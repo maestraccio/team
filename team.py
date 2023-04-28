@@ -1,7 +1,7 @@
 #!/usr/bin/python3
-versie = 0.1
-datum = 20230416
-print("Versie = %s, datum: %s" % (versie,datum))
+versie = 0.2
+datum = 20230428
+print("Team %s: %s" % (versie,datum))
 import datetime, calendar, locale, os, ast, pathlib, sqlite3, subprocess, operator, random
 from collections import Counter, OrderedDict
 from datetime import *
@@ -82,13 +82,28 @@ colstat5 = LichtRood
 colgoed = Groen
 colmatig = Geel
 colslecht = Rood
-terug = "%s    Q: Terug%s\n" % (ResetAll+colterug,ResetAll)
+
+print()
+lang = False
+while lang == False:
+    qlang = input("Kies je taal | Choose your language:\n  > 1: NL\n    2: EN\n  : ")
+    if qlang == "2":
+        lang = "EN"
+    else:
+        lang = "NL"
+if lang == "EN":
+    terug = "%s    Q: Back%s\n" % (ResetAll+colterug,ResetAll)
+else:
+    terug = "%s    Q: Terug%s\n" % (ResetAll+colterug,ResetAll)
 
 afsluitlijst = ["X","Q"]
 jalijst = ["J","Y"]
 neelijst = ["N"]
 skiplijst = ["!",">","S","D"] # Skip, Standaard, Default
-statuslijst = [colstat0+"0: gepland"+ResetAll,colstat1+"1: gestart"+ResetAll,colstat2+"2: gepauzeerd"+ResetAll,colstat3+"3: afgebroken"+ResetAll,colstat4+"4: afgerond"+ResetAll,colstat5+"5: verlopen"+ResetAll]
+if lang == "EN":
+    statuslijst = [colstat0+"0: planned"+ResetAll,colstat1+"1: started"+ResetAll,colstat2+"2: paused"+ResetAll,colstat3+"3: aborted"+ResetAll,colstat4+"4: done"+ResetAll,colstat5+"5: overdue"+ResetAll]
+else:
+    statuslijst = [colstat0+"0: gepland"+ResetAll,colstat1+"1: gestart"+ResetAll,colstat2+"2: gepauzeerd"+ResetAll,colstat3+"3: afgebroken"+ResetAll,colstat4+"4: afgerond"+ResetAll,colstat5+"5: verlopen"+ResetAll]
 
 nu = str(date.today()).replace("-","")
 nuy = nu[:4]
@@ -154,7 +169,10 @@ def mkPresenteam():
         for i in range(len(Voornaamlijst)):
             cur.execute("INSERT INTO presentie(%s,%s,%s,%s) VALUES('%s','%s','%s','%s');" % (pl[1],pl[2],pl[3],pl[4],Voornaamlijst[i].strip(),Achternaamlijst[i].strip(),colslecht+"UIT"+ResetAll+col,Aantekeninglijst[i].strip()))
             con.commit()
-        print("Het %s van de %s was succesvol." % (col+"Resetten"+ResetAll,col+"Presentielijst"+ResetAll))
+        if lang == "EN":
+            print("%s the %s was successful." % (col+"Resetting"+ResetAll,col+"Presence list"+ResetAll))
+        else:
+            print("Het %s van de %s was succesvol." % (col+"Resetten"+ResetAll,col+"Presentielijst"+ResetAll))
         presenteam()
         togglewie = "N"
     except(Exception) as error:
@@ -183,26 +201,41 @@ for i in TeamLogo:
     print(i, end = "", flush=True)
     sleep(0.0025)
 
-print("\nHet is vandaag "+LichtBlauw+str(date.today().strftime("%A"))+" "+nu+ResetAll+".\n")
+if lang == "EN":
+    print("\nToday is "+LichtBlauw+str(date.today().strftime("%A"))+" "+nu+ResetAll+".\n")
+else:
+    print("\nHet is vandaag "+LichtBlauw+str(date.today().strftime("%A"))+" "+nu+ResetAll+".\n")
 
 # Bij het opstarten willen we de data in de database vergelijken met de datum van vandaag, en eventueel een waarschuwing printen
 curseloverStop = "SELECT m.%s, m.%s, m.%s, m.%s, t.%s, t.%s, m.%s, m.%s FROM takenlijst m INNER JOIN team t ON m.%s = t.%s WHERE m.%s < %d AND (m.%s = '%s' OR m.%s = '%s' OR %s = '%s');" % (cltakenlijst[0],cltakenlijst[1],cltakenlijst[2],cltakenlijst[3],clteam[0],clteam[2],cltakenlijst[5],cltakenlijst[6],cltakenlijst[4],clteam[4],cltakenlijst[2],int(nu),cltakenlijst[5],statuslijst[0],cltakenlijst[5],statuslijst[1],cltakenlijst[5],statuslijst[5])
 cur.execute(curseloverStop)
 fetchalloverStop = str(cur.fetchall()).replace(" ","").replace("[","").replace("]","").replace("(","").replace(")","").split(",")
 if fetchalloverStop[0] != "": 
-    print("%sLET OP: Er zijn verlopen Taken of Taken die vandaag verlopen!%s" % (Rood,ResetAll))
+    if lang == "EN":
+        print("%sATTENTION: There are Tasks overdue or due today!%s" % (Rood,ResetAll))
+    else:
+        print("%sLET OP: Er zijn verlopen Taken of Taken die vandaag verlopen!%s" % (Rood,ResetAll))
 curseloverStart = "SELECT m.%s, m.%s, m.%s, m.%s, t.%s, t.%s, m.%s, m.%s FROM takenlijst m INNER JOIN team t ON m.%s = t.%s WHERE %s < %d AND %s = '%s';" % (cltakenlijst[0],cltakenlijst[1],cltakenlijst[2],cltakenlijst[3],clteam[0],clteam[2],cltakenlijst[5],cltakenlijst[6],cltakenlijst[4],clteam[4],cltakenlijst[1],int(nu),cltakenlijst[5],statuslijst[0])
 cur.execute(curseloverStart)
 fetchalloverStart = str(cur.fetchall()).replace(" ","").replace("[","").replace("]","").replace("(","").replace(")","").split(",")
 if fetchalloverStart[0] != "": 
-    print("%sLET OP: Er zijn Taken die nog moeten worden gestart!%s\n" % (Rood,ResetAll))
+    if lang == "EN":
+        print("%sATTENTION: There are unstarted Tasks!%s\n" % (Rood,ResetAll))
+    else:
+        print("%sLET OP: Er zijn Taken die nog moeten worden gestart!%s\n" % (Rood,ResetAll))
 curselnuStart = "SELECT m.%s, m.%s, m.%s, m.%s, t.%s, t.%s, m.%s, m.%s FROM takenlijst m INNER JOIN team t ON m.%s = t.%s WHERE %s = %d AND %s = '%s';" % (cltakenlijst[0],cltakenlijst[1],cltakenlijst[2],cltakenlijst[3],clteam[0],clteam[2],cltakenlijst[5],cltakenlijst[6],cltakenlijst[4],clteam[4],cltakenlijst[1],int(nu),cltakenlijst[5],statuslijst[0])
 cur.execute(curselnuStart)
 fetchallnuStart = str(cur.fetchall()).replace(" ","").replace("[","").replace("]","").replace("(","").replace(")","").split(",")
 if fetchallnuStart[0] != "": 
-    print("%sLET OP: Er zijn Taken die vandaag nog moeten worden gestart!%s\n" % (Geel,ResetAll))
+    if lang == "EN":
+        print("%sATTENTION: There are Tasks planned to start today!%s\n" % (Geel,ResetAll))
+    else:
+        print("%sLET OP: Er zijn Taken die vandaag nog moeten worden gestart!%s\n" % (Geel,ResetAll))
 if fetchalloverStop[0] == "" and fetchallnuStart[0] == "" and fetchalloverStart[0] == "":
-    print("Alle Taken liggen op schema. %sGoed bezig.%s" % (colgoed,ResetAll))
+    if lang == "EN":
+        print("All Tasks are on schedule. %sGood job.%s" % (colgoed,ResetAll))
+    else:
+        print("Alle Taken liggen op schema. %sGoed bezig.%s" % (colgoed,ResetAll))
 
 
 # Hieronder begint het programma met interactieve input
@@ -220,12 +253,31 @@ while Team == "Y":
     try:
         presenteam()
     except(Exception) as error:
-        print("%sMaak eerst een presentielijst met %s\"0\"%s" % (colslecht,ResetAll+colcheck,ResetAll))
+        if lang == "EN":
+            print("%sCreate a presence list first with %s\"0\"%s" % (colslecht,ResetAll+colcheck,ResetAll))
+        else:
+            print("%sMaak eerst een presentielijst met %s\"0\"%s" % (colslecht,ResetAll+colcheck,ResetAll))
         #print(error)
     fl = "{:<30}".format
     fc = "{:^6}".format
     fr = "{:>24}".format
-    functie = input("""Kies een functie:
+    if lang == "EN":
+        functie = input("""Choose a job:
+%s    %s
+%s    %s
+%s    %s
+%s    %s
+%s  > %s
+%s    %s
+%s    %s
+%s    %s
+%s    %s
+%s    %s
+%s    %s
+%s    %s
+  : """ % (coltoevoegen,fl("A dd")+fc("1 | 1!")+fr("A - T ask")+ResetAll,colbekijken,fl("V iew")+fc("2 | 2!")+fr("V - L ong")+ResetAll,colwijzigen,fl("M odify")+fc("3 | 3!")+fr("M - T ask")+ResetAll,colverwijderen,fl("D elete/archive")+fc("4 | 4!")+fr("D - A rchive")+ResetAll,colkalender,fl("C alendar and timeline")+fc("5 |   ")+fr("(ncal -3w)")+ResetAll,colreset,fl("R eset RecordID's and Backup")+fc("6 | 6!")+fr("R - B ackup All")+ResetAll,coldatabase,fl("S ql Database")+fc("7 |   ")+fr("(sqlite3 Team.db)")+ResetAll,colinformatie,fl("N otes")+fc("8 |   ")+fr("(vim Team.txt)")+ResetAll,colmeeting,fl("M eeting")+fc("9 | 9!")+fr("M - N o guests")+ResetAll,colcheck,fl("P resence list")+fc("0 | 0!")+fr("P - R eset")+ResetAll,LichtGrijs,fl("_S tandard job/Default")+fc("* !>SD")+fr("[*!, *>, *S, *D]")+ResetAll,colterug,fl("Q Back")+fc("q | %sq!" % (ResetAll+colslecht))+fr("Q - Q uit")+ResetAll)).replace(" ","").replace("-","")
+    else:
+        functie = input("""Kies een functie:
 %s    %s
 %s    %s
 %s    %s
@@ -240,93 +292,185 @@ while Team == "Y":
 %s    %s
   : """ % (coltoevoegen,fl("T oevoegen")+fc("1 | 1!")+fr("T - T aak")+ResetAll,colbekijken,fl("B ekijken")+fc("2 | 2!")+fr("B - U itgebreid")+ResetAll,colwijzigen,fl("W ijzigen")+fc("3 | 3!")+fr("W - T aak")+ResetAll,colverwijderen,fl("V erwijderen/archiveren")+fc("4 | 4!")+fr("V - A rchiveren")+ResetAll,colkalender,fl("K alender en tijdlijn")+fc("5 |   ")+fr("(ncal -3w)")+ResetAll,colreset,fl("R eset RecordID's en Backup")+fc("6 | 6!")+fr("R - B ackup Alles")+ResetAll,coldatabase,fl("D atabase")+fc("7 |   ")+fr("(sqlite3 Team.db)")+ResetAll,colinformatie,fl("A lgemene informatie")+fc("8 |   ")+fr("(vim Team.txt)")+ResetAll,colmeeting,fl("M eeting")+fc("9 | 9!")+fr("M - G een gasten")+ResetAll,colcheck,fl("P resentielijst")+fc("0 | 0!")+fr("P - R eset")+ResetAll,LichtGrijs,fl("_S tandaardopdracht/Default")+fc("* !>SD")+fr("[*!, *>, *S, *D]")+ResetAll,colterug,fl("Q Terug")+fc("q | %sq!" % (ResetAll+colslecht))+fr("Q - A fsluiten")+ResetAll)).replace(" ","").replace("-","")
     if functie.upper() in afsluitlijst or functie.upper() in neelijst:
-        toch = input("Weet je het %s?\n  : " % (colslecht+"zeker"+ResetAll))
+        if lang == "EN":
+            toch = input("Are you %s?\n  : " % (colslecht+"sure"+ResetAll))
+        else:
+            toch = input("Weet je het %s?\n  : " % (colslecht+"zeker"+ResetAll))
         if toch.upper() in jalijst:
-            print("\n%sBedankt, aan de slag, of neem een momentje voor jezelf.%s\n" % (LichtMagenta,ResetAll))
+            if lang == "EN":
+                print("\n%sThank you, back to work, or take a moment for yourself.%s\n" % (LichtMagenta,ResetAll))
+            else:
+                print("\n%sBedankt, aan de slag, of neem een momentje voor jezelf.%s\n" % (LichtMagenta,ResetAll))
             exit()
     elif len(functie) >= 2 and (functie[0].upper() in afsluitlijst or functie[0].upper() in neelijst) and (functie[1].upper() in skiplijst or functie[1].upper() == "A"):
-        toch = input("Weet je het %s?\n  : " % (colslecht+"zeker"+ResetAll))
+        if lang == "EN":
+            toch = input("Are you %s?\n  : " % (colslecht+"sure"+ResetAll))
+        else:
+            toch = input("Weet je het %s?\n  : " % (colslecht+"zeker"+ResetAll))
         if toch.upper() in jalijst:
-            print("\n%sBedankt, aan de slag, of neem een momentje voor jezelf.%s\n" % (LichtMagenta,ResetAll))
+            if lang == "EN":
+                print("\n%sThank you, back to work, or take a moment for yourself.%s\n" % (LichtMagenta,ResetAll))
+            else:
+                print("\n%sBedankt, aan de slag, of neem een momentje voor jezelf.%s\n" % (LichtMagenta,ResetAll))
             exit()
-    elif len(functie) >= 2 and (functie[0] == "1" or functie[0].upper() == "T") and (functie[1].upper() in skiplijst or functie[1] == "1" or functie[1].upper() == "T"):    # 1: Toevoegen
-        functie = "1"
-        toe = "1"
-        print("Standaardfunctie \"%sToevoegen - Taak%s\" gekozen." % (coltoevoegen, ResetAll))
-    elif len(functie) >= 2 and (functie[0] == "1" or functie[0].upper() == "T") and (functie[1] == "2" or functie[1].upper() == "M"):
-        functie = "1"
-        toe = "2"
-        print("Standaardfunctie \"%sToevoegen - Medewerker%s\" gekozen." % (coltoevoegen, ResetAll))
-    elif len(functie) >= 2 and (functie[0] == "2" or functie[0].upper() == "B") and (functie[1].upper() in skiplijst or functie[1].upper() == "U"):                         # 2: Bekijken
-        functie = "2"
-        comp = "1"
-        print("Standaardfunctie \"%sBekijken - Uitgebreid%s\" gekozen." % (colbekijken, ResetAll))
-    elif len(functie) >= 2 and (functie[0] == "3" or functie[0].upper() == "W") and (functie[1].upper() in skiplijst or functie[1] == "1" or functie[1].upper() == "T"):    # 3: Wijzigen
-        functie = "3"
-        mot = "1"
-        print("Standaardfunctie \"%sWijzigen - Taak%s\" gekozen." % (colwijzigen, ResetAll))
-    elif len(functie) >= 2 and (functie[0] == "3" or functie[0].upper() == "W") and (functie[1] == "2" or functie[1].upper() == "M"):
-        functie = "3"
-        mot = "2"
-        print("Standaardfunctie \"%sWijzigen - Medewerker%s\" gekozen." % (colwijzigen, ResetAll))
-    elif len(functie) >= 2 and (functie[0] == "4" or functie[0].upper() == "V") and (functie[1].upper() in skiplijst or functie[1] == "3" or functie[1].upper() == "A"):    # 4: Verwijderen/Archiveren
-        functie = "4"
-        Wat = "3"
-        print("Standaardfunctie \"%sVerwijderen/archiveren - Archiveren%s\" gekozen." % (colverwijderen, ResetAll))
-    elif len(functie) >= 2 and (functie[0] == "4" or functie[0].upper() == "V") and (functie[1] == "1" or functie[1].upper() == "T"):
-        functie = "4"
-        Wat = "1"
-        print("Standaardfunctie \"%sVerwijderen/archiveren - Taak verwijderen%s\" gekozen." % (colverwijderen, ResetAll))
-    elif len(functie) >= 2 and (functie[0] == "4" or functie[0].upper() == "V") and (functie[1] == "2" or functie[1].upper() == "M"):
-        functie = "4"
-        Wat = "2"
-        print("Standaardfunctie \"%sVerwijderen/archiveren - Medewerker verwijderen%s\" gekozen." % (colverwijderen, ResetAll))
-    elif len(functie) >= 2 and (functie[0] == "6" or functie[0].upper() == "R") and (functie[1].upper() in skiplijst or functie[1] == "1" or functie[1].upper() == "B"):    # 6: Reset RecordID's en Backup
-        functie = "6"
-        resetjn = "1"
-        print("Standaardfunctie \"%sReset RecordID's en Backup: Backup van alles en reset RecordID's%s\" gekozen." % (colreset, ResetAll))
-    elif len(functie) >= 2 and (functie[0] == "6" or functie[0].upper() == "R") and (functie[1] == "2"):
-        functie = "6"
-        resetjn = "2"
-        print("Standaardfunctie \"%sReset RecordID's en Backup: Backup alleen Takenlijst en reset RecordID's%s\" gekozen." % (colreset, ResetAll))
-    elif len(functie) >= 2 and (functie[0] == "6" or functie[0].upper() == "R") and (functie[1] == "3"):
-        functie = "6"
-        resetjn = "3"
-        print("Standaardfunctie \"%sReset RecordID's en Backup: Backup alleen Team%s\" gekozen." % (colreset, ResetAll))
-    elif len(functie) >= 2 and (functie[0] == "6" or functie[0].upper() == "R") and (functie[1] == "4"):
-        functie = "6"
-        resetjn = "4"
-        print("Standaardfunctie \"%sReset RecordID's en Backup: Backup alleen Archief%s\" gekozen." % (colreset, ResetAll))
-    elif len(functie) >= 2 and (functie[0] == "6" or functie[0].upper() == "R") and (functie[1] == "5"):
-        functie = "6"
-        resetjn = "5"
-        print("Standaardfunctie \"%sReset RecordID's en Backup: Backup alleen Algemene informatie (Team.txt)%s\" gekozen." % (colreset, ResetAll))
-    elif len(functie) >= 2 and (functie[0] == "6" or functie[0].upper() == "R") and (functie[1] == "6"):
-        functie = "6"
-        resetjn = "6"
-        print("Standaardfunctie \"%sReset RecordID's en Backup: Terugzetten backup Takenlijst%s\" gekozen." % (colreset, ResetAll))
-    elif len(functie) >= 2 and (functie[0] == "6" or functie[0].upper() == "R") and (functie[1] == "7"):
-        functie = "6"
-        resetjn = "7"
-        print("Standaardfunctie \"%sReset RecordID's en Backup: Terugzetten backup Team%s\" gekozen." % (colreset, ResetAll))
-    elif len(functie) >= 2 and (functie[0] == "6" or functie[0].upper() == "R") and (functie[1] == "8"):
-        functie = "6"
-        resetjn = "8"
-        print("Standaardfunctie \"%sReset RecordID's en Backup: Terugzetten backup Archief%s\" gekozen." % (colreset, ResetAll))
-    elif len(functie) >= 2 and (functie[0] == "6" or functie[0].upper() == "R") and (functie[1] == "9"):
-        functie = "6"
-        resetjn = "9"
-        print("Standaardfunctie \"%sReset RecordID's en Backup: Terugzetten backup Algemene informatie (Team.txt)%s\" gekozen." % (colreset, ResetAll))
-    elif len(functie) >= 2 and (functie[0] == "9" or functie[0].upper() == "M") and (functie[1].upper() in skiplijst or functie[1] == "0" or functie[1].upper() == "G"):    # 9: Meeting
-        functie = "9"
-        Extra = "N"
-        print("Standaardfunctie \"%sMeeting - Geen gasten%s\" gekozen." % (colcheck, ResetAll))
-    elif len(functie) >= 2 and (functie[0] == "0" or functie[0].upper() == "P") and (functie[1].upper() in skiplijst or functie[1].upper() in ["R","U"]):                   # 0: Presentielijst
-        functie = "0"
-        togglewie = "R"
-        print("Standaardfunctie \"%sPresentielijst - Reset%s\" gekozen." % (colcheck, ResetAll))
-    elif functie == "":
-        functie = "5"
+    if lang == "EN":
+        if len(functie) >= 2 and (functie[0] == "1" or functie[0].upper() == "A") and (functie[1].upper() in skiplijst or functie[1] == "1" or functie[1].upper() == "T"):    # 1: Toevoegen
+            functie = "1"
+            toe = "1"
+            print("Standard job \"%sAdd - Task%s\" chosen." % (coltoevoegen, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "1" or functie[0].upper() == "A") and (functie[1] == "2" or functie[1].upper() == "M"):
+            functie = "1"
+            toe = "2"
+            print("Standard job \"%sAdd - Member%s\" chosen." % (coltoevoegen, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "2" or functie[0].upper() == "V") and (functie[1].upper() in skiplijst or functie[1].upper() == "L"):                         # 2: Bekijken
+            functie = "2"
+            comp = "1"
+            print("Standard job \"%sView - Long%s\" chosen." % (colbekijken, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "3" or functie[0].upper() == "M") and (functie[1].upper() in skiplijst or functie[1] == "1" or functie[1].upper() == "T"):    # 3: Wijzigen
+            functie = "3"
+            mot = "1"
+            print("Standard job \"%sModify - Task%s\" chosen." % (colwijzigen, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "3" or functie[0].upper() == "M") and (functie[1] == "2" or functie[1].upper() == "M"):
+            functie = "3"
+            mot = "2"
+            print("Standard job \"%sModify - Member%s\" chosen." % (colwijzigen, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "4" or functie[0].upper() == "D") and (functie[1].upper() in skiplijst or functie[1] == "3" or functie[1].upper() == "A"):    # 4: Verwijderen/Archiveren
+            functie = "4"
+            Wat = "3"
+            print("Standard job \"%sDelete/archive - Archive%s\" chosen." % (colverwijderen, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "4" or functie[0].upper() == "D") and (functie[1] == "1" or functie[1].upper() == "T"):
+            functie = "4"
+            Wat = "1"
+            print("Standard job \"%sDelete/archive - Delete Task%s\" chosen." % (colverwijderen, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "4" or functie[0].upper() == "D") and (functie[1] == "2" or functie[1].upper() == "M"):
+            functie = "4"
+            Wat = "2"
+            print("Standard job \"%sDelete/archive - Delete Member%s\" chosen." % (colverwijderen, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "6" or functie[0].upper() == "R") and (functie[1].upper() in skiplijst or functie[1] == "1" or functie[1].upper() == "B"):    # 6: Reset RecordID's en Backup
+            functie = "6"
+            resetjn = "1"
+            print("Standard job \"%sReset RecordID's and Backup: Backup All and Reset RecordID's%s\" chosen." % (colreset, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "6" or functie[0].upper() == "R") and (functie[1] == "2"):
+            functie = "6"
+            resetjn = "2"
+            print("Standard job \"%sReset RecordID's and Backup: Backup only Tasks list and Reset RecordID's%s\" chosen." % (colreset, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "6" or functie[0].upper() == "R") and (functie[1] == "3"):
+            functie = "6"
+            resetjn = "3"
+            print("Standard job \"%sReset RecordID's and Backup: Backup only Team%s\" chosen." % (colreset, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "6" or functie[0].upper() == "R") and (functie[1] == "4"):
+            functie = "6"
+            resetjn = "4"
+            print("Standard job \"%sReset RecordID's and Backup: Backup only Archive%s\" chosen." % (colreset, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "6" or functie[0].upper() == "R") and (functie[1] == "5"):
+            functie = "6"
+            resetjn = "5"
+            print("Standard job \"%sReset RecordID's and Backup: Backup only Notes (Team.txt)%s\" chosen." % (colreset, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "6" or functie[0].upper() == "R") and (functie[1] == "6"):
+            functie = "6"
+            resetjn = "6"
+            print("Standard job \"%sReset RecordID's and Backup: Rollback Tasks list%s\" chosen." % (colreset, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "6" or functie[0].upper() == "R") and (functie[1] == "7"):
+            functie = "6"
+            resetjn = "7"
+            print("Standard job \"%sReset RecordID's and Backup: Rollback Team%s\" chosen." % (colreset, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "6" or functie[0].upper() == "R") and (functie[1] == "8"):
+            functie = "6"
+            resetjn = "8"
+            print("Standard job \"%sReset RecordID's and Backup: Rollback Archive%s\" chosen." % (colreset, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "6" or functie[0].upper() == "R") and (functie[1] == "9"):
+            functie = "6"
+            resetjn = "9"
+            print("Standard job \"%sReset RecordID's and Backup: Rollback Notes (Team.txt)%s\" gekozen." % (colreset, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "9" or functie[0].upper() == "M") and (functie[1].upper() in skiplijst or functie[1] == "0" or functie[1].upper() == "N"):    # 9: Meeting
+            functie = "9"
+            Extra = "N"
+            print("Standard job \"%sMeeting - No guests%s\" chosen." % (colcheck, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "0" or functie[0].upper() == "P") and (functie[1].upper() in skiplijst or functie[1].upper() in ["R","O"]):                   # 0: Presentielijst
+            functie = "0"
+            togglewie = "R"
+            print("Standard job \"%sPresence list - Reset%s\" chosen." % (colcheck, ResetAll))
+        elif functie == "":
+            functie = "5"
+    else:
+        if len(functie) >= 2 and (functie[0] == "1" or functie[0].upper() == "T") and (functie[1].upper() in skiplijst or functie[1] == "1" or functie[1].upper() == "T"):    # 1: Toevoegen
+            functie = "1"
+            toe = "1"
+            print("Standaardfunctie \"%sToevoegen - Taak%s\" gekozen." % (coltoevoegen, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "1" or functie[0].upper() == "T") and (functie[1] == "2" or functie[1].upper() == "M"):
+            functie = "1"
+            toe = "2"
+            print("Standaardfunctie \"%sToevoegen - Medewerker%s\" gekozen." % (coltoevoegen, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "2" or functie[0].upper() == "B") and (functie[1].upper() in skiplijst or functie[1].upper() == "U"):                         # 2: Bekijken
+            functie = "2"
+            comp = "1"
+            print("Standaardfunctie \"%sBekijken - Uitgebreid%s\" gekozen." % (colbekijken, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "3" or functie[0].upper() == "W") and (functie[1].upper() in skiplijst or functie[1] == "1" or functie[1].upper() == "T"):    # 3: Wijzigen
+            functie = "3"
+            mot = "1"
+            print("Standaardfunctie \"%sWijzigen - Taak%s\" gekozen." % (colwijzigen, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "3" or functie[0].upper() == "W") and (functie[1] == "2" or functie[1].upper() == "M"):
+            functie = "3"
+            mot = "2"
+            print("Standaardfunctie \"%sWijzigen - Medewerker%s\" gekozen." % (colwijzigen, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "4" or functie[0].upper() == "V") and (functie[1].upper() in skiplijst or functie[1] == "3" or functie[1].upper() == "A"):    # 4: Verwijderen/Archiveren
+            functie = "4"
+            Wat = "3"
+            print("Standaardfunctie \"%sVerwijderen/archiveren - Archiveren%s\" gekozen." % (colverwijderen, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "4" or functie[0].upper() == "V") and (functie[1] == "1" or functie[1].upper() == "T"):
+            functie = "4"
+            Wat = "1"
+            print("Standaardfunctie \"%sVerwijderen/archiveren - Taak verwijderen%s\" gekozen." % (colverwijderen, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "4" or functie[0].upper() == "V") and (functie[1] == "2" or functie[1].upper() == "M"):
+            functie = "4"
+            Wat = "2"
+            print("Standaardfunctie \"%sVerwijderen/archiveren - Medewerker verwijderen%s\" gekozen." % (colverwijderen, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "6" or functie[0].upper() == "R") and (functie[1].upper() in skiplijst or functie[1] == "1" or functie[1].upper() == "B"):    # 6: Reset RecordID's en Backup
+            functie = "6"
+            resetjn = "1"
+            print("Standaardfunctie \"%sReset RecordID's en Backup: Backup van alles en reset RecordID's%s\" gekozen." % (colreset, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "6" or functie[0].upper() == "R") and (functie[1] == "2"):
+            functie = "6"
+            resetjn = "2"
+            print("Standaardfunctie \"%sReset RecordID's en Backup: Backup alleen Takenlijst en reset RecordID's%s\" gekozen." % (colreset, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "6" or functie[0].upper() == "R") and (functie[1] == "3"):
+            functie = "6"
+            resetjn = "3"
+            print("Standaardfunctie \"%sReset RecordID's en Backup: Backup alleen Team%s\" gekozen." % (colreset, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "6" or functie[0].upper() == "R") and (functie[1] == "4"):
+            functie = "6"
+            resetjn = "4"
+            print("Standaardfunctie \"%sReset RecordID's en Backup: Backup alleen Archief%s\" gekozen." % (colreset, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "6" or functie[0].upper() == "R") and (functie[1] == "5"):
+            functie = "6"
+            resetjn = "5"
+            print("Standaardfunctie \"%sReset RecordID's en Backup: Backup alleen Algemene informatie (Team.txt)%s\" gekozen." % (colreset, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "6" or functie[0].upper() == "R") and (functie[1] == "6"):
+            functie = "6"
+            resetjn = "6"
+            print("Standaardfunctie \"%sReset RecordID's en Backup: Terugzetten backup Takenlijst%s\" gekozen." % (colreset, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "6" or functie[0].upper() == "R") and (functie[1] == "7"):
+            functie = "6"
+            resetjn = "7"
+            print("Standaardfunctie \"%sReset RecordID's en Backup: Terugzetten backup Team%s\" gekozen." % (colreset, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "6" or functie[0].upper() == "R") and (functie[1] == "8"):
+            functie = "6"
+            resetjn = "8"
+            print("Standaardfunctie \"%sReset RecordID's en Backup: Terugzetten backup Archief%s\" gekozen." % (colreset, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "6" or functie[0].upper() == "R") and (functie[1] == "9"):
+            functie = "6"
+            resetjn = "9"
+            print("Standaardfunctie \"%sReset RecordID's en Backup: Terugzetten backup Algemene informatie (Team.txt)%s\" gekozen." % (colreset, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "9" or functie[0].upper() == "M") and (functie[1].upper() in skiplijst or functie[1] == "0" or functie[1].upper() == "G"):    # 9: Meeting
+            functie = "9"
+            Extra = "N"
+            print("Standaardfunctie \"%sMeeting - Geen gasten%s\" gekozen." % (colcheck, ResetAll))
+        elif len(functie) >= 2 and (functie[0] == "0" or functie[0].upper() == "P") and (functie[1].upper() in skiplijst or functie[1].upper() in ["R","U"]):                   # 0: Presentielijst
+            functie = "0"
+            togglewie = "R"
+            print("Standaardfunctie \"%sPresentielijst - Reset%s\" gekozen." % (colcheck, ResetAll))
+        elif functie == "":
+            functie = "5"
 
     # 1: TOEVOEGEN
     if functie == "1" or functie[0].upper() == "T":
@@ -334,13 +478,22 @@ while Team == "Y":
         insert = "Y"
         while insert == "Y":
             if toe not in ["1","2"]:
-                toe = input("%sWil je een Taak of een Medewerker toevoegen?%s\n%s  > 1: Taak%s\n    2: Medewerker\n%s  : " % (col,ResetAll,col,ResetAll,terug))
+                if lang == "EN":
+                    toe = input("%sDo you want to add a Task or a Member?%s\n%s  > 1: Task%s\n    2: Member\n%s  : " % (col,ResetAll,col,ResetAll,terug))
+                else:
+                    toe = input("%sWil je een Taak of een Medewerker toevoegen?%s\n%s  > 1: Taak%s\n    2: Medewerker\n%s  : " % (col,ResetAll,col,ResetAll,terug))
             if toe.upper() in afsluitlijst or toe.upper() in neelijst:
                 break
             elif len(toe) == 2 and (toe[0].upper() in afsluitlijst or toe[0].upper() in neelijst) and toe[1].upper() in skiplijst:
-                toch = input("Weet je het %s?\n  : " % (colslecht+"zeker"+ResetAll))
+                if lang == "EN":
+                    toch = input("Are you %s?\n  : " % (colslecht+"sure"+ResetAll))
+                else:
+                    toch = input("Weet je het %s?\n  : " % (colslecht+"zeker"+ResetAll))
                 if toch.upper() in jalijst:
-                    print("\n%sBedankt, aan de slag, of neem een momentje voor jezelf.%s\n" % (LichtMagenta,ResetAll))
+                    if lang == "EN":
+                        print("\n%sThank you, back to work, or take a moment for yourself.%s\n" % (LichtMagenta,ResetAll))
+                    else:
+                        print("\n%sBedankt, aan de slag, of neem een momentje voor jezelf.%s\n" % (LichtMagenta,ResetAll))
                     exit()
             # 1: TOEVOEGEN - 1: taak = default = else = "1!"
             # 1: TOEVOEGEN - 2: medewerker
@@ -349,17 +502,29 @@ while Team == "Y":
                 while medewerker == "Y":
                     voor = "Y"
                     while voor == "Y":
-                        voorNaam = input("Typ de %sVoornaam%s (max 25 posities):\n  : " % (col,ResetAll))
+                        if lang == "EN":
+                            voorNaam = input("Type the %sGiven name%s (max 25 characters):\n  : " % (col,ResetAll))
+                        else:
+                            voorNaam = input("Typ de %sVoornaam%s (max 25 karakters):\n  : " % (col,ResetAll))
                         if voorNaam.upper() in afsluitlijst or voorNaam.upper() in neelijst:
                             voor = "X"
                             break
                         elif len(voorNaam) == 2 and (voorNaam[0].upper() in afsluitlijst or voorNaam[0].upper() in neelijst) and voorNaam[1].upper() in skiplijst:
-                            toch = input("Weet je het %s?\n  : " % (colslecht+"zeker"+ResetAll))
+                            if lang == "EN":
+                                toch = input("Are you %s?\n  : " % (colslecht+"sure"+ResetAll))
+                            else:
+                                toch = input("Weet je het %s?\n  : " % (colslecht+"zeker"+ResetAll))
                             if toch.upper() in jalijst:
-                                print("\n%sBedankt, aan de slag, of neem een momentje voor jezelf.%s\n" % (LichtMagenta,ResetAll))
+                                if lang == "EN":
+                                    print("\n%sThank you, back to work, or take a moment for yourself.%s\n" % (LichtMagenta,ResetAll))
+                                else:
+                                    print("\n%sBedankt, aan de slag, of neem een momentje voor jezelf.%s\n" % (LichtMagenta,ResetAll))
                                 exit()
                         elif len(voorNaam) > 25:
-                            print("Deze Voornaam is te lang. Kort hem af.")
+                            if lang == "EN":
+                                print("This Given name is too long. Abbreviate it.")
+                            else:
+                                print("Deze Voornaam is te lang. Kort hem af.")
                         elif voorNaam == "?":
                             cur.execute("SELECT * FROM team")
                             Lijst = from_db_cursor(cur)
@@ -379,11 +544,17 @@ while Team == "Y":
                                 VN = voorNaam[0]+voorNaam[voorNaam.rfind("-")+1]
                                 voor = "N"
                             else:
-                                print("Er is iets vreemds met deze voornaam, probeer het opnieuw.")
+                                if lang == "EN":
+                                    print("There is something odd with this given name, try again.")
+                                else:
+                                    print("Er is iets vreemds met deze voornaam, probeer het opnieuw.")
                             vnbestaatal = "N"
                             if voorNaam == vn:
                                 vnbestaatal = "Y"
-                                print("Let op: Voornaam \"%s\" bestaat al:" % voorNaam)
+                                if lang == "EN":
+                                    print("Attention: Given name \"%s\" already exists:" % voorNaam)
+                                else:
+                                    print("Let op: Voornaam \"%s\" bestaat al:" % voorNaam)
                                 cur.execute("SELECT * FROM team where %s='%s';" % (clteam[0], voorNaam))
                                 voornaammatch = from_db_cursor(cur)
                                 voornaammatch.align = "l"
@@ -394,17 +565,29 @@ while Team == "Y":
                         break
                     achter = "Y"
                     while achter == "Y":
-                        achterNaam = input("Typ de %sAchternaam%s (max 25 karakters):\n  : " % (col,ResetAll))
+                        if lang == "EN":
+                            achterNaam = input("Type the %sFamily name%s (max 25 characters):\n  : " % (col,ResetAll))
+                        else:
+                            achterNaam = input("Typ de %sAchternaam%s (max 25 karakters):\n  : " % (col,ResetAll))
                         if achterNaam.upper() in afsluitlijst or achterNaam.upper() in neelijst:
                             achter = "X"
                             break
                         elif len(achterNaam) == 2 and (achterNaam[0].upper() in afsluitlijst or achterNaam[0].upper() in neelijst) and achterNaam[1].upper() in skiplijst:
-                            toch = input("Weet je het %s?\n  : " % (colslecht+"zeker"+ResetAll))
+                            if lang == "EN":
+                                toch = input("Are you %s?\n  : " % (colslecht+"sure"+ResetAll))
+                            else:
+                                toch = input("Weet je het %s?\n  : " % (colslecht+"zeker"+ResetAll))
                             if toch.upper() in jalijst:
-                                print("\n%sBedankt, aan de slag, of neem een momentje voor jezelf.%s\n" % (LichtMagenta,ResetAll))
+                                if lang == "EN":
+                                    print("\n%sThank you, back to work, or take a moment for yourself.%s\n" % (LichtMagenta,ResetAll))
+                                else:
+                                    print("\n%sBedankt, aan de slag, of neem een momentje voor jezelf.%s\n" % (LichtMagenta,ResetAll))
                                 exit()
                         elif len(achterNaam) > 25:
-                            print("Deze Achternaam is te lang. Kort hem af.")
+                            if lang == "EN":
+                                print("This Family name is too long. Abbreviate it.")
+                            else:
+                                print("Deze Achternaam is te lang. Kort hem af.")
                         cur.execute("SELECT %s FROM team where %s='%s';" % (clteam[2], clteam[2], achterNaam))
                         an = str(cur.fetchall()).replace("[","").replace("(","").replace(")","").replace("]","").replace("'","").replace(",","")
                         if achterNaam.rfind(" ") == -1 and achterNaam.rfind("-") == -1:
@@ -417,11 +600,17 @@ while Team == "Y":
                             AN = achterNaam[0]+achterNaam[achterNaam.rfind("-")+1]
                             achter = "N"
                         else:
-                            print("Er is iets vreemds met deze achternaam, probeer het opnieuw.")
+                            if lang == "EN":
+                                print("There is something odd with this family name, try again.")
+                            else:
+                                print("Er is iets vreemds met deze achternaam, probeer het opnieuw.")
                         anbestaatal = "N"
                         if achterNaam == an:
                             anbestaatal = "Y"
-                            print("Let op: Achternaam \"%s\" bestaat al:" % achterNaam)
+                            if lang == "EN":
+                                print("Attention: Family name \"%s\" already exists:" % achterNaam)
+                            else:
+                                print("Let op: Achternaam \"%s\" bestaat al:" % achterNaam)
                             cur.execute("SELECT * FROM team where %s='%s';" % (clteam[2], achterNaam))
                             achternaammatch = from_db_cursor(cur)
                             achternaammatch.align = "l"
@@ -432,13 +621,22 @@ while Team == "Y":
                         break
                     nummer = "Y"
                     while nummer == "Y":
-                        Nummer = input("Typ het %sPersoneelsNummer%s (numeriek):\n  : " % (col,ResetAll))
+                        if lang == "EN":
+                            Nummer = input("Type the %sAgent Number%s (numerical):\n  : " % (col,ResetAll))
+                        else:
+                            Nummer = input("Typ het %sPersoneelsNummer%s (numeriek):\n  : " % (col,ResetAll))
                         if Nummer.upper() in afsluitlijst or Nummer.upper() in neelijst:
                             nummer = "X"
                         elif len(nummer) == 2 and (nummer[0].upper() in afsluitlijst or nummer[0].upper() in neelijst) and nummer[1].upper() in skiplijst:
-                            toch = input("Weet je het %s?\n  : " % (colslecht+"zeker"+ResetAll))
+                            if lang == "EN":
+                                toch = input("Are you %s?\n  : " % (colslecht+"sure"+ResetAll))
+                            else:
+                                toch = input("Weet je het %s?\n  : " % (colslecht+"zeker"+ResetAll))
                             if toch.upper() in jalijst:
-                                print("\n%sBedankt, aan de slag, of neem een momentje voor jezelf.%s\n" % (LichtMagenta,ResetAll))
+                                if lang == "EN":
+                                    print("\n%sThank you, back to work, or take a moment for yourself.%s\n" % (LichtMagenta,ResetAll))
+                                else:
+                                    print("\n%sBedankt, aan de slag, of neem een momentje voor jezelf.%s\n" % (LichtMagenta,ResetAll))
                                 exit()
                         else:
                             try:
@@ -448,7 +646,10 @@ while Team == "Y":
                                 pnbestaatal = "N"
                                 if Nummer == pn:
                                     pnbestaatal = "Y"
-                                    print("Let op: PersoneelsNummer \"%s\" bestaat al:" % Nummer)
+                                    if lang == "EN":
+                                        print("Attention: Agent Number \"%s\" already exists:" % Nummer)
+                                    else:
+                                        print("Let op: PersoneelsNummer \"%s\" bestaat al:" % Nummer)
                                     cur.execute("SELECT * FROM team where %s='%s';" % (clteam[4], Nummer))
                                     nummermatch = from_db_cursor(cur)
                                     nummermatch.align = "l"
@@ -457,19 +658,31 @@ while Team == "Y":
                                 else:
                                     nummer = "N"
                             except:
-                                print("Een PersoneelsNummer mag alleen cijfers bevatten.")
+                                if lang == "EN":
+                                    print("An Agent Number can only contain digits.")
+                                else:
+                                    print("Een PersoneelsNummer mag alleen cijfers bevatten.")
                     if nummer == "X":
                         medewerker = "X"
                         break
                     aant = "Y"
                     while aant == "Y":
-                        Aantekening = input("Voeg een %sAantekening%s toe (optioneel, max. 25 karakters):\n  : " % (col,ResetAll))
+                        if lang == "EN":
+                            Aantekening = input("Add a %sNote%s (optional, max. 25 characters):\n  : " % (col,ResetAll))
+                        else:
+                            Aantekening = input("Voeg een %sAantekening%s toe (optioneel, max. 25 karakters):\n  : " % (col,ResetAll))
                         if Aantekening.upper() in afsluitlijst or Aantekening.upper() in neelijst:
                             aant = "X"
                         elif len(Aantekening) == 2 and (Aantekening[0].upper() in afsluitlijst or Aantekening[0].upper() in neelijst) and Aantekening[1].upper() in skiplijst:
-                            toch = input("Weet je het %s?\n  : " % (colslecht+"zeker"+ResetAll))
+                            if lang == "EN":
+                                toch = input("Are you %s?\n  : " % (colslecht+"sure"+ResetAll))
+                            else:
+                                toch = input("Weet je het %s?\n  : " % (colslecht+"zeker"+ResetAll))
                             if toch.upper() in jalijst:
-                                print("\n%sBedankt, aan de slag, of neem een momentje voor jezelf.%s\n" % (LichtMagenta,ResetAll))
+                                if lang == "EN":
+                                    print("\n%sThank you, back to work, or take a moment for yourself.%s\n" % (LichtMagenta,ResetAll))
+                                else:
+                                    print("\n%sBedankt, aan de slag, of neem een momentje voor jezelf.%s\n" % (LichtMagenta,ResetAll))
                                 exit()
                         else:
                             aant = "OK"
@@ -477,18 +690,33 @@ while Team == "Y":
                         break
                     print(voorNaam, VN, achterNaam, AN, Nummer,Aantekening)
                     if pnbestaatal == "Y":
-                        print("Dit PersoneelsNummer bestaat al en moet uniek zijn. Pas de gegevens aan.")
+                        if lang == "EN":
+                            print("This Agent Number already exists and must be unique. Correct your entry.")
+                        else:
+                            print("Dit PersoneelsNummer bestaat al en moet uniek zijn. Pas de gegevens aan.")
                     elif vnbestaatal == "Y" and anbestaatal == "Y":
-                        print("Deze medewerker bestaat al en zal niet worden toegevoegd.")
+                        if lang == "EN":
+                            print("This member already exists and will not be added.")
+                        else:
+                            print("Deze medewerker bestaat al en zal niet worden toegevoegd.")
                     else:
-                        ok = input("Klopt dit?\n%s  > 1: Ja, toevoegen aan lijst en terug%s\n%s    2: Ja, toevoegen en nogmaals%s\n    3: Nee, corrigeren alstublieft\n    4: Nee, laat maar\n  : " % (col,ResetAll,col,ResetAll))
+                        if lang == "EN":
+                            ok = input("Is this right?\n%s  > 1: Yes, add to the list and abort%s\n%s    2: Yes, add and again%s\n    3: No, let me correct\n    4: No, never mind, abort\n  : " % (col,ResetAll,col,ResetAll))
+                        else:
+                            ok = input("Klopt dit?\n%s  > 1: Ja, toevoegen aan lijst en hier uit%s\n%s    2: Ja, toevoegen en nogmaals%s\n    3: Nee, corrigeren alstublieft\n    4: Nee, laat maar\n  : " % (col,ResetAll,col,ResetAll))
                         if ok.upper() in afsluitlijst or ok.upper() in neelijst:
                             medewerker = "N"
                             insert = "N"
                         elif len(ok) == 2 and (ok[0].upper() in afsluitlijst or ok[0].upper() in neelijst) and ok[1].upper() in skiplijst:
-                            toch = input("Weet je het %s?\n  : " % (colslecht+"zeker"+ResetAll))
+                            if lang == "EN":
+                                toch = input("Are you %s?\n  : " % (colslecht+"sure"+ResetAll))
+                            else:
+                                toch = input("Weet je het %s?\n  : " % (colslecht+"zeker"+ResetAll))
                             if toch.upper() in jalijst:
-                                print("\n%sBedankt, aan de slag, of neem een momentje voor jezelf.%s\n" % (LichtMagenta,ResetAll))
+                                if lang == "EN":
+                                    print("\n%sThank you, back to work, or take a moment for yourself.%s\n" % (LichtMagenta,ResetAll))
+                                else:
+                                    print("\n%sBedankt, aan de slag, of neem een momentje voor jezelf.%s\n" % (LichtMagenta,ResetAll))
                                 exit()
                         elif ok == "1" or ok == "":
                             cur.execute("INSERT INTO team (%s, %s, %s, %s, %s, %s) VALUES ('%s', '%s', '%s', '%s', '%s', '%s')" % (clteam[0],clteam[1],clteam[2],clteam[3],clteam[4],clteam[5],voorNaam,VN,achterNaam,AN,Nummer,Aantekening))
@@ -517,20 +745,33 @@ while Team == "Y":
                     break
             # 1: TOEVOEGEN - 1: taak = default = else = "1>"
             else:
-                print("%sKies \"x\" voor \"Afbreken\".%s" % (colterug,ResetAll))
-                print("De standaardperiode van een nieuwe taak is (vandaag + ) 7 dagen")
+                if lang == "EN":
+                    print("%sChoose \"x\" to \"Abort\".%s" % (colterug,ResetAll))
+                    print("The default period for a new Task is (today + ) 7 days")
+                else
+                    print("%sKies \"x\" voor \"Afbreken\".%s" % (colterug,ResetAll))
+                    print("De standaardperiode van een nieuwe Taak is (vandaag + ) 7 dagen")
                 taak = "Y"
                 while taak == "Y":
                     start = "Y"
                     while start == "Y":
-                        startDatum = input("Voer de %sBegindatum%s in (YYYYMMDD):\n  : " % (col,ResetAll)).replace(" ","").replace("-","").replace("/","")
+                        if lang == "EN":
+                            startDatum = input("Enter the %sStart date%s (YYYYMMDD):\n  : " % (col,ResetAll)).replace(" ","").replace("-","").replace("/","")
+                        else:
+                            startDatum = input("Voer de %sBegindatum%s in (YYYYMMDD):\n  : " % (col,ResetAll)).replace(" ","").replace("-","").replace("/","")
                         if startDatum.upper() in afsluitlijst or startDatum.upper() in neelijst:
                             start = "X"
                             taak = "X"
                         elif len(startDatum) == 2 and (startDatum[0].upper() in afsluitlijst or startDatum[0].upper() in neelijst) and startDatum[1].upper() in skiplijst:
-                            toch = input("Weet je het %s?\n  : " % (colslecht+"zeker"+ResetAll))
+                            if lang == "EN":
+                                toch = input("Are you %s?\n  : " % (colslecht+"sure"+ResetAll))
+                            else:
+                                toch = input("Weet je het %s?\n  : " % (colslecht+"zeker"+ResetAll))
                             if toch.upper() in jalijst:
-                                print("\n%sBedankt, aan de slag, of neem een momentje voor jezelf.%s\n" % (LichtMagenta,ResetAll))
+                                if lang == "EN":
+                                    print("\n%sThank you, back to work, or take a moment for yourself.%s\n" % (LichtMagenta,ResetAll))
+                                else:
+                                    print("\n%sBedankt, aan de slag, of neem een momentje voor jezelf.%s\n" % (LichtMagenta,ResetAll))
                                 exit()
                         elif startDatum == "":
                             datumStart = nu
@@ -542,22 +783,37 @@ while Team == "Y":
                                 datetime.strptime(str(datumStart),"%Y%m%d")
                                 start = "N"
                             except:
-                                print("Dat is geen geldige datum, probeer het opnieuw.") # startDatum
+                                if lang == "EN":
+                                    print("That is not a valid date, try again.") # startDatum
+                                else:
+                                    print("Dat is geen geldige datum, probeer het opnieuw.") # startDatum
                     if start == "X":
                         taak = "X"
                         break
                     stop = "Y"
                     while stop == "Y":
-                        stopDatum = input("Voer de %sEinddatum%s in (YYYYMMDD):\n  : " % (col,ResetAll)).replace(" ","").replace("-","").replace("/","")
+                        if lang == "EN":
+                            stopDatum = input("Enter the %sEnd date%s (YYYYMMDD):\n  : " % (col,ResetAll)).replace(" ","").replace("-","").replace("/","")
+                        else:
+                            stopDatum = input("Voer de %sEinddatum%s in (YYYYMMDD):\n  : " % (col,ResetAll)).replace(" ","").replace("-","").replace("/","")
                         if stopDatum.upper() in afsluitlijst or stopDatum.upper() in neelijst:
                             stop = "X"
                         elif len(stopDatum) == 2 and (stopDatum[0].upper() in afsluitlijst or stopDatum[0].upper() in neelijst) and stopDatum[1].upper() in skiplijst:
-                            toch = input("Weet je het %s?\n  : " % (colslecht+"zeker"+ResetAll))
+                            if lang == "EN":
+                                toch = input("Are you %s?\n  : " % (colslecht+"sure"+ResetAll))
+                            else:
+                                toch = input("Weet je het %s?\n  : " % (colslecht+"zeker"+ResetAll))
                             if toch.upper() in jalijst:
-                                print("\n%sBedankt, aan de slag, of neem een momentje voor jezelf.%s\n" % (LichtMagenta,ResetAll))
+                                if lang == "EN":
+                                    print("\n%sThank you, back to work, or take a moment for yourself.%s\n" % (LichtMagenta,ResetAll))
+                                else:
+                                    print("\n%sBedankt, aan de slag, of neem een momentje voor jezelf.%s\n" % (LichtMagenta,ResetAll))
                                 exit()
                         elif stopDatum == "":
-                            print("De standaardperiode %s7 dagen%s is gekozen." % (col,ResetAll))
+                            if lang == "EN":
+                                print("The default period %s7 days%s is chosen." % (col,ResetAll))
+                            else:
+                                print("De standaardperiode %s7 dagen%s is gekozen." % (col,ResetAll))
                             datumStop = datetime.strftime(datetime.strptime(str(datumStart),"%Y%m%d")+timedelta(days=7),"%Y%m%d")
                             print(datumStop)
                             stop = "N"
@@ -568,36 +824,63 @@ while Team == "Y":
                                     datetime.strptime(str(datumStop),"%Y%m%d")
                                     stop = "N"
                                 else:
-                                    print("De Einddatum ligt vóór de Begindatum, dat kan niet.")
+                                    if lang == "EN":
+                                        print("The End date is before the Start date, that is wrong.")
+                                    else:
+                                        print("De Einddatum ligt vóór de Begindatum, dat kan niet.")
                             except:
-                                print("Dat is geen geldige datum, probeer het opnieuw.") # stopDatum
+                                if lang == "EN":
+                                    print("That is not a valid date, try again.") # stopDatum
+                                else:
+                                    print("Dat is geen geldige datum, probeer het opnieuw.") # stopDatum
                     if stop == "X":
                         break
                     omschrijvingTaak = "Y"
                     while omschrijvingTaak == "Y":
-                        taakOmschrijving = input("Voer een %sTaakomschrijving%s in:\n  : " % (col,ResetAll))
+                        if lang == "EN":
+                            taakOmschrijving = input("Enter a %sTask description%s:\n  : " % (col,ResetAll))
+                        else:
+                            taakOmschrijving = input("Voer een %sTaakomschrijving%s in:\n  : " % (col,ResetAll))
                         if taakOmschrijving.upper() in afsluitlijst or taakOmschrijving.upper() in neelijst:
                             omschrijvingTaak = "X"
                         elif len(taakOmschrijving) == 2 and (taakOmschrijving[0].upper() in afsluitlijst or taakOmschrijving[0].upper() in neelijst) and taakOmschrijving[1].upper() in skiplijst:
-                            toch = input("Weet je het %s?\n  : " % (colslecht+"zeker"+ResetAll))
+                            if lang == "EN":
+                                toch = input("Are you %s?\n  : " % (colslecht+"sure"+ResetAll))
+                            else:
+                                toch = input("Weet je het %s?\n  : " % (colslecht+"zeker"+ResetAll))
                             if toch.upper() in jalijst:
-                                print("\n%sBedankt, aan de slag, of neem een momentje voor jezelf.%s\n" % (LichtMagenta,ResetAll))
+                                if lang == "EN":
+                                    print("\n%sThank you, back to work, or take a moment for yourself.%s\n" % (LichtMagenta,ResetAll))
+                                else:
+                                    print("\n%sBedankt, aan de slag, of neem een momentje voor jezelf.%s\n" % (LichtMagenta,ResetAll))
                                 exit()
                         elif len(taakOmschrijving) < 5:
-                            print("Taakomschrijving is verplicht, vul tenminste 5 posities (bij voorkeur uniek) in.")
+                            if lang == "EN":
+                                print("Task description is mandatory. Enter at least 5 characters.")
+                            else:
+                                print("Taakomschrijving is verplicht. Geef tenminste 5 karakters op.")
                         else:
                             omschrijvingTaak = "N"
                     if omschrijvingTaak == "X":
                         break
                     werkerMede = "Y"
                     while werkerMede == "Y":
-                        voornaamPersoneels = input("Voer (een fragment uit) de %sVoornaam%s van de medewerker in of \"?\" voor een lijst:\n  : " % (col,ResetAll))
+                        if lang == "EN":
+                            voornaamPersoneels = input("Enter (a part of) the member's %sGiven name%s or \"?\" for a list:\n  : " % (col,ResetAll))
+                        else:
+                            voornaamPersoneels = input("Voer (een deel van) de %sVoornaam%s van de medewerker in of \"?\" voor een lijst:\n  : " % (col,ResetAll))
                         if voornaamPersoneels.upper() in afsluitlijst or voornaamPersoneels.upper() in neelijst:
                             werkerMede = "X"
                         elif len(voornaamPersoneels) == 2 and (voornaamPersoneels[0].upper() in afsluitlijst or voornaamPersoneels[0].upper() in neelijst) and voornaamPersoneels[1].upper() in skiplijst:
-                            toch = input("Weet je het %s?\n  : " % (colslecht+"zeker"+ResetAll))
+                            if lang == "EN":
+                                toch = input("Are you %s?\n  : " % (colslecht+"sure"+ResetAll))
+                            else:
+                                toch = input("Weet je het %s?\n  : " % (colslecht+"zeker"+ResetAll))
                             if toch.upper() in jalijst:
-                                print("\n%sBedankt, aan de slag, of neem een momentje voor jezelf.%s\n" % (LichtMagenta,ResetAll))
+                                if lang == "EN":
+                                    print("\n%sThank you, back to work, or take a moment for yourself.%s\n" % (LichtMagenta,ResetAll))
+                                else:
+                                    print("\n%sBedankt, aan de slag, of neem een momentje voor jezelf.%s\n" % (LichtMagenta,ResetAll))
                                 exit()
                         elif voornaamPersoneels == "?":
                             cur.execute("SELECT * FROM team")
@@ -615,7 +898,10 @@ while Team == "Y":
                             personeelsNummerLijst = str(voorNummerLijst).replace("[","").replace("]","").replace("(","").replace(",)","").replace(" ","").split(",")
                             personeelsNummer = str(voorNummerLijst).replace("[","").replace("]","").replace("(","").replace(",)","").replace(" ","")
                             if len(voorNamenLijst) == 0:
-                                print("Die medewerker ken ik niet.")
+                                if lang == "EN":
+                                    print("I don't know that member.")
+                                else:
+                                    print("Die medewerker ken ik niet.")
                             elif len(voorNamenLijst) == 1:
                                 werkerMede = "N"
                             else:
@@ -624,15 +910,27 @@ while Team == "Y":
                                 medewNamenLijst.align = "l"
                                 medewNamenLijst.align[clteam[4]] = "r"
                                 print(medewNamenLijst)
-                                Nummert = input("Typ het PersoneelsNummer van de juiste medewerker:\n  : ")
+                                if lang == "EN":
+                                    Nummert = input("Type the right member's Agent Number:\n  : ")
+                                else:
+                                    Nummert = input("Typ het PersoneelsNummer van de juiste medewerker:\n  : ")
                                 if Nummert.upper() in afsluitlijst or Nummert.upper() in neelijst:
                                     werkerMede = "X"
                                 elif len(Nummert) == 2 and (Nummert[0].upper() in afsluitlijst or Nummert[0].upper() in neelijst) and Nummert[1].upper() in skiplijst:
-                                    toch = input("Weet je het %s?\n  : " % (colslecht+"zeker"+ResetAll))
+                                    if lang == "EN":
+                                        toch = input("Are you %s?\n  : " % (colslecht+"sure"+ResetAll))
+                                    else:
+                                        toch = input("Weet je het %s?\n  : " % (colslecht+"zeker"+ResetAll))
                                     if toch.upper() in jalijst:
-                                        print("\n%sBedankt, aan de slag, of neem een momentje voor jezelf.%s\n" % (LichtMagenta,ResetAll))
+                                        if lang == "EN":
+                                            print("\n%sThank you, back to work, or take a moment for yourself.%s\n" % (LichtMagenta,ResetAll))
+                                        else:
+                                            print("\n%sBedankt, aan de slag, of neem een momentje voor jezelf.%s\n" % (LichtMagenta,ResetAll))
                                         exit()
                                 elif Nummert not in personeelsNummerLijst:
+                                if lang == "EN":
+                                    print("I don't know that member.")
+                                else:
                                     print("Die medewerker ken ik niet.")
                                 else:
                                     cur.execute("SELECT %s FROM team WHERE %s = '%s';" % (clteam[4],clteam[4],Nummert))
@@ -651,13 +949,22 @@ while Team == "Y":
                         break
                     voortgang = "Y"
                     while voortgang == "Y":
-                        preStatus = input("Kies uit één van de volgende %sStatussen%s:\n    %s\n    %s\n    %s\n    %s\n    %s\n    %s\n  : " % (col,ResetAll,statuslijst[0],statuslijst[1],statuslijst[2],statuslijst[3],statuslijst[4],statuslijst[5]))
+                        if lang == "EN":
+                            preStatus = input("Choose one of the following %sStatuses%s:\n    %s\n    %s\n    %s\n    %s\n    %s\n    %s\n  : " % (col,ResetAll,statuslijst[0],statuslijst[1],statuslijst[2],statuslijst[3],statuslijst[4],statuslijst[5]))
+                        else:
+                            preStatus = input("Kies uit één van de volgende %sStatussen%s:\n    %s\n    %s\n    %s\n    %s\n    %s\n    %s\n  : " % (col,ResetAll,statuslijst[0],statuslijst[1],statuslijst[2],statuslijst[3],statuslijst[4],statuslijst[5]))
                         if preStatus.upper() in afsluitlijst or preStatus.upper() in neelijst:
                             voortgang = "X"
                         elif len(preStatus) == 2 and (preStatus[0].upper() in afsluitlijst or preStatus[0].upper() in neelijst) and preStatus[1].upper() in skiplijst:
-                            toch = input("Weet je het %s?\n  : " % (colslecht+"zeker"+ResetAll))
+                            if lang == "EN":
+                                toch = input("Are you %s?\n  : " % (colslecht+"sure"+ResetAll))
+                            else:
+                                toch = input("Weet je het %s?\n  : " % (colslecht+"zeker"+ResetAll))
                             if toch.upper() in jalijst:
-                                print("\n%sBedankt, aan de slag, of neem een momentje voor jezelf.%s\n" % (LichtMagenta,ResetAll))
+                                if lang == "EN":
+                                    print("\n%sThank you, back to work, or take a moment for yourself.%s\n" % (LichtMagenta,ResetAll))
+                                else:
+                                    print("\n%sBedankt, aan de slag, of neem een momentje voor jezelf.%s\n" % (LichtMagenta,ResetAll))
                                 exit()
                         elif preStatus == "":
                             if int(datumStart) > int(nu):
@@ -669,7 +976,10 @@ while Team == "Y":
                                 print(Status)
                                 voortgang = "N"
                             else:
-                                print("Er kon geen standaardStatus worden aangemaakt.")
+                                if lang == "EN":
+                                    print("A default Status could not be set.")
+                                else:
+                                    print("Er kon geen standaardStatus worden aangemaakt.")
                         elif preStatus == "0":
                             Status = statuslijst[0]
                             print(Status)
@@ -695,19 +1005,31 @@ while Team == "Y":
                             print(Status)
                             voortgang = "N"
                         else:
-                            print("Daar kan ik geen Status van maken.")
+                            if lang == "EN":
+                                print("I cannot make a Status out of that.")
+                            else:
+                                print("Daar kan ik geen Status van maken.")
                             Status = ""
                     if voortgang == "X":
                         break
                     aantekening = "Y"
                     while aantekening == "Y":
-                        Opmerking = input("Ruimte voor %sOpmerkingen%s:\n  : " % (col,ResetAll))
+                        if lang == "EN":
+                            Opmerking = input("Room for %sNotes%s:\n  : " % (col,ResetAll))
+                        else:
+                            Opmerking = input("Ruimte voor %sOpmerkingen%s:\n  : " % (col,ResetAll))
                         if Opmerking.upper() in afsluitlijst or Opmerking.upper() in neelijst:
                             aantekening = "X"
                         elif len(Opmerking) == 2 and (Opmerking[0].upper() in afsluitlijst or Opmerking[0].upper() in neelijst) and Opmerking[1].upper() in skiplijst:
-                            toch = input("Weet je het %s?\n  : " % (colslecht+"zeker"+ResetAll))
+                            if lang == "EN":
+                                toch = input("Are you %s?\n  : " % (colslecht+"sure"+ResetAll))
+                            else:
+                                toch = input("Weet je het %s?\n  : " % (colslecht+"zeker"+ResetAll))
                             if toch.upper() in jalijst:
-                                print("\n%sBedankt, aan de slag, of neem een momentje voor jezelf.%s\n" % (LichtMagenta,ResetAll))
+                                if lang == "EN":
+                                    print("\n%sThank you, back to work, or take a moment for yourself.%s\n" % (LichtMagenta,ResetAll))
+                                else:
+                                    print("\n%sBedankt, aan de slag, of neem een momentje voor jezelf.%s\n" % (LichtMagenta,ResetAll))
                                 exit()
                         else:
                             aantekening = "N"
@@ -716,13 +1038,22 @@ while Team == "Y":
                     toevoegen = "Y"
                     while toevoegen == "Y":
                         print(startDatum, stopDatum, taakOmschrijving, medewerkerNaam, personeelsNummer, Opmerking)
-                        goed = input("Deze gegevens zijn geldig, zal ik die in de database zetten?\n%s  > 1: Ja%s\n    2: Nee\n  : " % (col,ResetAll))
+                        if lang == "EN":
+                            goed = input("These data are valid, shall I register them?\n%s  > 1: Yes%s\n    2: No\n  : " % (col,ResetAll))
+                        else:
+                            goed = input("Deze gegevens zijn geldig, zal ik die registreren?\n%s  > 1: Ja%s\n    2: Nee\n  : " % (col,ResetAll))
                         if goed.upper() in afsluitlijst or goed.upper() in neelijst:
                             toevoegen = "X"
                         elif len(goed) == 2 and (goed[0].upper() in afsluitlijst or goed[0].upper() in neelijst) and goed[1].upper() in skiplijst:
-                            toch = input("Weet je het %s?\n  : " % (colslecht+"zeker"+ResetAll))
+                            if lang == "EN":
+                                toch = input("Are you %s?\n  : " % (colslecht+"sure"+ResetAll))
+                            else:
+                                toch = input("Weet je het %s?\n  : " % (colslecht+"zeker"+ResetAll))
                             if toch.upper() in jalijst:
-                                print("\n%sBedankt, aan de slag, of neem een momentje voor jezelf.%s\n" % (LichtMagenta,ResetAll))
+                                if lang == "EN":
+                                    print("\n%sThank you, back to work, or take a moment for yourself.%s\n" % (LichtMagenta,ResetAll))
+                                else:
+                                    print("\n%sBedankt, aan de slag, of neem een momentje voor jezelf.%s\n" % (LichtMagenta,ResetAll))
                                 exit()
                         elif goed == "1" or goed.upper() in jalijst or goed == "":
                             try:
