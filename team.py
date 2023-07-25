@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-versie = 0.2
+versie = 0.3
 datum = 20230725
 print("Team %s: %s" % (versie,datum))
 import datetime, calendar, locale, os, ast, pathlib, sqlite3, subprocess, operator, random
@@ -199,7 +199,8 @@ def teamnieuw():
     while voornaam == False:
         VN = input(nieuwevoornaam)
         if VN.upper() in afsluitlijst:
-            return
+            uit = True
+            return uit
         elif len(VN) == 2 and VN[0].upper() in afsluitlijst and VN[1].upper() in skiplijst:
             eindroutine()
         elif len(VN) < 1:
@@ -210,7 +211,8 @@ def teamnieuw():
     while achternaam == False:
         AN = input(nieuweachternaam)
         if AN.upper() in afsluitlijst:
-            return
+            uit = True
+            return uit
         elif len(AN) == 2 and AN[0].upper() in afsluitlijst and AN[1].upper() in skiplijst:
             eindroutine()
         elif len(AN) < 1:
@@ -221,7 +223,8 @@ def teamnieuw():
     while personeelsnummer == False:
         PN = input(nieuwpersoneelsnummer)
         if PN.upper() in afsluitlijst:
-            return
+            uit = True
+            return uit
         elif len(PN) == 2 and PN[0].upper() in afsluitlijst and PN[1].upper() in skiplijst:
             eindroutine()
         elif len(PN) < 1:
@@ -230,7 +233,8 @@ def teamnieuw():
             personeelsnummer = True
     AT = input(nieuweaantekening)
     if AT.upper() in afsluitlijst:
-        return
+        uit = True
+        return uit
     elif len(AT) == 2 and AT[0].upper() in afsluitlijst and AT[1].upper() in skiplijst:
         eindroutine()
     nieuwteam = [PN,VN,AN,0,AT]
@@ -281,7 +285,8 @@ def taaknieuw():
     while StartDatum == False:
         SD = input(startdatum).replace(" ","").replace("-","").replace("/","").replace(":","").replace("\\","")
         if SD.upper() in afsluitlijst:
-            return
+            uit = True
+            return uit
         elif len(SD) == 2 and SD[0].upper() in afsluitlijst and SD[1].upper() in skiplijst:
             eindroutine()
         try:
@@ -301,7 +306,8 @@ def taaknieuw():
     while EindDatum == False:
         ED = input(einddatum).replace(" ","").replace("-","").replace("/","").replace(":","").replace("\\","")
         if ED.upper() in afsluitlijst:
-            return
+            uit = True
+            return uit
         elif len(ED) == 2 and ED[0].upper() in afsluitlijst and ED[1].upper() in skiplijst:
             eindroutine()
         try:
@@ -322,7 +328,8 @@ def taaknieuw():
     while koe == False:
         OS = input(omschrijving)
         if OS.upper() in afsluitlijst:
-            return
+            uit = True
+            return uit
         elif len(OS) == 2 and OS[0].upper() in afsluitlijst and OS[1].upper() in skiplijst:
             eindroutine()
         if len(OS) < 5:
@@ -335,7 +342,8 @@ def taaknieuw():
     while pisang == False:
         LL = input(wie)
         if LL.upper() in afsluitlijst:
-            return
+            uit = True
+            return uit
         elif len(LL) == 2 and LL[0].upper() in afsluitlijst and LL[1].upper() in skiplijst:
             eindroutine()
         try:
@@ -352,7 +360,8 @@ def taaknieuw():
             pass
     AT = input(aantekening)
     if AT.upper() in afsluitlijst:
-        return
+        uit = True
+        return uit
     elif len(AT) == 2 and AT[0].upper() in afsluitlijst and AT[1].upper() in skiplijst:
         eindroutine()
     staat = False
@@ -361,7 +370,8 @@ def taaknieuw():
         statusshow()
         ST = input(inputindent)
         if ST.upper() in afsluitlijst:
-            return
+            uit = True
+            return uit
         elif len(ST) == 2 and ST[0].upper() in afsluitlijst and ST[1].upper() in skiplijst:
             eindroutine()
         if ST == "":
@@ -388,7 +398,6 @@ def taaknieuw():
     takenlijst = sorted(takenlijst)
     with open("takenlijst","w") as t:
         print(takenlijst, end = "", file = t)
-    takenshow()
 
 def takenbreed():
     lijn = "+--+--------+--------+--------------------+--------------------+--------------------+--------------+"
@@ -420,8 +429,40 @@ def takensmal():
         print(forr3(ID),forc4(str(i[0]))[4:],forc4(str(i[1]))[4:],statcol[int(i[5])-1]+forl11(i[2])[:11]+ResetAll,forl11(i[3])[:11],forl11(i[4])[:11],statcol[int(i[5])-1]+forl10(statuslijst[int(i[5])-1])[:10]+ResetAll)
     print(colbekijken+lijn+ResetAll)
     print()
+def takendertig():
+    lijn = "+"+"----+"*30
+    eerstedatum = datetime.strptime(nu,"%Y%m%d")-timedelta(days = 7)
+    print(colbekijken+lijn+ResetAll)
+    datumbereik = []
+    for i in range(30):
+        ij = eerstedatum + timedelta(days = i)
+        j = datetime.strftime(ij,"%m%d")
+        datumbereik.append(j)
+        if i == 7:
+            if lang == "EN":
+                j = LichtBlauw+forc4("NOW")+ResetAll
+            else:
+                j = LichtBlauw+forc4("NU")+ResetAll
+        print(" "+j, end = "")
+    print()
+    print(lijn)
+    takenlijst = taak()
+    for i in takenlijst:
+        if i[0] < int(datetime.strftime(eerstedatum,"%Y%m%d")) and i[1] >= int(datetime.strftime(eerstedatum,"%Y%m%d")):
+            indexstartdatum = 0
+            print("",statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:4]+ResetAll, end = "")
+        if str(i[0])[4:] in datumbereik:
+            indexstartdatum = datumbereik.index(str(i[0])[4:])
+            print("     "*indexstartdatum,statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+forl4(i[2][:4])+ResetAll, end = "")
+        if str(i[1])[4:] in datumbereik:
+            indexeinddatum = datumbereik.index(str(i[1])[4:])
+            print(statcol[int(i[5])-1]+"....."*(indexeinddatum-indexstartdatum-1)+ResetAll+forl4(i[3][:4]))
+        else:
+            print(statcol[int(i[5])-1]+"....."*(30-1-1-indexstartdatum)+ResetAll+forl4(i[3][:4]))
+    print(colbekijken+lijn+ResetAll)
+    print()
 def takenveertien():
-    lijn = "+----+----+----+----+----+----+----+----+----+----+----+----+----+----+"
+    lijn = "+"+"----+"*14
     eerstedatum = datetime.strptime(nu,"%Y%m%d")-timedelta(days = 3)
     print(colbekijken+lijn+ResetAll)
     datumbereik = []
@@ -453,7 +494,7 @@ def takenveertien():
     print(colbekijken+lijn+ResetAll)
     print()
 def takenzeven():
-    lijn = "+----+----+----+----+----+----+----+"
+    lijn = "+"+"----+"*7
     eerstedatum = datetime.strptime(nu,"%Y%m%d")-timedelta(days = 1)
     print(colbekijken+lijn+ResetAll)
     datumbereik = []
@@ -487,10 +528,10 @@ def takenzeven():
 
 def takenshow():
     if lang == "EN":
-        sob = "Narrow or Wide view?:\n  1 : Narrow (60)\n >2 : Wide (100)\n  3 : Timeline (7 days)\n  4 : Timeline (14 days)\n%s" % inputindent
+        sob = "Narrow or Wide view?:\n  1 : Narrow (60 chars)\n >2 : Wide (100 chars)\n  3 : Timeline (7 days)\n  4 : Timeline (14 days)\n  5 : Timeline (30 days)\n%s" % inputindent
         geentaken = "There are no tasks."
     else:
-        sob = "Smal of Breed overzicht?:\n  1 : Smal (60)\n >2 : Breed (100)\n  3 : Tijdlijn (7 dagen)\n  4 : Tijdlijn (14 dagen)\n%s" % inputindent
+        sob = "Smal of Breed overzicht?:\n  1 : Smal (60 tekens)\n >2 : Breed (100 tekens)\n  3 : Tijdlijn (7 dagen)\n  4 : Tijdlijn (14 dagen)\n  5 : Tijdlijn (30 dagen)\n%s" % inputindent
         geentaken = "Er zijn geen taken."
     takenlijst = taak()
     if len(takenlijst) == 0:
@@ -507,6 +548,8 @@ def takenshow():
         takenzeven()
     elif now == "4":
         takenveertien()
+    elif now == "5":
+        takendertig()
     else:
         takenbreed()
 
@@ -564,7 +607,8 @@ def wijzigtaak():
     while kelapa == False:
         welke = input(welk)
         if welke.upper() in afsluitlijst:
-            return
+            uit = True
+            return uit
         elif len(welke) == 2 and welke[0].upper() in afsluitlijst and welke[1].upper() in skiplijst:
             eindroutine()
         try:
@@ -586,7 +630,8 @@ def wijzigtaak():
                     print(" "+forc3(i+1)+":",forl20(taakverdeling[i]),j)
                 watte = input(inputindent)
                 if watte.upper() in afsluitlijst:
-                    return
+                    uit = True
+                    return uit
                 elif len(watte) == 2 and watte[0].upper() in afsluitlijst and watte[1].upper() in skiplijst:
                     eindroutine()
                 if watte == "1":
@@ -594,7 +639,8 @@ def wijzigtaak():
                     while StartDatum == False:
                         SD = input(startdatum).replace(" ","").replace("-","").replace("/","").replace(":","").replace("\\","")
                         if SD.upper() in afsluitlijst:
-                            return
+                            uit = True
+                            return uit
                         elif len(SD) == 2 and SD[0].upper() in afsluitlijst and SD[1].upper() in skiplijst:
                             eindroutine()
                         try:
@@ -617,7 +663,8 @@ def wijzigtaak():
                     while EindDatum == False:
                         ED = input(einddatum).replace(" ","").replace("-","").replace("/","").replace(":","").replace("\\","")
                         if ED.upper() in afsluitlijst:
-                            return
+                            uit = True
+                            return uit
                         elif len(ED) == 2 and ED[0].upper() in afsluitlijst and ED[1].upper() in skiplijst:
                             eindroutine()
                         try:
@@ -641,7 +688,8 @@ def wijzigtaak():
                     while koe == False:
                         OS = input(omschrijving)
                         if OS.upper() in afsluitlijst:
-                            return
+                            uit = True
+                            return uit
                         elif len(OS) == 2 and OS[0].upper() in afsluitlijst and OS[1].upper() in skiplijst:
                             eindroutine()
                         if len(OS) < 5:
@@ -675,7 +723,8 @@ def wijzigtaak():
                 elif watte == "5":
                     AT = input(aantekening)
                     if AT.upper() in afsluitlijst:
-                        return
+                        uit = True
+                        return uit
                     elif len(AT) == 2 and AT[0].upper() in afsluitlijst and AT[1].upper() in skiplijst:
                         eindroutine()
                     takenlijst[welke-1][5-1] = AT
@@ -686,7 +735,8 @@ def wijzigtaak():
                         statusshow()
                         ST = input(inputindent)
                         if ST.upper() in afsluitlijst:
-                            return
+                            uit = True
+                            return uit
                         elif len(ST) == 2 and ST[0].upper() in afsluitlijst and ST[1].upper() in skiplijst:
                             eindroutine()
                         if ST == "":
@@ -713,7 +763,6 @@ def wijzigtaak():
                 with open("takenlijst","w") as t:
                     print(takenlijst, end = "", file = t)
                 kelapa = True
-                takenshow()
         except:
             pass
     print()
@@ -736,7 +785,8 @@ def wijzigmedewerker():
     while pisang == False:
         LL = input(wie)
         if LL.upper() in afsluitlijst:
-            return
+            uit = True
+            return uit
         elif len(LL) == 2 and LL[0].upper() in afsluitlijst and LL[1].upper() in skiplijst:
             eindroutine()
         try:
@@ -805,7 +855,6 @@ def wijzigmedewerker():
                 with open("teamlijst","w") as t:
                     print(teamlijst, end = "", file = t)
                 teamlijst = team()
-                teamshow()
         except:
             pass
         pisang = True
@@ -826,7 +875,8 @@ def wijzigteam():
     teamshow()
     select = input(sel).replace(" ","")
     if select.upper() in afsluitlijst:
-        return
+        uit = True
+        return uit
     elif len(select) == 2 and select[0].upper() in afsluitlijst and select[1].upper() in skiplijst:
         eindroutine()
     if select == "*":
@@ -842,13 +892,15 @@ def wijzigteam():
             pass
     wijzig = input(wat)
     if wijzig.upper() in afsluitlijst:
-        return
+        uit = True
+        return uit
     elif len(wijzig) == 2 and wijzig[0].upper() in afsluitlijst and wijzig[1].upper() in skiplijst:
         eindroutine()
     if wijzig == "2":
         AT = input(nieuweaantekening)
         if AT.upper() in afsluitlijst:
-            return
+            uit = True
+            return uit
         elif len(AT) == 2 and AT[0].upper() in afsluitlijst and AT[1].upper() in skiplijst:
             eindroutine()
         for i in medewerkerlijst:
@@ -864,7 +916,6 @@ def wijzigteam():
     with open("teamlijst","w") as t:
         print(teamlijst, end = "", file = t)
     teamlijst = team()
-    teamshow()
 
 def vergadering():
     if lang == "EN":
@@ -943,7 +994,8 @@ def verwijdertaak():
     takenshow()
     select = input(sel).replace(" ","")
     if select.upper() in afsluitlijst:
-        return
+        uit = True
+        return uit
     elif len(select) == 2 and select[0].upper() in afsluitlijst and select[1].upper() in skiplijst:
         eindroutine()
     if select == "*":
@@ -962,7 +1014,6 @@ def verwijdertaak():
     with open("takenlijst","w") as t:
         print(takenlijst, end = "", file = t)
     takenlijst = taak()
-    takenshow()
 
 def verwijdermedewerker():
     if lang == "EN":
@@ -973,7 +1024,8 @@ def verwijdermedewerker():
     teamshow()
     select = input(sel).replace(" ","")
     if select.upper() in afsluitlijst:
-        return
+        uit = True
+        return uit
     elif len(select) == 2 and select[0].upper() in afsluitlijst and select[1].upper() in skiplijst:
         eindroutine()
     if select == "*":
@@ -992,7 +1044,6 @@ def verwijdermedewerker():
     with open("teamlijst","w") as t:
         print(teamlijst, end = "", file = t)
     teamlijst = team()
-    teamshow()
 
 
 baas = True
@@ -1024,9 +1075,17 @@ while baas == True:
         elif len(toevoegen) == 2 and toevoegen[0].upper() in afsluitlijst and toevoegen[1].upper() in skiplijst:
             eindroutine()
         elif toevoegen == "2":
-            teamnieuw()
+            nite = True
+            while nite == True:
+                uit = teamnieuw()
+                if uit == True:
+                    nite = False
         else:
-            taaknieuw()
+            nita = True
+            while nita == True:
+                uit = taaknieuw()
+                if uit == True:
+                    nita = False
     elif keuze == "3":
         veranderen = input(andiot)
         if veranderen.upper() in afsluitlijst:
@@ -1034,11 +1093,23 @@ while baas == True:
         elif len(veranderen) == 2 and veranderen[0].upper() in afsluitlijst and veranderen[1].upper() in skiplijst:
             eindroutine()
         elif veranderen == "1":
-            wijzigtaak()
+            wita = True
+            while wita == True:
+                uit = wijzigtaak()
+                if uit == True:
+                    wita = False
         elif veranderen == "2":
-            wijzigmedewerker()
+            wime = True
+            while wime == True:
+                uit = wijzigmedewerker()
+                if uit == True:
+                    wime = False
         else:
-            wijzigteam()
+            wite = True
+            while wite == True:
+                uit = wijzigteam()
+                if uit == True:
+                    wite = False
     elif keuze == "4":
         verwijderen = input(watweg)
         if verwijderen.upper() in afsluitlijst:
@@ -1046,9 +1117,17 @@ while baas == True:
         elif len(verwijderen) == 2 and verwijderen[0].upper() in afsluitlijst and verwijderen[1].upper() in skiplijst:
             eindroutine()
         elif verwijderen == "2":
-            verwijdermedewerker()
+            veme = True
+            while veme == True:
+                uit = verwijdermedewerker()
+                if uit == True:
+                    veme = False
         else:
-            verwijdertaak()
+            veta = True
+            while veta == True:
+                uit = verwijdertaak()
+                if uit == True:
+                    veta = False
     elif keuze == "5":
         vergadering()
     elif keuze == "6":
