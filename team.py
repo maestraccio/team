@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-versie = 0.1
+versie = 0.2
 datum = 20230725
 print("Team %s: %s" % (versie,datum))
 import datetime, calendar, locale, os, ast, pathlib, sqlite3, subprocess, operator, random
@@ -67,26 +67,17 @@ coltoevoegen = LichtGroen
 colbekijken = LichtGeel
 colwijzigen = LichtCyaan
 colverwijderen = LichtRood
-colkalender = Geel
 colinformatie = Wit
 colmeeting = LichtMagenta
-colreset = Cyaan
 colterug = DonkerGrijs
-colstat1 = Geel
-colstat2 = LichtGeel
-colstat3 = Magenta
-colstat4 = Rood
-colstat5 = Groen
-colstat6 = LichtRood
 colgoed = Groen
-colmatig = Geel
 colslecht = Rood
 statcol = [Geel,LichtGeel,Magenta,Rood,Groen,LichtRood]
 iocol = [Rood,Groen]
 
 TeamLogo = """%s
-    .______.                   
-    |/ \\/ \|___   __ ____ __ 
+    .______. 
+    |/ \\/ \|___   __ ____ __
        ||  //_\\\\ 6_\\\\|| \V \\\\
        || ||'   // |||| || ||
       _/\_ \\\\_/|\\\\/|\/\ || /\\%s
@@ -107,13 +98,13 @@ if lang == "EN":
     checklijst = ["OUT","IN"]
     weg = "%s  Q!: Exit%s" % (ResetAll+colterug,ResetAll)
     terug = "%s  Q : Back%s" % (ResetAll+colterug,ResetAll)
-    print("Today is "+LichtBlauw+str(date.today().strftime("%A"))+" "+nu+ResetAll+".")
+    print("Today is %s." % (LichtBlauw+str(date.today().strftime("%A %Y%m%d"))+ResetAll)) 
     statuslijst = ["Planned","Started","Paused","Aborted","Completed","Overdue"]
 else:
     checklijst = ["UIT","IN"]
     weg = "%s  Q!: Afsluiten%s" % (ResetAll+colterug,ResetAll)
     terug = "%s  Q : Terug%s" % (ResetAll+colterug,ResetAll)
-    print("Het is vandaag "+LichtBlauw+str(date.today().strftime("%A"))+" "+nu+ResetAll+".")
+    print("Het is vandaag %s." % (LichtBlauw+str(date.today().strftime("%A %Y%m%d"))+ResetAll))
     statuslijst = ["Gepland","Gestart","Gepauzeerd","Afgebroken","Afgerond","Verlopen"]
 
 afsluitlijst = ["X","Q"]
@@ -121,6 +112,7 @@ jalijst = ["J","Y"]
 neelijst = ["N"]
 skiplijst = ["!",">","S","D"] # Skip, Standaard, Default
 inputindent = "  : "
+# Veel formaten niet in gebruik, maar handig om mee te testen
 forc3 = "{:^3}".format
 forl3 = "{:<3}".format
 forr3 = "{:>3}".format
@@ -152,22 +144,14 @@ forc25 = "{:^25}".format
 forl25 = "{:<25}".format
 forr25 = "{:>25}".format
 
-nu = str(date.today()).replace("-","")
-nuy = nu[:4]
-num = nu[4:6]
-nud = nu[6:]
-WW = date.today().strftime("%V")
-DD = date.today().strftime("%d")
-MM = date.today().strftime("%m")
-YY = date.today().strftime("%y")
-YYYY = date.today().strftime("%Y")
+nu = datetime.strftime(datetime.today(),"%Y%m%d")
 
 def eindroutine():
     if lang == "EN":
-        zeker = "Are you %s?\n  : " % (colslecht+"sure"+ResetAll)
+        zeker = "Are you %ssure%s?\n%s" % (colslecht,ResetAll,inputindent)
         bedankt = "\n%sThank you, back to work, or take a moment for yourself.%s\n" % (LichtMagenta,ResetAll)
     else:
-        zeker = "Weet je het %s?\n  : " % (colslecht+"zeker"+ResetAll)
+        zeker = "Weet je het %szeker%s?\n%s" % (colslecht,ResetAll,inputindent)
         bedankt = "\n%sBedankt, aan de slag, of neem een momentje voor jezelf.%s\n" % (LichtMagenta,ResetAll)
     toch = input(zeker)
     if toch.upper() in jalijst:
@@ -271,7 +255,7 @@ def teamshow():
         print(forr3(ID),forc10(i[0])[:10],forr10(i[1])[:10],forl25(i[2])[:25],iocol[int(forc5(i[3]))]+forc5(checklijst[int(forc5(i[3]))])[:5]+ResetAll,forl12(i[4])[:12])
     print(colbekijken+lijn+ResetAll)
     print()
-        
+ 
 def taaknieuw():
     if lang == "EN":
         statuslijst = ["Planned","Started","Paused","Aborted","Completed","Overdue"]
@@ -525,7 +509,6 @@ def takenshow():
         takenveertien()
     else:
         takenbreed()
-
 
 def checkstatusdatum():
     if lang == "EN":
@@ -1019,19 +1002,19 @@ while baas == True:
     teamshow()
     if lang == "EN":
         keuzeopties = "Choose from the following options:\n  1 : %sAdd%s\n >2 : %sView%s\n  3 : %sChange%s\n  4 : %sDelete%s\n  5 : %sMeeting%s\n  6 : %sNotepad (Vim)%s\n%s\n%s" % (coltoevoegen,ResetAll,colbekijken,ResetAll,colwijzigen,ResetAll,colverwijderen,ResetAll,colmeeting,ResetAll,colinformatie,ResetAll,weg,inputindent)
-        toetom = "Add a Task or an Agent:\n >1 : Task\n  2 : Agent\n%s\n%s" % (terug,inputindent)
-        zietom = "View Tasks or Agents:\n >1 : Tasks\n  2 : Agents\n%s\n%s" % (terug,inputindent)
-        andiot = "Do you want to change a Task or Team data?:\n  1 : Task\n  2 : Individual\n >3 : Group\n%s\n%s" % (terug,inputindent)
-        watweg = "Do you want to delete a Task or an Agent?:\n >1 : Task\n  2 : Agent\n%s\n%s" % (terug,inputindent)
+        toetom = "%sADD%s a Task or an Agent:\n >1 : Task\n  2 : Agent\n%s\n%s" % (coltoevoegen,ResetAll,terug,inputindent)
+        zietom = "%sVIEW%s Tasks or Agents:\n >1 : Tasks\n  2 : Agents\n%s\n%s" % (colbekijken,ResetAll,terug,inputindent)
+        andiot = "%sCHANGE%s a Task or Team data:\n  1 : Task\n  2 : One Agent\n >3 : Group\n%s\n%s" % (colwijzigen,ResetAll,terug,inputindent)
+        watweg = "%sDELETE%s a Task or an Agent:\n >1 : Task\n  2 : Agent\n%s\n%s" % (colverwijderen,ResetAll,terug,inputindent)
     else:
         keuzeopties = "Kies uit de volgende opties:\n  1 : %sToevoegen%s\n >2 : %sBekijken%s\n  3 : %sWijzigen%s\n  4 : %sVerwijderen%s\n  5 : %sVergadering%s\n  6 : %sKladblok (Vim)%s\n%s\n%s" % (coltoevoegen,ResetAll,colbekijken,ResetAll,colwijzigen,ResetAll,colverwijderen,ResetAll,colmeeting,ResetAll,colinformatie,ResetAll,weg,inputindent)
-        toetom = "Voeg een Taak of een Medewerker toe:\n >1 : Taak\n  2 : Medewerker\n%s\n%s" % (terug,inputindent)
-        zietom = "Taken of Medewerkers bekijken:\n >1 : Taken\n  2 : Medewerkers\n%s\n%s" % (terug,inputindent)
-        andiot = "Wil je een Taak of Team gegevens wijzigen?:\n  1 : Taak\n  2 : Individueel\n >3 : Groep\n%s\n%s" % (terug,inputindent)
-        watweg = "Wil je een Taak of een Medewerker verwijderen?:\n >1 : Taak\n  2 : Medewerker\n%s\n%s" % (terug,inputindent)
+        toetom = "%sVOEG%s een Taak of een Medewerker %sTOE%s:\n >1 : Taak\n  2 : Medewerker\n%s\n%s" % (coltoevoegen,ResetAll,coltoevoegen,ResetAll,terug,inputindent)
+        zietom = "%sBEKIJK%s Taken of Medewerkers:\n >1 : Taken\n  2 : Medewerkers\n%s\n%s" % (colbekijken,ResetAll,terug,inputindent)
+        andiot = "%sWIJZIG%s een Taak of Team gegevens:\n  1 : Taak\n  2 : Één Medewerker\n >3 : Groep\n%s\n%s" % (colwijzigen,ResetAll,terug,inputindent)
+        watweg = "%sVERWIJDER%s een Taak of een Medewerker:\n >1 : Taak\n  2 : Medewerker\n%s\n%s" % (colverwijderen,ResetAll,terug,inputindent)
     keuze = input(keuzeopties)
     if keuze.upper() in afsluitlijst:
-        exit()
+        eindroutine()
     elif len(keuze) == 2 and keuze[0].upper() in afsluitlijst and keuze[1].upper() in skiplijst:
         eindroutine()
     if keuze == "1":
@@ -1082,5 +1065,3 @@ while baas == True:
             teamshow()
         else:
             takenshow()
-
-
