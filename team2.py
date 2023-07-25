@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-versie = 0.0
-datum = 20230723
+versie = 0.1
+datum = 20230725
 print("Team %s: %s" % (versie,datum))
 import datetime, calendar, locale, os, ast, pathlib, sqlite3, subprocess, operator, random
 from collections import Counter, OrderedDict
@@ -68,10 +68,8 @@ colbekijken = LichtGeel
 colwijzigen = LichtCyaan
 colverwijderen = LichtRood
 colkalender = Geel
-coldatabase = LichtMagenta
 colinformatie = Wit
-colmeeting = Groen
-colcheck = LichtBlauw
+colmeeting = LichtMagenta
 colreset = Cyaan
 colterug = DonkerGrijs
 colstat1 = Geel
@@ -87,15 +85,15 @@ statcol = [Geel,LichtGeel,Magenta,Rood,Groen,LichtRood]
 iocol = [Rood,Groen]
 
 TeamLogo = """%s
-.______.                   
-|/ \\/ \| ___   __ ____ __ 
-   ||   //_\\\\ 6_\\\\|| \V \\\\
-   ||  ||'   // |||| || ||
-  _/\_  \\\\_/|\\\\/|\/\ || /\\%s
+    .______.                   
+    |/ \\/ \|___   __ ____ __ 
+       ||  //_\\\\ 6_\\\\|| \V \\\\
+       || ||'   // |||| || ||
+      _/\_ \\\\_/|\\\\/|\/\ || /\\%s
 """ % (Magenta,ResetAll)
 for i in TeamLogo:
     print(i, end = "", flush=True)
-    sleep(0.0050)
+    sleep(0.005)
 print()
 lang = False
 while lang == False:
@@ -107,15 +105,15 @@ while lang == False:
 
 if lang == "EN":
     checklijst = ["OUT","IN"]
-    weg = "%s  X : Exit%s" % (ResetAll+colterug,ResetAll)
+    weg = "%s  Q!: Exit%s" % (ResetAll+colterug,ResetAll)
     terug = "%s  Q : Back%s" % (ResetAll+colterug,ResetAll)
-    print("\nToday is "+LichtBlauw+str(date.today().strftime("%A"))+" "+nu+ResetAll+".\n")
+    print("Today is "+LichtBlauw+str(date.today().strftime("%A"))+" "+nu+ResetAll+".")
     statuslijst = ["Planned","Started","Paused","Aborted","Completed","Overdue"]
 else:
     checklijst = ["UIT","IN"]
-    weg = "%s  X : Afsluiten%s" % (ResetAll+colterug,ResetAll)
+    weg = "%s  Q!: Afsluiten%s" % (ResetAll+colterug,ResetAll)
     terug = "%s  Q : Terug%s" % (ResetAll+colterug,ResetAll)
-    print("\nHet is vandaag "+LichtBlauw+str(date.today().strftime("%A"))+" "+nu+ResetAll+".\n")
+    print("Het is vandaag "+LichtBlauw+str(date.today().strftime("%A"))+" "+nu+ResetAll+".")
     statuslijst = ["Gepland","Gestart","Gepauzeerd","Afgebroken","Afgerond","Verlopen"]
 
 afsluitlijst = ["X","Q"]
@@ -213,21 +211,39 @@ def teamnieuw():
         nieuwpersoneelsnummer = "Typ het PersoneelsNummer:\n%s" % inputindent
         nieuweaantekening = "Typ een Aantekening (opt):\n%s" % inputindent
     teamlijst = team()
-    VN = input(nieuwevoornaam)
-    if VN.upper() in afsluitlijst:
-        return
-    elif len(VN) == 2 and VN[0].upper() in afsluitlijst and VN[1].upper() in skiplijst:
-        eindroutine()
-    AN = input(nieuweachternaam)
-    if AN.upper() in afsluitlijst:
-        return
-    elif len(AN) == 2 and AN[0].upper() in afsluitlijst and AN[1].upper() in skiplijst:
-        eindroutine()
-    PN = input(nieuwpersoneelsnummer)
-    if PN.upper() in afsluitlijst:
-        return
-    elif len(PN) == 2 and PN[0].upper() in afsluitlijst and PN[1].upper() in skiplijst:
-        eindroutine()
+    voornaam = False
+    while voornaam == False:
+        VN = input(nieuwevoornaam)
+        if VN.upper() in afsluitlijst:
+            return
+        elif len(VN) == 2 and VN[0].upper() in afsluitlijst and VN[1].upper() in skiplijst:
+            eindroutine()
+        elif len(VN) < 1:
+            pass
+        else:
+            voornaam = True
+    achternaam = False
+    while achternaam == False:
+        AN = input(nieuweachternaam)
+        if AN.upper() in afsluitlijst:
+            return
+        elif len(AN) == 2 and AN[0].upper() in afsluitlijst and AN[1].upper() in skiplijst:
+            eindroutine()
+        elif len(AN) < 1:
+            pass
+        else:
+            achternaam = True
+    personeelsnummer = False
+    while personeelsnummer == False:
+        PN = input(nieuwpersoneelsnummer)
+        if PN.upper() in afsluitlijst:
+            return
+        elif len(PN) == 2 and PN[0].upper() in afsluitlijst and PN[1].upper() in skiplijst:
+            eindroutine()
+        elif len(PN) < 1:
+            pass
+        else:
+            personeelsnummer = True
     AT = input(nieuweaantekening)
     if AT.upper() in afsluitlijst:
         return
@@ -238,6 +254,7 @@ def teamnieuw():
     teamlijst = sorted(teamlijst)
     with open("teamlijst","w") as t:
         print(teamlijst, end = "", file = t)
+    print()
 
 def teamshow():
     teamlijst = team()
@@ -246,13 +263,14 @@ def teamshow():
         kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("AN")[:10],forc10("GivenName")[:10],forc25("LastName")[:25],forc5("Chk")[:5],forc12("Note")[:12])
     else:
         kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("PN")[:10],forc10("VoorNaam")[:10],forc25("AchterNaam")[:25],forc5("Chk")[:5],forc12("Aantekening")[:12])
-    print(lijn)
+    print(colbekijken+lijn+ResetAll)
     print(kop)
     print(lijn)
     for i in teamlijst:
         ID = teamlijst.index(i)+1
         print(forr3(ID),forc10(i[0])[:10],forr10(i[1])[:10],forl25(i[2])[:25],iocol[int(forc5(i[3]))]+forc5(checklijst[int(forc5(i[3]))])[:5]+ResetAll,forl12(i[4])[:12])
-    print(lijn)
+    print(colbekijken+lijn+ResetAll)
+    print()
         
 def taaknieuw():
     if lang == "EN":
@@ -381,7 +399,6 @@ def taaknieuw():
                 staat = True
         except:
             pass
-
     nieuwtaak = [start,eind,OS,die[1]+" "+die[2],AT,ST]
     takenlijst.append(nieuwtaak)
     takenlijst = sorted(takenlijst)
@@ -395,32 +412,34 @@ def takenbreed():
         kop = "%s %s %s %s %s %s %s" % (forr3("ID"),forc8("Start")[:8],forc8("Due")[:8],forc20("TaskDescription")[:20],forc20("Name")[:20],forc20("Note")[:20],forc15("Status")[:15])
     else:
         kop = "%s %s %s %s %s %s %s" % (forr3("ID"),forc8("Start")[:8],forc8("Eind")[:8],forc20("Taakomschrijving")[:20],forc20("Name")[:20],forc20("Aantekening")[:20],forc15("Status")[:15])
-    print(lijn)
+    print(colbekijken+lijn+ResetAll)
     print(kop)
     print(lijn)
     takenlijst = taak()
     for i in takenlijst:
         ID = takenlijst.index(i)+1
         print(forr3(ID),forc8(str(i[0]))[:8],forc8(str(i[1]))[:8],statcol[int(i[5])-1]+forl20(i[2])[:20]+ResetAll,forl20(i[3])[:20],forl20(i[4])[:20],statcol[int(i[5])-1]+forl15(statuslijst[int(i[5])-1])[:15]+ResetAll)
-    print(lijn)
+    print(colbekijken+lijn+ResetAll)
+    print()
 def takensmal():
     lijn = "+--+----+----+-----------+-----------+-----------+---------+"
     if lang == "EN":
         kop = "%s %s %s %s %s %s %s" % (forr3("ID"),forc4("Strt")[:4],forc4("Due")[:4],forc11("TaskDescr.")[:11],forc11("Name")[:11],forc11("Note")[:11],forc10("Status")[:10])
     else:
         kop = "%s %s %s %s %s %s %s" % (forr3("ID"),forc4("Strt")[:4],forc4("Eind")[:4],forc11("Taakomschr.")[:11],forc11("Name")[:11],forc11("Aantekening")[:11],forc10("Status")[:10])
-    print(lijn)
+    print(colbekijken+lijn+ResetAll)
     print(kop)
     print(lijn)
     takenlijst = taak()
     for i in takenlijst:
         ID = takenlijst.index(i)+1
         print(forr3(ID),forc4(str(i[0]))[4:],forc4(str(i[1]))[4:],statcol[int(i[5])-1]+forl11(i[2])[:11]+ResetAll,forl11(i[3])[:11],forl11(i[4])[:11],statcol[int(i[5])-1]+forl10(statuslijst[int(i[5])-1])[:10]+ResetAll)
-    print(lijn)
+    print(colbekijken+lijn+ResetAll)
+    print()
 def takenveertien():
     lijn = "+----+----+----+----+----+----+----+----+----+----+----+----+----+----+"
     eerstedatum = datetime.strptime(nu,"%Y%m%d")-timedelta(days = 3)
-    print(lijn)
+    print(colbekijken+lijn+ResetAll)
     datumbereik = []
     for i in range(14):
         ij = eerstedatum + timedelta(days = i)
@@ -447,10 +466,12 @@ def takenveertien():
             print(statcol[int(i[5])-1]+"....."*(indexeinddatum-indexstartdatum-1)+ResetAll+forl4(i[3][:4]))
         else:
             print(statcol[int(i[5])-1]+"....."*(14-1-1-indexstartdatum)+ResetAll+forl4(i[3][:4]))
+    print(colbekijken+lijn+ResetAll)
+    print()
 def takenzeven():
     lijn = "+----+----+----+----+----+----+----+"
     eerstedatum = datetime.strptime(nu,"%Y%m%d")-timedelta(days = 1)
-    print(lijn)
+    print(colbekijken+lijn+ResetAll)
     datumbereik = []
     for i in range(7):
         ij = eerstedatum + timedelta(days = i)
@@ -477,6 +498,8 @@ def takenzeven():
             print(statcol[int(i[5])-1]+"....."*(indexeinddatum-indexstartdatum-1)+ResetAll+forl4(i[3][:4]))
         else:
             print(statcol[int(i[5])-1]+"....."*(7-1-1-indexstartdatum)+ResetAll+forl4(i[3][:4]))
+    print(colbekijken+lijn+ResetAll)
+    print()
 
 def takenshow():
     if lang == "EN":
@@ -525,6 +548,7 @@ def checkstatusdatum():
     takenlijst = sorted(takenlijst)
     with open("takenlijst","w") as t:
         print(takenlijst, end = "", file = t)
+    print()
 
 def wijzigtaak():
     if lang == "EN":
@@ -707,18 +731,18 @@ def wijzigtaak():
                     print(takenlijst, end = "", file = t)
                 kelapa = True
                 takenshow()
-        except(Exception) as fout:
-            print(fout)
-
+        except:
+            pass
+    print()
 
 def wijzigmedewerker():
     if lang == "EN":
-        kies = "Choose an Agent to change:"
+        kies = "Choose an Agent to %sCHANGE%s:" % (colwijzigen, ResetAll)
         wie = "Give the ID of the Agent:\n%s" % inputindent
         wat = "What do you want to change?:\n  1 : Agent Number\n  2 : Given Name\n  3 : Last Name\n  4 : Check\n  5 : Note\n%s" % inputindent
         hoechk = "  0 : OUT\n  1 : IN\n%s" % inputindent
     else:
-        kies = "Choose an Agent to change:"
+        kies = "Kies een Medewerker om te %sWIJZIGEN%s:" % (colwijzigen, ResetAll)
         wie = "Geef de ID van de Medewerker:\n%s" % inputindent
         wat = "Wat wil je Wijzigen?:\n  1 : Personeelsnummer\n  2 : VoorNaam\n  3 : AchterNaam\n  4 : Check\n  5 : Aantekening\n%s" % inputindent
         hoechk = "  0 : UIT\n  1 : IN\n%s" % inputindent
@@ -742,13 +766,44 @@ def wijzigmedewerker():
                 elif len(welk) == 2 and welk[0].upper() in afsluitlijst and welk[1].upper() in skiplijst:
                     eindroutine()
                 if welk == "1":
-                    PN = input()
-                    teamlijst[LL-1][0] = PN
+                    personeelsnummer = False
+                    while personeelsnummer == False:
+                        PN = input()
+                        if PN.upper() in afsluitlijst:
+                            return
+                        elif len(PN) == 2 and PN[0].upper() in afsluitlijst and PN[1].upper() in skiplijst:
+                            eindroutine()
+                        elif len(PN) < 1:
+                            pass
+                        else:
+                            teamlijst[LL-1][0] = PN
+                            personeelsnummer = True
                 elif welk == "2":
-                    VN = input()
-                    teamlijst[LL-1][1] = VN
+                    voornaam = False
+                    while voornaam == False:
+                        VN = input()
+                        if VN.upper() in afsluitlijst:
+                            return
+                        elif len(VN) == 2 and VN[0].upper() in afsluitlijst and VN[1].upper() in skiplijst:
+                            eindroutine()
+                        elif len(VN) < 1:
+                            pass
+                        else:
+                            teamlijst[LL-1][1] = VN
+                            voornaam = True
                 elif welk == "3":
-                    AN = input()
+                    achternaam = False
+                    while achternaam == False:
+                        AN = input()
+                        if AN.upper() in afsluitlijst:
+                            return
+                        elif len(AN) == 2 and AN[0].upper() in afsluitlijst and AN[1].upper() in skiplijst:
+                            eindroutine()
+                        elif len(AN) < 1:
+                            pass
+                        else:
+                            teamlijst[LL-1][2] = AN
+                            achternaam = True
                     teamlijst[LL-1][2] = AN
                 elif welk == "4":
                     inofuit = False
@@ -771,15 +826,16 @@ def wijzigmedewerker():
         except:
             pass
         pisang = True
+    print()
 
 def wijzigteam():
     if lang == "EN":
-        sel = "Select the IDs of Agents, separated by commas, or * for all:\n%s" % inputindent
+        sel = "Select the IDs of the Agents you want to %sCHANGE%s,\nseparated by commas, or * for all:\n%s" % (colwijzigen,ResetAll,inputindent)
         tog = "Check these Agents OUT or IN:\n  0 : OUT\n  1 : IN\n%s" % inputindent
         wat = "What do you want to change?\n >1 : Check this group OUT or IN\n  2 : Change Note for everyone in this group\n%s" % inputindent
         nieuweaantekening = "Type or clear the Note:\n%s" % inputindent
     else:
-        sel = "Selecteer ID's van Medewerkers, gescheiden door een komma, of * voor alle:\n%s" % inputindent
+        sel = "Selecteer ID's van de Medewerkers die je wilt %sWIJZIGEN%s,\ngescheiden door een komma, of * voor alle:\n%s" % (colwijzigen,ResetAll,inputindent)
         tog = "Check deze Medewerkers UIT of IN:\n  0 : UIT\n  1 : IN\n%s" % inputindent
         wat = "Wat wil je wijzigen?\n >1 : Check deze groep UIT of IN\n  2 : Wijzig Aantekening voor iedereen in deze groep\n%s" % inputindent
         nieuweaantekening = "Typ of wis de Aantekening:\n%s" % inputindent
@@ -790,7 +846,7 @@ def wijzigteam():
         return
     elif len(select) == 2 and select[0].upper() in afsluitlijst and select[1].upper() in skiplijst:
         eindroutine()
-    if select in ["*",""]:
+    if select == "*":
         medewerkerlijst = teamlijst
     else:
         medewerkerlijst = []
@@ -828,45 +884,151 @@ def wijzigteam():
     teamshow()
 
 def vergadering():
+    if lang == "EN":
+        naamkop = colmeeting+forc10("Name:")+ResetAll
+        meetingstart = "Comments are collected and shown but not stored.\nThe meeting has started. End with \"Q\"."
+        extradeelnemer = "Add extra participants, FirstNames, divided by a comma:\n%s" % inputindent
+    else:
+        naamkop = colmeeting+forc10("Naam:")+ResetAll
+        meetingstart = "Opmerkingen worden verzameld en getoond maar niet opgeslagen.\nDe vergadering is gestart. Beëindig met \"Q\"."
+        extradeelnemer = "Voeg extra deelnemers toe, VoorNamen, gescheiden door komma's:\n%s" % inputindent
     teamlijst = team()
+    teamshow()
     meetinglijstsorted = []
-    meetinglijstrandom = []
+    meetinglijstrandom = {}
+    gast = False
+    while gast == False:
+        extra = input(extradeelnemer).replace(" ","")
+        if extra.upper() in afsluitlijst:
+            gezellig = False
+            break
+        elif len(extra) == 2 and extra[0].upper() in afsluitlijst and extra[1].upper() in skiplijst:
+            eindroutine()
+        elif extra == "":
+            gast = True
+        else:
+            extralijst = extra.split(",")
+            for i in extralijst:
+                meetinglijstsorted.append(i)
+                gast = True
     for i in teamlijst:
         if i[3] == 1:
-            meetinglijstsorted.append(i)
+            meetinglijstsorted.append(i[1])
     while len(meetinglijstsorted) > 0:
         r = random.choice(meetinglijstsorted)
-        meetinglijstrandom.append(r)
+        meetinglijstrandom[r]= ""
         meetinglijstsorted.remove(r)
-    lijn = "+"+"----------+"*len(meetinglijstrandom)
+    lijn = "+"+"----------+"*(len(meetinglijstrandom)+1)
     print(lijn)
-    print(" ", end = "")
-
-
+    print(" %s " % naamkop, end = "")
     for i in meetinglijstrandom:
-        if len(i[1]) <= 10:
-            j = forl10(i[1])
+        if len(i) <= 10:
+            j = forl10(i)
         else:
-            j = i[1][:10]
+            j = i[:10]
         print(j, end = " ")
     print()
     print(lijn)
+    print(meetingstart)
+    gezellig = True
+    while gezellig == True:
+        for i,j in meetinglijstrandom.items():
+            print(forr10(i[:10]),": ", end = "")
+            put = input()
+            if put == "":
+                putty = ""
+            else:
+                putty = meetinglijstrandom[i]+put+" + "
+            if put.upper() in afsluitlijst:
+                gezellig = False
+                break
+            elif len(put) == 2 and put[0].upper() in afsluitlijst and put[1].upper() in skiplijst:
+                eindroutine()
+            meetinglijstrandom[i] = putty
+        print(lijn)
+    for i,j in meetinglijstrandom.items():
+        print(colmeeting+forr10(i[:10]),":",j+ResetAll)
+    print(colmeeting+lijn+ResetAll)
+    print()
+
+def verwijdertaak():
+    if lang == "EN":
+        sel = "Select the IDs of the Tasks that you want to %sDELETE%s,\nseparated by commas, or * for all:\n%s" % (colslecht, ResetAll, inputindent)
+    else:
+        sel = "Selecteer ID's van de Taken die je wilt %sVERWIJDEREN%s,\ngescheiden door een komma, of * voor alle:\n%s" % (colslecht, ResetAll, inputindent)
+    takenlijst = taak()
+    takenshow()
+    select = input(sel).replace(" ","")
+    if select.upper() in afsluitlijst:
+        return
+    elif len(select) == 2 and select[0].upper() in afsluitlijst and select[1].upper() in skiplijst:
+        eindroutine()
+    if select == "*":
+        taaklijst = takenlijst
+    else:
+        taaklijst = []
+        try:
+            selectlijst = select.split(",")
+            for i in selectlijst:
+                i = int(i)
+                taaklijst.append(takenlijst[i-1])
+        except:
+            pass
+    for i in taaklijst:
+        takenlijst.remove(i)
+    with open("takenlijst","w") as t:
+        print(takenlijst, end = "", file = t)
+    takenlijst = taak()
+    takenshow()
+
+def verwijdermedewerker():
+    if lang == "EN":
+        sel = "Select the IDs of the Agents that you want to %sDELETE%s,\nseparated by commas, or * for all:\n%s" % (colslecht, ResetAll, inputindent)
+    else:
+        sel = "Selecteer ID's van de Medewerkers die je wilt %sVERWIJDEREN%s,\ngescheiden door een komma, of * voor alle:\n%s" % (colslecht, ResetAll, inputindent)
+    teamlijst = team()
+    teamshow()
+    select = input(sel).replace(" ","")
+    if select.upper() in afsluitlijst:
+        return
+    elif len(select) == 2 and select[0].upper() in afsluitlijst and select[1].upper() in skiplijst:
+        eindroutine()
+    if select == "*":
+        medewerkerlijst = teamlijst
+    else:
+        medewerkerlijst = []
+        try:
+            selectlijst = select.split(",")
+            for i in selectlijst:
+                i = int(i)
+                medewerkerlijst.append(teamlijst[i-1])
+        except:
+            pass
+    for i in medewerkerlijst:
+        teamlijst.remove(i)
+    with open("teamlijst","w") as t:
+        print(teamlijst, end = "", file = t)
+    teamlijst = team()
+    teamshow()
+
 
 baas = True
 while baas == True:
     checkstatusdatum()
-    #takenveertien()
+    takenveertien()
     teamshow()
     if lang == "EN":
-        keuzeopties = "Choose from the following options:\n  1 : Add\n >2 : View\n  3 : Change\n  4 : Delete\n  5 : Meeting\n%s\n%s" % (weg,inputindent)
-        toetom = "Add a Task or an Agent:\n >1 : Task\n  2 : Agent\n%s\n%s" % (weg,inputindent)
-        zietom = "View Tasks or Agents:\n >1 : Tasks\n  2 : Agents\n%s\n%s" % (weg,inputindent)
-        andiot = "Do you want to change a Task or Team data?:\n  1 : Task\n  2 : Individual\n >3 : Group\n%s\n%s" % (weg,inputindent)
+        keuzeopties = "Choose from the following options:\n  1 : %sAdd%s\n >2 : %sView%s\n  3 : %sChange%s\n  4 : %sDelete%s\n  5 : %sMeeting%s\n  6 : %sNotepad (Vim)%s\n%s\n%s" % (coltoevoegen,ResetAll,colbekijken,ResetAll,colwijzigen,ResetAll,colverwijderen,ResetAll,colmeeting,ResetAll,colinformatie,ResetAll,weg,inputindent)
+        toetom = "Add a Task or an Agent:\n >1 : Task\n  2 : Agent\n%s\n%s" % (terug,inputindent)
+        zietom = "View Tasks or Agents:\n >1 : Tasks\n  2 : Agents\n%s\n%s" % (terug,inputindent)
+        andiot = "Do you want to change a Task or Team data?:\n  1 : Task\n  2 : Individual\n >3 : Group\n%s\n%s" % (terug,inputindent)
+        watweg = "Do you want to delete a Task or an Agent?:\n >1 : Task\n  2 : Agent\n%s\n%s" % (terug,inputindent)
     else:
-        keuzeopties = "Kies uit de volgende opties:\n  1 : Toevoegen\n >2 : Bekijken\n  3 : Wijzigen\n  4 : Verwijderen\n  5 : Vergadering\n%s\n%s" % (weg,inputindent)
-        toetom = "Voeg een Taak of een Medewerker toe:\n >1 : Taak\n  2 : Medewerker\n%s\n%s" % (weg,inputindent)
-        zietom = "Taken of Medewerkers bekijken:\n >1 : Taken\n  2 : Medewerkers\n%s\n%s" % (weg,inputindent)
-        andiot = "Wil je een Taak of Team gegevens wijzigen?:\n  1 : Taak\n  2 : Individueel\n >3 : Groep\n%s\n%s" % (weg,inputindent)
+        keuzeopties = "Kies uit de volgende opties:\n  1 : %sToevoegen%s\n >2 : %sBekijken%s\n  3 : %sWijzigen%s\n  4 : %sVerwijderen%s\n  5 : %sVergadering%s\n  6 : %sKladblok (Vim)%s\n%s\n%s" % (coltoevoegen,ResetAll,colbekijken,ResetAll,colwijzigen,ResetAll,colverwijderen,ResetAll,colmeeting,ResetAll,colinformatie,ResetAll,weg,inputindent)
+        toetom = "Voeg een Taak of een Medewerker toe:\n >1 : Taak\n  2 : Medewerker\n%s\n%s" % (terug,inputindent)
+        zietom = "Taken of Medewerkers bekijken:\n >1 : Taken\n  2 : Medewerkers\n%s\n%s" % (terug,inputindent)
+        andiot = "Wil je een Taak of Team gegevens wijzigen?:\n  1 : Taak\n  2 : Individueel\n >3 : Groep\n%s\n%s" % (terug,inputindent)
+        watweg = "Wil je een Taak of een Medewerker verwijderen?:\n >1 : Taak\n  2 : Medewerker\n%s\n%s" % (terug,inputindent)
     keuze = input(keuzeopties)
     if keuze.upper() in afsluitlijst:
         exit()
@@ -875,34 +1037,48 @@ while baas == True:
     if keuze == "1":
         toevoegen = input(toetom)
         if toevoegen.upper() in afsluitlijst:
-            exit()
+            pass
         elif len(toevoegen) == 2 and toevoegen[0].upper() in afsluitlijst and toevoegen[1].upper() in skiplijst:
             eindroutine()
-        if toevoegen == "2":
+        elif toevoegen == "2":
             teamnieuw()
         else:
             taaknieuw()
     elif keuze == "3":
         veranderen = input(andiot)
         if veranderen.upper() in afsluitlijst:
-            exit()
+            pass
         elif len(veranderen) == 2 and veranderen[0].upper() in afsluitlijst and veranderen[1].upper() in skiplijst:
             eindroutine()
-        if veranderen == "1":
+        elif veranderen == "1":
             wijzigtaak()
         elif veranderen == "2":
             wijzigmedewerker()
         else:
             wijzigteam()
+    elif keuze == "4":
+        verwijderen = input(watweg)
+        if verwijderen.upper() in afsluitlijst:
+            pass
+        elif len(verwijderen) == 2 and verwijderen[0].upper() in afsluitlijst and verwijderen[1].upper() in skiplijst:
+            eindroutine()
+        elif verwijderen == "2":
+            verwijdermedewerker()
+        else:
+            verwijdertaak()
     elif keuze == "5":
         vergadering()
+    elif keuze == "6":
+        print(colinformatie, end = "")
+        subprocess.run(["vim","Team.txt"])
+        print(ResetAll, end = "")
     else: # 2
         bekijken = input(zietom)
         if bekijken.upper() in afsluitlijst:
-            exit()
+            pass
         elif len(bekijken) == 2 and bekijken[0].upper() in afsluitlijst and bekijken[1].upper() in skiplijst:
             eindroutine()
-        if bekijken == "2":
+        elif bekijken == "2":
             teamshow()
         else:
             takenshow()
