@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-versie = 0.4
+versie = 0.5
 datum = 20230726
 print("Team %s: %s" % (versie,datum))
 import datetime, calendar, locale, os, ast, pathlib, sqlite3, subprocess, operator, random
@@ -187,6 +187,50 @@ def taak():
             print(takenlijst, end = "", file = t)
     return takenlijst
 
+def takenblok():
+    takenlijst = taak()
+    collijst = []
+    for i in takenlijst:
+        collijst.append(i[5]-1)
+    takendict = {}
+    taakindex = 1
+    for i in takenlijst:
+        takendict[taakindex] = i[2]
+        taakindex += 1
+    breedte = 4
+    breed = 0
+    tel = 0
+    for i,j in takendict.items():
+        breed += 1
+        tel += 1
+        print(forr3(i)+" : "+statcol[collijst[tel-1]]+forl15(j[:15])+ResetAll,end = "")
+        if breed == breedte or tel == len(takendict):
+            print()
+            breed = 0
+
+def checkstatusdatum():
+    if lang == "EN":
+        verlopentaak = "There is a Task Overdue."
+    else:
+        verlopentaak = "Er is een Verlopen Taak."
+    oei = False
+    takenlijst = taak()
+    for i in takenlijst:
+        if datetime.strptime(str(i[0]),"%Y%m%d") > datetime.strptime(nu,"%Y%m%d"):
+            i[5] = 1
+        if datetime.strptime(str(i[0]),"%Y%m%d") <= datetime.strptime(nu,"%Y%m%d") and i[5] == 1:
+            i[5] = 2
+        if datetime.strptime(str(i[1]),"%Y%m%d") < datetime.strptime(nu,"%Y%m%d") and i[5] == 2:
+            i[5] = 6
+        if i[5] == 6:
+            oei = True
+    if oei == True:
+        print(colslecht+verlopentaak+ResetAll)
+    takenlijst = sorted(takenlijst)
+    with open("takenlijst","w") as t:
+        print(takenlijst, end = "", file = t)
+    print()
+
 def teamnieuw():
     if lang == "EN":
         nieuwevoornaam = "Type the GivenName:\n%s" % inputindent
@@ -267,42 +311,53 @@ def teamshow():
 def taaknieuw():
     if lang == "EN":
         startdatum = "Give the Start date (YYYYMMDD):\n%s" % inputindent
-        einddatum = "Give the Due date (YYYYMMDD):\n%s" % inputindent
+        einddatum = "Give the Due date (YYYYMMDD, or \"+N\" adds days to the Start date):\n%s" % inputindent
         omschrijving = "Give the TaskDescription:\n%s" % inputindent
-        moetlanger = "Give at least 5 characters."
+        moetlanger = "Give at least 4 characters."
         wie = "Give the ID of the Agent:\n%s" % inputindent
         aantekening = "Give extra Info (opt):\n%s" % inputindent
         staten = "Give the ID of one of these Statuses:"
     else:
         startdatum = "Geef de Startdatum op (YYYYMMDD):\n%s" % inputindent
-        einddatum = "Geef de Einddatum op (YYYYMMDD):\n%s" % inputindent
+        einddatum = "Geef de Einddatum op (YYYYMMDD, of \"+N\" voegt dagen toe aan Startdatum):\n%s" % inputindent
         omschrijving = "Geef de Taakbeschrijving op:\n%s" % inputindent
-        moetlanger = "Geef tenminste 5 karakters op."
+        moetlanger = "Geef tenminste 4 karakters op."
         wie = "Geef de ID van de Medewerker:\n%s" % inputindent
         aantekening = "Geef extra Informatie (opt):\n%s" % inputindent
         staten = "Geef de ID van één van deze Statusen:"
     takenlijst = taak()
-    takenshow()
     StartDatum = False
     while StartDatum == False:
-        SD = input(startdatum).replace(" ","").replace("-","").replace("/","").replace(":","").replace("\\","")
+        SD = input(startdatum)
         if SD.upper() in afsluitlijst:
             uit = True
             return uit
         elif len(SD) == 2 and SD[0].upper() in afsluitlijst and SD[1].upper() in skiplijst:
             eindroutine()
         try:
-            startdat = datetime.strptime(SD,"%Y%m%d")
+            if SD[0] == "+":
+                delta = int(SD[1:])
+                origstart = datetime.today()
+                startdat = origstart + timedelta(days = delta)
+            elif SD[0] == "-":
+                delta = int(SD[1:])
+                origstart = datetime.today()
+                startdat = origstart - timedelta(days = delta)
+            else:
+                startdat = datetime.strptime(SD,"%Y%m%d")
             start = int(datetime.strftime(startdat,"%Y%m%d"))
+            if lang == "EN":
+                print("The Start date is %s." % start)
+            else:
+                print("De Startdatum is %s." % start)
             StartDatum = True
         except:
             startdat = datetime.today()
             start = int(datetime.strftime(startdat,"%Y%m%d"))
             if lang == "EN":
-                standaardstart =  "The default Start date (today: %s) is selected." % start
+                print("The default Start date (today: %s) is selected." % start)
             else:
-                standaardstart =  "De standaardStartdatum (vandaag: %s) is geselecteerd." % start
-            print(standaardstart)
+                print("De standaardStartdatum (vandaag: %s) is geselecteerd." % start)
             StartDatum = True
     EindDatum = False
     while EindDatum == False:
@@ -313,18 +368,26 @@ def taaknieuw():
         elif len(ED) == 2 and ED[0].upper() in afsluitlijst and ED[1].upper() in skiplijst:
             eindroutine()
         try:
-            einddat = datetime.strptime(ED,"%Y%m%d")
+            if ED[0] == "+":
+                delta = int(ED[1:])
+                origstart = datetime.strptime(str(start),"%Y%m%d")
+                einddat = origstart + timedelta(days = delta)
+            else:
+                einddat = datetime.strptime(ED,"%Y%m%d")
             eind = int(datetime.strftime(einddat,"%Y%m%d"))
             if eind >= start:
+                if lang == "EN":
+                    print("The Due date is %s." % start)
+                else:
+                    print("De Einddatum is %s." % start)
                 EindDatum = True
         except:
             einddat = startdat+timedelta(days = 7)
             eind = int(datetime.strftime(einddat,"%Y%m%d"))
             if lang == "EN":
-                standaardeind =  "The default Due date (Start date + 7 days: %s) is selected." % eind
+                print("The default Due date (Start date + 7 days: %s) is selected." % eind)
             else:
-                standaardeind =  "De standaardEinddatum (Startdatum + 7 dagen: %s) is geselecteerd." % eind
-            print(standaardeind)
+                print("De standaardEinddatum (Startdatum + 7 dagen: %s) is geselecteerd." % eind)
             EindDatum = True
     koe = False
     while koe == False:
@@ -334,7 +397,7 @@ def taaknieuw():
             return uit
         elif len(OS) == 2 and OS[0].upper() in afsluitlijst and OS[1].upper() in skiplijst:
             eindroutine()
-        if len(OS) < 5:
+        if len(OS) < 4:
             print(moetlanger)
         else:
             koe = True
@@ -353,10 +416,9 @@ def taaknieuw():
             if 0 <= LL-1 <= len(teamlijst):
                 die = teamlijst[LL-1]
                 if lang == "EN":
-                    diedus = "%s %s is the chosen one." % (die[1],die[2])
+                    print("%s %s is the chosen one." % (die[1],die[2]))
                 else:
-                    diedus = "%s %s is gekozen." % (die[1],die[2])
-                print(diedus)
+                    print("%s %s is gekozen." % (die[1],die[2]))
                 pisang = True
         except:
             pass
@@ -388,18 +450,34 @@ def taaknieuw():
             if 0 <= ST-1 <= len(statuslijst):
                 stus = statuslijst[ST-1]
                 if lang == "EN":
-                    stiedus = "%s is the chosen status." % stus
+                    print("%s is the chosen status." % stus)
                 else:
-                    stiedus = "%s is de gekozen status." % stus
-                print(stiedus)
+                    print("%s is de gekozen status." % stus)
                 staat = True
         except:
             pass
     nieuwtaak = [start,eind,OS,die[1]+" "+die[2],AT,ST]
     takenlijst.append(nieuwtaak)
     takenlijst = sorted(takenlijst)
+    checkstatusdatum()
     with open("takenlijst","w") as t:
         print(takenlijst, end = "", file = t)
+
+def takensmal():
+    lijn = "+--+----+----+-----------+-----------+-----------+---------+"
+    if lang == "EN":
+        kop = "%s %s %s %s %s %s %s" % (forr3("ID"),forc4("Strt")[:4],forc4("Due")[:4],forc11("TaskDescr.")[:11],forc11("Name")[:11],forc11("Note")[:11],forc10("Status")[:10])
+    else:
+        kop = "%s %s %s %s %s %s %s" % (forr3("ID"),forc4("Strt")[:4],forc4("Eind")[:4],forc11("Taakomschr.")[:11],forc11("Name")[:11],forc11("Aantekening")[:11],forc10("Status")[:10])
+    print(colbekijken+lijn+ResetAll)
+    print(kop)
+    print(lijn)
+    takenlijst = taak()
+    for i in takenlijst:
+        ID = takenlijst.index(i)+1
+        print(forr3(ID),forc4(str(i[0]))[4:],forc4(str(i[1]))[4:],statcol[int(i[5])-1]+forl11(i[2])[:11]+ResetAll,forl11(i[3])[:11],forl11(i[4])[:11],statcol[int(i[5])-1]+forl10(statuslijst[int(i[5])-1])[:10]+ResetAll)
+    print(colbekijken+lijn+ResetAll)
+    print()
 
 def takenbreed():
     lijn = "+--+--------+--------+--------------------+--------------------+--------------------+--------------+"
@@ -416,85 +494,7 @@ def takenbreed():
         print(forr3(ID),forc8(str(i[0]))[:8],forc8(str(i[1]))[:8],statcol[int(i[5])-1]+forl20(i[2])[:20]+ResetAll,forl20(i[3])[:20],forl20(i[4])[:20],statcol[int(i[5])-1]+forl15(statuslijst[int(i[5])-1])[:15]+ResetAll)
     print(colbekijken+lijn+ResetAll)
     print()
-def takensmal():
-    lijn = "+--+----+----+-----------+-----------+-----------+---------+"
-    if lang == "EN":
-        kop = "%s %s %s %s %s %s %s" % (forr3("ID"),forc4("Strt")[:4],forc4("Due")[:4],forc11("TaskDescr.")[:11],forc11("Name")[:11],forc11("Note")[:11],forc10("Status")[:10])
-    else:
-        kop = "%s %s %s %s %s %s %s" % (forr3("ID"),forc4("Strt")[:4],forc4("Eind")[:4],forc11("Taakomschr.")[:11],forc11("Name")[:11],forc11("Aantekening")[:11],forc10("Status")[:10])
-    print(colbekijken+lijn+ResetAll)
-    print(kop)
-    print(lijn)
-    takenlijst = taak()
-    for i in takenlijst:
-        ID = takenlijst.index(i)+1
-        print(forr3(ID),forc4(str(i[0]))[4:],forc4(str(i[1]))[4:],statcol[int(i[5])-1]+forl11(i[2])[:11]+ResetAll,forl11(i[3])[:11],forl11(i[4])[:11],statcol[int(i[5])-1]+forl10(statuslijst[int(i[5])-1])[:10]+ResetAll)
-    print(colbekijken+lijn+ResetAll)
-    print()
-def takendertig():
-    lijn = "+"+"----+"*30
-    eerstedatum = datetime.strptime(nu,"%Y%m%d")-timedelta(days = 7)
-    print(colbekijken+lijn+ResetAll)
-    datumbereik = []
-    for i in range(30):
-        ij = eerstedatum + timedelta(days = i)
-        j = datetime.strftime(ij,"%m%d")
-        datumbereik.append(j)
-        if i == 7:
-            if lang == "EN":
-                j = LichtBlauw+forc4("NOW")+ResetAll
-            else:
-                j = LichtBlauw+forc4("NU")+ResetAll
-        print(" "+j, end = "")
-    print()
-    print(lijn)
-    takenlijst = taak()
-    for i in takenlijst:
-        if i[0] < int(datetime.strftime(eerstedatum,"%Y%m%d")) and i[1] >= int(datetime.strftime(eerstedatum,"%Y%m%d")):
-            indexstartdatum = 0
-            print("",statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:4]+ResetAll, end = "")
-        if str(i[0])[4:] in datumbereik:
-            indexstartdatum = datumbereik.index(str(i[0])[4:])
-            print("     "*indexstartdatum,statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+forl4(i[2][:4])+ResetAll, end = "")
-        if str(i[1])[4:] in datumbereik:
-            indexeinddatum = datumbereik.index(str(i[1])[4:])
-            print(statcol[int(i[5])-1]+"....."*(indexeinddatum-indexstartdatum-1)+ResetAll+forl4(i[3][:4]))
-        else:
-            print(statcol[int(i[5])-1]+"....."*(30-1-1-indexstartdatum)+ResetAll+forl4(i[3][:4]))
-    print(colbekijken+lijn+ResetAll)
-    print()
-def takenveertien():
-    lijn = "+"+"----+"*14
-    eerstedatum = datetime.strptime(nu,"%Y%m%d")-timedelta(days = 3)
-    print(colbekijken+lijn+ResetAll)
-    datumbereik = []
-    for i in range(14):
-        ij = eerstedatum + timedelta(days = i)
-        j = datetime.strftime(ij,"%m%d")
-        datumbereik.append(j)
-        if i == 3:
-            if lang == "EN":
-                j = LichtBlauw+forc4("NOW")+ResetAll
-            else:
-                j = LichtBlauw+forc4("NU")+ResetAll
-        print(" "+j, end = "")
-    print()
-    print(lijn)
-    takenlijst = taak()
-    for i in takenlijst:
-        if i[0] < int(datetime.strftime(eerstedatum,"%Y%m%d")) and i[1] >= int(datetime.strftime(eerstedatum,"%Y%m%d")):
-            indexstartdatum = 0
-            print("",statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:4]+ResetAll, end = "")
-        if str(i[0])[4:] in datumbereik:
-            indexstartdatum = datumbereik.index(str(i[0])[4:])
-            print("     "*indexstartdatum,statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+forl4(i[2][:4])+ResetAll, end = "")
-        if str(i[1])[4:] in datumbereik:
-            indexeinddatum = datumbereik.index(str(i[1])[4:])
-            print(statcol[int(i[5])-1]+"....."*(indexeinddatum-indexstartdatum-1)+ResetAll+forl4(i[3][:4]))
-        else:
-            print(statcol[int(i[5])-1]+"....."*(14-1-1-indexstartdatum)+ResetAll+forl4(i[3][:4]))
-    print(colbekijken+lijn+ResetAll)
-    print()
+
 def takenzeven():
     lijn = "+"+"----+"*7
     eerstedatum = datetime.strptime(nu,"%Y%m%d")-timedelta(days = 1)
@@ -520,7 +520,9 @@ def takenzeven():
         if str(i[0])[4:] in datumbereik:
             indexstartdatum = datumbereik.index(str(i[0])[4:])
             print("     "*indexstartdatum,statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:4]+ResetAll, end = "")
-        if str(i[1])[4:] in datumbereik:
+        if str(i[1])[4:] == str(i[0])[4:]:
+            print()
+        elif str(i[1])[4:] in datumbereik:
             indexeinddatum = datumbereik.index(str(i[1])[4:])
             print(statcol[int(i[5])-1]+"....."*(indexeinddatum-indexstartdatum-1)+ResetAll+forl4(i[3][:4]))
         else:
@@ -528,13 +530,82 @@ def takenzeven():
     print(colbekijken+lijn+ResetAll)
     print()
 
+def takenveertien():
+    lijn = "+"+"----+"*14
+    eerstedatum = datetime.strptime(nu,"%Y%m%d")-timedelta(days = 3)
+    print(colbekijken+lijn+ResetAll)
+    datumbereik = []
+    for i in range(14):
+        ij = eerstedatum + timedelta(days = i)
+        j = datetime.strftime(ij,"%m%d")
+        datumbereik.append(j)
+        if i == 3:
+            if lang == "EN":
+                j = LichtBlauw+forc4("NOW")+ResetAll
+            else:
+                j = LichtBlauw+forc4("NU")+ResetAll
+        print(" "+j, end = "")
+    print()
+    print(lijn)
+    takenlijst = taak()
+    for i in takenlijst:
+        if i[0] < int(datetime.strftime(eerstedatum,"%Y%m%d")) and i[1] >= int(datetime.strftime(eerstedatum,"%Y%m%d")):
+            indexstartdatum = 0
+            print("",statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:4]+ResetAll, end = "")
+        if str(i[0])[4:] in datumbereik:
+            indexstartdatum = datumbereik.index(str(i[0])[4:])
+            print("     "*indexstartdatum,statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+forl4(i[2][:4])+ResetAll, end = "")
+        if str(i[1])[4:] == str(i[0])[4:]:
+            print()
+        elif str(i[1])[4:] in datumbereik:
+            indexeinddatum = datumbereik.index(str(i[1])[4:])
+            print(statcol[int(i[5])-1]+"....."*(indexeinddatum-indexstartdatum-1)+ResetAll+forl4(i[3][:4]))
+        else:
+            print(statcol[int(i[5])-1]+"....."*(14-1-1-indexstartdatum)+ResetAll+forl4(i[3][:4]))
+    print(colbekijken+lijn+ResetAll)
+    print()
+
+def takendertig():
+    lijn = "+"+"----+"*30
+    eerstedatum = datetime.strptime(nu,"%Y%m%d")-timedelta(days = 7)
+    print(colbekijken+lijn+ResetAll)
+    datumbereik = []
+    for i in range(30):
+        ij = eerstedatum + timedelta(days = i)
+        j = datetime.strftime(ij,"%m%d")
+        datumbereik.append(j)
+        if i == 7:
+            if lang == "EN":
+                j = LichtBlauw+forc4("NOW")+ResetAll
+            else:
+                j = LichtBlauw+forc4("NU")+ResetAll
+        print(" "+j, end = "")
+    print()
+    print(lijn)
+    takenlijst = taak()
+    for i in takenlijst:
+        if i[0] < int(datetime.strftime(eerstedatum,"%Y%m%d")) and i[1] >= int(datetime.strftime(eerstedatum,"%Y%m%d")):
+            indexstartdatum = 0
+            print("",statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:4]+ResetAll, end = "")
+        if str(i[0])[4:] in datumbereik:
+            indexstartdatum = datumbereik.index(str(i[0])[4:])
+            print("     "*indexstartdatum,statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+forl4(i[2][:4])+ResetAll, end = "")
+        if str(i[1])[4:] == str(i[0])[4:]:
+            print()
+        elif str(i[1])[4:] in datumbereik:
+            indexeinddatum = datumbereik.index(str(i[1])[4:])
+            print(statcol[int(i[5])-1]+"....."*(indexeinddatum-indexstartdatum-1)+ResetAll+forl4(i[3][:4]))
+        else:
+            print(statcol[int(i[5])-1]+"....."*(30-1-1-indexstartdatum)+ResetAll+forl4(i[3][:4]))
+    print(colbekijken+lijn+ResetAll)
+    print()
 
 def takenshow():
     if lang == "EN":
-        sob = "View:\n  1 : Narrow (60 chars)\n >2 : Wide (100 chars)\n  3 : Timeline (7 days)\n  4 : Timeline (14 days)\n  5 : Timeline (30 days)\n%s" % inputindent
+        sob = "View:\n  1 : Narrow (60 chars)\n  2 : Wide (100 chars)\n  3 : Timeline (7 days)\n  4 : Timeline (14 days)\n  5 : Timeline (30 days)\n >6 : Compact block\n%s" % inputindent
         geentaken = "There are no tasks."
     else:
-        sob = "Toon:\n  1 : Smal (60 tekens)\n >2 : Breed (100 tekens)\n  3 : Tijdlijn (7 dagen)\n  4 : Tijdlijn (14 dagen)\n  5 : Tijdlijn (30 dagen)\n%s" % inputindent
+        sob = "Toon:\n  1 : Smal (60 tekens)\n  2 : Breed (100 tekens)\n  3 : Tijdlijn (7 dagen)\n  4 : Tijdlijn (14 dagen)\n  5 : Tijdlijn (30 dagen)\n >6 : Compact blok\n%s" % inputindent
         geentaken = "Er zijn geen taken."
     takenlijst = taak()
     if len(takenlijst) == 0:
@@ -547,63 +618,40 @@ def takenshow():
         eindroutine()
     if now == "1":
         takensmal()
+    elif now == 2:
+        takenbreed()
     elif now == "3":
         takenzeven()
     elif now == "4":
         takenveertien()
     elif now == "5":
         takendertig()
-    else:
-        takenbreed()
-
-def checkstatusdatum():
-    if lang == "EN":
-        verlopentaak = "There is a Task Overdue."
-    else:
-        verlopentaak = "Er is een Verlopen Taak."
-    oei = False
-    takenlijst = taak()
-    for i in takenlijst:
-        if datetime.strptime(str(i[0]),"%Y%m%d") > datetime.strptime(nu,"%Y%m%d"):
-            i[5] = 1
-        if datetime.strptime(str(i[0]),"%Y%m%d") <= datetime.strptime(nu,"%Y%m%d") and i[5] == 1:
-            i[5] = 2
-        if datetime.strptime(str(i[1]),"%Y%m%d") < datetime.strptime(nu,"%Y%m%d") and i[5] == 2:
-            i[5] = 6
-        if i[5] == 6:
-            oei = True
-    if oei == True:
-        print(colslecht+verlopentaak+ResetAll)
-    takenlijst = sorted(takenlijst)
-    with open("takenlijst","w") as t:
-        print(takenlijst, end = "", file = t)
-    print()
-        #taakverdeling = ["Start","Due","TaskDescription","Name","Note","Status"]
-        #taakverdeling = ["Start","Eind","Taakomschrijving","Naam","Aantekening","Status"]
+    else: # now == "6":
+        takenblok()
 
 def wijzigtaak():
     if lang == "EN":
-        startdatum = "Give the Start date (YYYYMMDD):\n%s" % inputindent
-        einddatum = "Give the Due date (YYYYMMDD):\n%s" % inputindent
+        startdatum = "Give the Start date (YYYYMMDD), or \"+N\" to start N days later:\n%s" % inputindent
+        einddatum = "Give the Due date (YYYYMMDD), or \"+N\" for N days more:\n%s" % inputindent
         omschrijving = "Give the TaskDescription:\n%s" % inputindent
-        moetlanger = "Give at least 5 characters."
+        moetlanger = "Give at least 4 characters."
         wie = "Give the ID of the Agent:\n%s" % inputindent
         aantekening = "Give extra Info (opt):\n%s" % inputindent
         staten = "Give the ID of one of these Statuses:"
         welk = "Give the ID of the Task you want to change:\n%s" % inputindent
-        wat = "What do you want to change:"
+        wat = "Give the ID of what you want to change:"
     else:
-        startdatum = "Geef de Startdatum op (YYYYMMDD):\n%s" % inputindent
-        einddatum = "Geef de Einddatum op (YYYYMMDD):\n%s" % inputindent
+        startdatum = "Geef de Startdatum op (YYYYMMDD), of \"+N\" om N dagen later te starten:\n%s" % inputindent
+        einddatum = "Geef de Einddatum op (YYYYMMDD), of \"+N\" voor N dagen méér:\n%s" % inputindent
         omschrijving = "Geef de Taakbeschrijving op:\n%s" % inputindent
-        moetlanger = "Geef tenminste 5 karakters op."
+        moetlanger = "Geef tenminste 4 karakters op."
         wie = "Geef de ID van de Medewerker:\n%s" % inputindent
         aantekening = "Geef extra Informatie (opt):\n%s" % inputindent
         staten = "Geef de ID van één van deze Statusen:"
         welk = "Geef de ID op van de Taak die je wilt wijzigen:\n%s" % inputindent
-        wat = "Wat wil je wijzigen:"
+        wat = "Geef de ID op van wat je wilt wijzigen:"
     takenlijst = taak()
-    takenshow()
+    takenblok()
     kelapa = False
     while kelapa == False:
         welke = input(welk)
@@ -619,10 +667,9 @@ def wijzigtaak():
                 start = die[0]
                 eind = die[1]
                 if lang == "EN":
-                    diedus = "%s %s is selected." % (statcol[die[5]-1]+statuslijst[die[5]-1]+ResetAll,statcol[die[5]-1]+die[2]+ResetAll)
+                    print("%s %s is selected." % (statcol[die[5]-1]+statuslijst[die[5]-1]+ResetAll,statcol[die[5]-1]+die[2]+ResetAll))
                 else:
-                    diedus = "%s %s is geselecteerd." % (statcol[die[5]-1]+statuslijst[die[5]-1]+ResetAll,statcol[die[5]-1]+die[2]+ResetAll)
-                print(diedus)
+                    print("%s %s is geselecteerd." % (statcol[die[5]-1]+statuslijst[die[5]-1]+ResetAll,statcol[die[5]-1]+die[2]+ResetAll))
                 print(wat)
                 for i in range(len(die)):
                     j = die[i]
@@ -638,50 +685,74 @@ def wijzigtaak():
                 if watte == "1":
                     StartDatum = False
                     while StartDatum == False:
-                        SD = input(startdatum).replace(" ","").replace("-","").replace("/","").replace(":","").replace("\\","")
+                        SD = input(startdatum)
                         if SD.upper() in afsluitlijst:
                             uit = True
                             return uit
                         elif len(SD) == 2 and SD[0].upper() in afsluitlijst and SD[1].upper() in skiplijst:
                             eindroutine()
                         try:
-                            startdat = datetime.strptime(SD,"%Y%m%d")
+                            if SD[0] == "+":
+                                delta = int(SD[1:])
+                                origstart = datetime.strptime(str(takenlijst[welke-1][1-1]),"%Y%m%d")
+                                startdat = origstart + timedelta(days = delta)
+                            elif SD[0] == "-":
+                                delta = int(SD[1:])
+                                origstart = datetime.strptime(str(takenlijst[welke-1][1-1]),"%Y%m%d")
+                                startdat = origstart - timedelta(days = delta)
+                            else:
+                                startdat = datetime.strptime(SD,"%Y%m%d")
                             start = int(datetime.strftime(startdat,"%Y%m%d"))
+                            if lang == "EN":
+                                print("The Start date is %s." % start)
+                            else:
+                                print("De Startdatum is %s." % start)
                             takenlijst[welke-1][1-1] = start
                             StartDatum = True
                         except:
                             startdat = datetime.today()
                             start = int(datetime.strftime(startdat,"%Y%m%d"))
                             if lang == "EN":
-                                standaardstart =  "The default Start date (today: %s) is selected." % start
+                                print("The default Start date (today: %s) is selected." % start)
                             else:
-                                standaardstart =  "De standaardStartdatum (vandaag: %s) is geselecteerd." % start
-                            print(standaardstart)
+                                print("De standaardStartdatum (vandaag: %s) is geselecteerd." % start)
                             takenlijst[welke-1][1-1] = start
                             StartDatum = True
                 elif watte == "2":
                     EindDatum = False
                     while EindDatum == False:
-                        ED = input(einddatum).replace(" ","").replace("-","").replace("/","").replace(":","").replace("\\","")
+                        ED = input(einddatum)
                         if ED.upper() in afsluitlijst:
                             uit = True
                             return uit
                         elif len(ED) == 2 and ED[0].upper() in afsluitlijst and ED[1].upper() in skiplijst:
                             eindroutine()
                         try:
-                            einddat = datetime.strptime(ED,"%Y%m%d")
+                            if ED[0] == "+":
+                                delta = int(ED[1:])
+                                origeind = datetime.strptime(str(takenlijst[welke-1][2-1]),"%Y%m%d")
+                                einddat = origeind + timedelta(days = delta)
+                            elif ED[0] == "-":
+                                delta = int(ED[1:])
+                                origeind = datetime.strptime(str(takenlijst[welke-1][2-1]),"%Y%m%d")
+                                einddat = origeind - timedelta(days = delta)
+                            else:
+                                einddat = datetime.strptime(ED,"%Y%m%d")
                             eind = int(datetime.strftime(einddat,"%Y%m%d"))
-                            if datetime.strptime(str(eind),"%Y%m%d") >= datetime.strptime(str(takenlijst[welke-1][1-1]),"%Y%m%d"):
+                            if eind > start:
+                                if lang == "EN":
+                                    print("The Due date is %s." % start)
+                                else:
+                                    print("De Einddatum is %s." % start)
                                 takenlijst[welke-1][2-1] = eind
                                 EindDatum = True
                         except:
                             einddat = datetime.today()
                             eind = int(datetime.strftime(einddat,"%Y%m%d"))
                             if lang == "EN":
-                                standaardeind =  "The default Due date (today: %s) is selected." % eind
+                                print("The default Due date (today: %s) is selected." % eind)
                             else:
-                                standaardeind =  "De standaardEinddatum (vandaag: %s) is geselecteerd." % eind
-                            print(standaardeind)
+                                print("De standaardEinddatum (vandaag: %s) is geselecteerd." % eind)
                             takenlijst[welke-1][2-1] = eind
                             EindDatum = True
                 elif watte == "3":
@@ -693,7 +764,7 @@ def wijzigtaak():
                             return uit
                         elif len(OS) == 2 and OS[0].upper() in afsluitlijst and OS[1].upper() in skiplijst:
                             eindroutine()
-                        if len(OS) < 5:
+                        if len(OS) < 4:
                             print(moetlanger)
                         else:
                             takenlijst[welke-1][3-1] = OS
@@ -766,6 +837,7 @@ def wijzigtaak():
                 kelapa = True
         except:
             pass
+    checkstatusdatum()
     print()
 
 def wijzigmedewerker():
@@ -917,6 +989,7 @@ def wijzigteam():
     with open("teamlijst","w") as t:
         print(teamlijst, end = "", file = t)
     teamlijst = team()
+    print()
 
 def vergadering():
     if lang == "EN":
@@ -1014,6 +1087,8 @@ def verwijdertaak():
     with open("takenlijst","w") as t:
         print(takenlijst, end = "", file = t)
     takenlijst = taak()
+    uit = True
+    return uit
 
 def verwijdermedewerker():
     if lang == "EN":
@@ -1044,6 +1119,8 @@ def verwijdermedewerker():
     with open("teamlijst","w") as t:
         print(teamlijst, end = "", file = t)
     teamlijst = team()
+    uit = True
+    return uit
 
 def uitklapteam():
     if lang == "EN":
@@ -1069,13 +1146,10 @@ def uitklapteam():
                     j = die[i]
                     if i == 3:
                         j = iocol[die[3]]+checklijst[die[3]]+ResetAll
-                    #print(" "+forc3(i+1)+":",forl20(taakverdeling[i]),j)
                     print(forl20(teamverdeling[i]),j)
         except:
             pass
     print()
-
-
 
 def uitklaptaak():
     if lang == "EN":
