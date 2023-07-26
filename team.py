@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-versie = 0.3
-datum = 20230725
+versie = 0.4
+datum = 20230726
 print("Team %s: %s" % (versie,datum))
 import datetime, calendar, locale, os, ast, pathlib, sqlite3, subprocess, operator, random
 from collections import Counter, OrderedDict
@@ -94,25 +94,31 @@ while lang == False:
     else:
         lang = "NL"
 
-if lang == "EN":
-    checklijst = ["OUT","IN"]
-    weg = "%s  Q!: Exit%s" % (ResetAll+colterug,ResetAll)
-    terug = "%s  Q : Back%s" % (ResetAll+colterug,ResetAll)
-    print("Today is %s." % (LichtBlauw+str(date.today().strftime("%A %Y%m%d"))+ResetAll)) 
-    statuslijst = ["Planned","Started","Paused","Aborted","Completed","Overdue"]
-else:
-    checklijst = ["UIT","IN"]
-    weg = "%s  Q!: Afsluiten%s" % (ResetAll+colterug,ResetAll)
-    terug = "%s  Q : Terug%s" % (ResetAll+colterug,ResetAll)
-    print("Het is vandaag %s." % (LichtBlauw+str(date.today().strftime("%A %Y%m%d"))+ResetAll))
-    statuslijst = ["Gepland","Gestart","Gepauzeerd","Afgebroken","Afgerond","Verlopen"]
-
+nu = datetime.strftime(datetime.today(),"%Y%m%d")
 afsluitlijst = ["X","Q"]
 jalijst = ["J","Y"]
 neelijst = ["N"]
 skiplijst = ["!",">","S","D"] # Skip, Standaard, Default
 inputindent = "  : "
+if lang == "EN":
+    checklijst = ["OUT","IN"]
+    weg = "%s  Q!: Exit%s" % (ResetAll+colterug,ResetAll)
+    terug = "%s  Q : Back%s" % (ResetAll+colterug,ResetAll)
+    statuslijst = ["Planned","Started","Paused","Aborted","Completed","Overdue"]
+    taakverdeling = ["Start","Due","TaskDescription","Name","Note","Status"]
+    print("Today is %s." % (LichtBlauw+str(date.today().strftime("%A %Y%m%d"))+ResetAll)) 
+else:
+    checklijst = ["UIT","IN"]
+    weg = "%s  Q!: Afsluiten%s" % (ResetAll+colterug,ResetAll)
+    terug = "%s  Q : Terug%s" % (ResetAll+colterug,ResetAll)
+    statuslijst = ["Gepland","Gestart","Gepauzeerd","Afgebroken","Afgerond","Verlopen"]
+    taakverdeling = ["Start","Eind","Taakomschrijving","Naam","Aantekening","Status"]
+    print("Het is vandaag %s." % (LichtBlauw+str(date.today().strftime("%A %Y%m%d"))+ResetAll))
+
 # Veel formaten niet in gebruik, maar handig om mee te testen
+forc2 = "{:^2}".format
+forl2 = "{:<2}".format
+forr2 = "{:>2}".format
 forc3 = "{:^3}".format
 forl3 = "{:<3}".format
 forr3 = "{:>3}".format
@@ -143,8 +149,6 @@ forr20 = "{:>20}".format
 forc25 = "{:^25}".format
 forl25 = "{:<25}".format
 forr25 = "{:>25}".format
-
-nu = datetime.strftime(datetime.today(),"%Y%m%d")
 
 def eindroutine():
     if lang == "EN":
@@ -262,7 +266,6 @@ def teamshow():
  
 def taaknieuw():
     if lang == "EN":
-        statuslijst = ["Planned","Started","Paused","Aborted","Completed","Overdue"]
         startdatum = "Give the Start date (YYYYMMDD):\n%s" % inputindent
         einddatum = "Give the Due date (YYYYMMDD):\n%s" % inputindent
         omschrijving = "Give the TaskDescription:\n%s" % inputindent
@@ -271,7 +274,6 @@ def taaknieuw():
         aantekening = "Give extra Info (opt):\n%s" % inputindent
         staten = "Give the ID of one of these Statuses:"
     else:
-        statuslijst = ["Gepland","Gestart","Gepauzeerd","Afgebroken","Afgerond","Verlopen"]
         startdatum = "Geef de Startdatum op (YYYYMMDD):\n%s" % inputindent
         einddatum = "Geef de Einddatum op (YYYYMMDD):\n%s" % inputindent
         omschrijving = "Geef de Taakbeschrijving op:\n%s" % inputindent
@@ -375,11 +377,11 @@ def taaknieuw():
         elif len(ST) == 2 and ST[0].upper() in afsluitlijst and ST[1].upper() in skiplijst:
             eindroutine()
         if ST == "":
-            if datetime.strptime(start,"%Y%m%d") > datetime.strptime(nu,"%Y%m%d"):
+            if datetime.strptime(str(start),"%Y%m%d") > datetime.strptime(str(nu),"%Y%m%d"):
                 ST = "1"
-            elif datetime.strptime(start,"%Y%m%d") <= datetime.strptime(nu,"%Y%m%d") <= datetime.strptime(eind,"%Y%m%d"):
+            elif datetime.strptime(str(start),"%Y%m%d") <= datetime.strptime(str(nu),"%Y%m%d") <= datetime.strptime(str(eind),"%Y%m%d"):
                 ST = "2"
-            elif datetime.strptime(eind,"%Y%m%d") <= datetime.strptime(nu,"%Y%m%d"):
+            elif datetime.strptime(str(eind),"%Y%m%d") <= datetime.strptime(str(nu),"%Y%m%d"):
                 ST = "6"
         try:
             ST = int(ST)
@@ -526,12 +528,13 @@ def takenzeven():
     print(colbekijken+lijn+ResetAll)
     print()
 
+
 def takenshow():
     if lang == "EN":
-        sob = "Narrow or Wide view?:\n  1 : Narrow (60 chars)\n >2 : Wide (100 chars)\n  3 : Timeline (7 days)\n  4 : Timeline (14 days)\n  5 : Timeline (30 days)\n%s" % inputindent
+        sob = "View:\n  1 : Narrow (60 chars)\n >2 : Wide (100 chars)\n  3 : Timeline (7 days)\n  4 : Timeline (14 days)\n  5 : Timeline (30 days)\n%s" % inputindent
         geentaken = "There are no tasks."
     else:
-        sob = "Smal of Breed overzicht?:\n  1 : Smal (60 tekens)\n >2 : Breed (100 tekens)\n  3 : Tijdlijn (7 dagen)\n  4 : Tijdlijn (14 dagen)\n  5 : Tijdlijn (30 dagen)\n%s" % inputindent
+        sob = "Toon:\n  1 : Smal (60 tekens)\n >2 : Breed (100 tekens)\n  3 : Tijdlijn (7 dagen)\n  4 : Tijdlijn (14 dagen)\n  5 : Tijdlijn (30 dagen)\n%s" % inputindent
         geentaken = "Er zijn geen taken."
     takenlijst = taak()
     if len(takenlijst) == 0:
@@ -575,10 +578,11 @@ def checkstatusdatum():
     with open("takenlijst","w") as t:
         print(takenlijst, end = "", file = t)
     print()
+        #taakverdeling = ["Start","Due","TaskDescription","Name","Note","Status"]
+        #taakverdeling = ["Start","Eind","Taakomschrijving","Naam","Aantekening","Status"]
 
 def wijzigtaak():
     if lang == "EN":
-        statuslijst = ["Planned","Started","Paused","Aborted","Completed","Overdue"]
         startdatum = "Give the Start date (YYYYMMDD):\n%s" % inputindent
         einddatum = "Give the Due date (YYYYMMDD):\n%s" % inputindent
         omschrijving = "Give the TaskDescription:\n%s" % inputindent
@@ -586,11 +590,9 @@ def wijzigtaak():
         wie = "Give the ID of the Agent:\n%s" % inputindent
         aantekening = "Give extra Info (opt):\n%s" % inputindent
         staten = "Give the ID of one of these Statuses:"
-        taakverdeling = ["Start","Due","TaskDescription","Name","Note","Status"]
         welk = "Give the ID of the Task you want to change:\n%s" % inputindent
         wat = "What do you want to change:"
     else:
-        statuslijst = ["Gepland","Gestart","Gepauzeerd","Afgebroken","Afgerond","Verlopen"]
         startdatum = "Geef de Startdatum op (YYYYMMDD):\n%s" % inputindent
         einddatum = "Geef de Einddatum op (YYYYMMDD):\n%s" % inputindent
         omschrijving = "Geef de Taakbeschrijving op:\n%s" % inputindent
@@ -598,7 +600,6 @@ def wijzigtaak():
         wie = "Geef de ID van de Medewerker:\n%s" % inputindent
         aantekening = "Geef extra Informatie (opt):\n%s" % inputindent
         staten = "Geef de ID van één van deze Statusen:"
-        taakverdeling = ["Start","Eind","Taakomschrijving","Naam","Aantekening","Status"]
         welk = "Geef de ID op van de Taak die je wilt wijzigen:\n%s" % inputindent
         wat = "Wat wil je wijzigen:"
     takenlijst = taak()
@@ -740,11 +741,11 @@ def wijzigtaak():
                         elif len(ST) == 2 and ST[0].upper() in afsluitlijst and ST[1].upper() in skiplijst:
                             eindroutine()
                         if ST == "":
-                            if datetime.strptime(start,"%Y%m%d") > datetime.strptime(nu,"%Y%m%d"):
+                            if datetime.strptime(str(start),"%Y%m%d") > datetime.strptime(str(nu),"%Y%m%d"):
                                 ST = "1"
-                            elif datetime.strptime(start,"%Y%m%d") <= datetime.strptime(nu,"%Y%m%d") <= datetime.strptime(eind,"%Y%m%d"):
+                            elif datetime.strptime(str(start),"%Y%m%d") <= datetime.strptime(str(nu),"%Y%m%d") <= datetime.strptime(str(eind),"%Y%m%d"):
                                 ST = "2"
-                            elif datetime.strptime(eind,"%Y%m%d") <= datetime.strptime(nu,"%Y%m%d"):
+                            elif datetime.strptime(str(eind),"%Y%m%d") <= datetime.strptime(str(nu),"%Y%m%d"):
                                 ST = "6"
                         try:
                             ST = int(ST)
@@ -952,9 +953,9 @@ def vergadering():
         r = random.choice(meetinglijstsorted)
         meetinglijstrandom[r]= ""
         meetinglijstsorted.remove(r)
-    lijn = "+"+"----------+"*(len(meetinglijstrandom)+1)
+    lijn = "   +"+"----------+"*(len(meetinglijstrandom)+1)
     print(lijn)
-    print(" %s " % naamkop, end = "")
+    print("    %s " % naamkop, end = "")
     for i in meetinglijstrandom:
         if len(i) <= 10:
             j = forl10(i)
@@ -964,15 +965,14 @@ def vergadering():
     print()
     print(lijn)
     print(meetingstart)
+    puttel = 0
     gezellig = True
     while gezellig == True:
+        puttel += 1
         for i,j in meetinglijstrandom.items():
-            print(forr10(i[:10]),": ", end = "")
+            print(forr2(puttel),forr10(i[:10]),": ", end = "")
             put = input()
-            if put == "":
-                putty = ""
-            else:
-                putty = meetinglijstrandom[i]+put+" + "
+            putty = meetinglijstrandom[i]+" %d: " % puttel+put
             if put.upper() in afsluitlijst:
                 gezellig = False
                 break
@@ -1045,6 +1045,69 @@ def verwijdermedewerker():
         print(teamlijst, end = "", file = t)
     teamlijst = team()
 
+def uitklapteam():
+    if lang == "EN":
+        teamverdeling = ["Agent Number","Given Name","Last Name","Check","Note"]
+        welk = "Give the ID of the Agent you want to expand:\n%s" % inputindent
+    else:
+        teamverdeling = ["Personeelsnummer","VoorNaam","AchterNaam","Check","Aantekening"]
+        welk = "Geef de ID op van de Medewerker die je wilt uitklappen:\n%s" % inputindent
+    teamlijst = team()
+    kelapa = False
+    while kelapa == False:
+        welke = input(welk)
+        if welke.upper() in afsluitlijst:
+            uit = True
+            return uit
+        elif len(welke) == 2 and welke[0].upper() in afsluitlijst and welke[1].upper() in skiplijst:
+            eindroutine()
+        try:
+            welke = int(welke)
+            if 0 <= welke-1 <= len(teamlijst):
+                die = teamlijst[welke-1]
+                for i in range(len(die)):
+                    j = die[i]
+                    if i == 3:
+                        j = iocol[die[3]]+checklijst[die[3]]+ResetAll
+                    #print(" "+forc3(i+1)+":",forl20(taakverdeling[i]),j)
+                    print(forl20(teamverdeling[i]),j)
+        except:
+            pass
+    print()
+
+
+
+def uitklaptaak():
+    if lang == "EN":
+        taakverdeling = ["Start","Due","TaskDescription","Name","Note","Status"]
+        welk = "Give the ID of the Task you want to expand:\n%s" % inputindent
+    else:
+        taakverdeling = ["Start","Eind","Taakomschrijving","Naam","Aantekening","Status"]
+        welk = "Geef de ID op van de Taak die je wilt uitklappen:\n%s" % inputindent
+    takenlijst = taak()
+    kelapa = False
+    while kelapa == False:
+        welke = input(welk)
+        if welke.upper() in afsluitlijst:
+            uit = True
+            return uit
+        elif len(welke) == 2 and welke[0].upper() in afsluitlijst and welke[1].upper() in skiplijst:
+            eindroutine()
+        try:
+            welke = int(welke)
+            if 0 <= welke-1 <= len(takenlijst):
+                die = takenlijst[welke-1]
+                start = die[0]
+                eind = die[1]
+                for i in range(len(die)):
+                    j = die[i]
+                    if i == 5:
+                        j = statcol[die[5]-1]+statuslijst[die[5]-1]+ResetAll
+                    #print(" "+forc3(i+1)+":",forl20(taakverdeling[i]),j)
+                    print(forl20(taakverdeling[i]),j)
+        except:
+            pass
+    print()
 
 baas = True
 while baas == True:
@@ -1132,7 +1195,7 @@ while baas == True:
         vergadering()
     elif keuze == "6":
         print(colinformatie, end = "")
-        subprocess.run(["vim","Team.txt"])
+        subprocess.run(["vim","team.txt"])
         print(ResetAll, end = "")
     else: # 2
         bekijken = input(zietom)
@@ -1142,5 +1205,7 @@ while baas == True:
             eindroutine()
         elif bekijken == "2":
             teamshow()
+            uitklapteam()
         else:
             takenshow()
+            uitklaptaak()
