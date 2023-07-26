@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-versie = 0.5
+versie = 0.6
 datum = 20230726
 print("Team %s: %s" % (versie,datum))
 import datetime, calendar, locale, os, ast, pathlib, sqlite3, subprocess, operator, random
@@ -186,27 +186,6 @@ def taak():
         with open("takenlijst","w") as t:
             print(takenlijst, end = "", file = t)
     return takenlijst
-
-def takenblok():
-    takenlijst = taak()
-    collijst = []
-    for i in takenlijst:
-        collijst.append(i[5]-1)
-    takendict = {}
-    taakindex = 1
-    for i in takenlijst:
-        takendict[taakindex] = i[2]
-        taakindex += 1
-    breedte = 4
-    breed = 0
-    tel = 0
-    for i,j in takendict.items():
-        breed += 1
-        tel += 1
-        print(forr3(i)+" : "+statcol[collijst[tel-1]]+forl15(j[:15])+ResetAll,end = "")
-        if breed == breedte or tel == len(takendict):
-            print()
-            breed = 0
 
 def checkstatusdatum():
     if lang == "EN":
@@ -519,12 +498,14 @@ def takenzeven():
             print("",statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:4]+ResetAll, end = "")
         if str(i[0])[4:] in datumbereik:
             indexstartdatum = datumbereik.index(str(i[0])[4:])
-            print("     "*indexstartdatum,statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:4]+ResetAll, end = "")
+            print("     "*indexstartdatum,statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+forl4(i[2][:4])+ResetAll, end = "")
         if str(i[1])[4:] == str(i[0])[4:]:
             print()
         elif str(i[1])[4:] in datumbereik:
             indexeinddatum = datumbereik.index(str(i[1])[4:])
             print(statcol[int(i[5])-1]+"....."*(indexeinddatum-indexstartdatum-1)+ResetAll+forl4(i[3][:4]))
+        elif i[1] < int(datetime.strftime(eerstedatum,"%Y%m%d")) or i[0] > int(datetime.strftime(eerstedatum,"%Y%m%d")):
+            pass
         else:
             print(statcol[int(i[5])-1]+"....."*(7-1-1-indexstartdatum)+ResetAll+forl4(i[3][:4]))
     print(colbekijken+lijn+ResetAll)
@@ -560,6 +541,8 @@ def takenveertien():
         elif str(i[1])[4:] in datumbereik:
             indexeinddatum = datumbereik.index(str(i[1])[4:])
             print(statcol[int(i[5])-1]+"....."*(indexeinddatum-indexstartdatum-1)+ResetAll+forl4(i[3][:4]))
+        elif i[1] < int(datetime.strftime(eerstedatum,"%Y%m%d")) or i[0] > int(datetime.strftime(eerstedatum,"%Y%m%d")):
+            pass
         else:
             print(statcol[int(i[5])-1]+"....."*(14-1-1-indexstartdatum)+ResetAll+forl4(i[3][:4]))
     print(colbekijken+lijn+ResetAll)
@@ -595,10 +578,33 @@ def takendertig():
         elif str(i[1])[4:] in datumbereik:
             indexeinddatum = datumbereik.index(str(i[1])[4:])
             print(statcol[int(i[5])-1]+"....."*(indexeinddatum-indexstartdatum-1)+ResetAll+forl4(i[3][:4]))
+        elif i[1] < int(datetime.strftime(eerstedatum,"%Y%m%d")) or i[0] > int(datetime.strftime(eerstedatum,"%Y%m%d")):
+            pass
         else:
             print(statcol[int(i[5])-1]+"....."*(30-1-1-indexstartdatum)+ResetAll+forl4(i[3][:4]))
     print(colbekijken+lijn+ResetAll)
     print()
+
+def takenblok():
+    takenlijst = taak()
+    collijst = []
+    for i in takenlijst:
+        collijst.append(i[5]-1)
+    takendict = {}
+    taakindex = 1
+    for i in takenlijst:
+        takendict[taakindex] = i[2]
+        taakindex += 1
+    breedte = 3
+    breed = 0
+    tel = 0
+    for i,j in takendict.items():
+        breed += 1
+        tel += 1
+        print(forr3(i)+" : "+statcol[collijst[tel-1]]+forl20(j[:15])+ResetAll,end = "")
+        if breed == breedte or tel == len(takendict):
+            print()
+            breed = 0
 
 def takenshow():
     if lang == "EN":
@@ -1185,6 +1191,11 @@ def uitklaptaak():
 
 baas = True
 while baas == True:
+    takenlijst = taak()
+    if lang == "EN":
+        print("There are %s tasks." % len(takenlijst))
+    else:
+        print("Er zijn %s taken." % len(takenlijst))
     checkstatusdatum()
     takenveertien()
     teamshow()
