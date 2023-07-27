@@ -1,14 +1,10 @@
 #!/usr/bin/python3
-versie = 0.6
-datum = 20230726
+versie = 0.7
+datum = 20230727
 print("Team %s: %s" % (versie,datum))
-import datetime, calendar, locale, os, ast, pathlib, sqlite3, subprocess, operator, random
-from collections import Counter, OrderedDict
+import locale, os, ast, pathlib, subprocess, operator, random
 from datetime import *
 from dateutil.relativedelta import *
-from decimal import *
-from os.path import expanduser
-from prettytable import PrettyTable, from_db_cursor, from_csv
 from time import sleep
 
 basismap = os.path.dirname(os.path.realpath(__file__))
@@ -1000,12 +996,14 @@ def wijzigteam():
 def vergadering():
     if lang == "EN":
         naamkop = colmeeting+forc10("Name:")+ResetAll
-        meetingstart = "Comments are collected and shown but not stored.\nThe meeting has started. End with \"Q\"."
+        meetingstart = "Comments are collected and shown but not stored.\n%sThe meeting has started.%s End with \"Q\"." % (colmeeting,ResetAll)
         extradeelnemer = "Add extra participants, FirstNames, divided by a comma:\n%s" % inputindent
+        geendeelnemers = "Check in participating Agents, or add participants manually."
     else:
         naamkop = colmeeting+forc10("Naam:")+ResetAll
-        meetingstart = "Opmerkingen worden verzameld en getoond maar niet opgeslagen.\nDe vergadering is gestart. Beëindig met \"Q\"."
+        meetingstart = "Opmerkingen worden verzameld en getoond maar niet opgeslagen.\n%sDe vergadering is gestart.%s Beëindig met \"Q\"." % (colmeeting,ResetAll)
         extradeelnemer = "Voeg extra deelnemers toe, VoorNamen, gescheiden door komma's:\n%s" % inputindent
+        geendeelnemers = "Check deelnemende Medewerkers in, of voeg handmatig deelnemers toe."
     teamlijst = team()
     teamshow()
     meetinglijstsorted = []
@@ -1032,6 +1030,9 @@ def vergadering():
         r = random.choice(meetinglijstsorted)
         meetinglijstrandom[r]= ""
         meetinglijstsorted.remove(r)
+    if len(meetinglijstrandom) == 0:
+        print(colslecht+geendeelnemers+ResetAll)
+        return
     lijn = "   +"+"----------+"*(len(meetinglijstrandom)+1)
     print(lijn)
     print("    %s " % naamkop, end = "")
