@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-versie = 0.8
+versie = 0.81
 datum = 20230727
 print("Team %s: %s" % (versie,datum))
 import locale, os, ast, pathlib, subprocess, operator, random
@@ -577,7 +577,7 @@ def takenzeven():
             indexeinddatum = datumbereik.index(str(i[1])[4:])
             print(statcol[int(i[5])-1]+"....."*(indexeinddatum-indexstartdatum-1)+ResetAll+forl4(i[3][:4]))
         elif i[1] < int(datetime.strftime(eerstedatum,"%Y%m%d")) or i[0] > int(datetime.strftime(eerstedatum,"%Y%m%d")):
-            pass
+            print()
         else:
             print(statcol[int(i[5])-1]+"....."*(7-1-1-indexstartdatum)+ResetAll+forl4(i[3][:4]))
     print(colbekijken+lijn+ResetAll)
@@ -614,7 +614,7 @@ def takenveertien():
             indexeinddatum = datumbereik.index(str(i[1])[4:])
             print(statcol[int(i[5])-1]+"....."*(indexeinddatum-indexstartdatum-1)+ResetAll+forl4(i[3][:4]))
         elif i[1] < int(datetime.strftime(eerstedatum,"%Y%m%d")) or i[0] > int(datetime.strftime(eerstedatum,"%Y%m%d")):
-            pass
+            print()
         else:
             print(statcol[int(i[5])-1]+"....."*(14-1-1-indexstartdatum)+ResetAll+forl4(i[3][:4]))
     print(colbekijken+lijn+ResetAll)
@@ -651,7 +651,7 @@ def takendertig():
             indexeinddatum = datumbereik.index(str(i[1])[4:])
             print(statcol[int(i[5])-1]+"....."*(indexeinddatum-indexstartdatum-1)+ResetAll+forl4(i[3][:4]))
         elif i[1] < int(datetime.strftime(eerstedatum,"%Y%m%d")) or i[0] > int(datetime.strftime(eerstedatum,"%Y%m%d")):
-            pass
+            print()
         else:
             print(statcol[int(i[5])-1]+"....."*(30-1-1-indexstartdatum)+ResetAll+forl4(i[3][:4]))
     print(colbekijken+lijn+ResetAll)
