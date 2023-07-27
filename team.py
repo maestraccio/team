@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-versie = 0.7
+versie = 0.8
 datum = 20230727
 print("Team %s: %s" % (versie,datum))
 import locale, os, ast, pathlib, subprocess, operator, random
@@ -81,14 +81,6 @@ TeamLogo = """%s
 for i in TeamLogo:
     print(i, end = "", flush=True)
     sleep(0.005)
-print()
-lang = False
-while lang == False:
-    qlang = input("Kies je taal | Choose your language:\n  > 1: NL\n    2: EN\n  : ")
-    if qlang == "2":
-        lang = "EN"
-    else:
-        lang = "NL"
 
 nu = datetime.strftime(datetime.today(),"%Y%m%d")
 afsluitlijst = ["X","Q"]
@@ -96,12 +88,25 @@ jalijst = ["J","Y"]
 neelijst = ["N"]
 skiplijst = ["!",">","S","D"] # Skip, Standaard, Default
 inputindent = "  : "
+print()
+
+lang = False
+while lang == False:
+    qlang = input("Kies je taal | Choose your language:\n  > 1: NL\n    2: EN\n%s" % inputindent)
+    if qlang.upper() in afsluitlijst:
+        exit()
+    elif qlang == "2":
+        lang = "EN"
+    else:
+        lang = "NL"
+
 if lang == "EN":
     checklijst = ["OUT","IN"]
     weg = "%s  Q!: Exit%s" % (ResetAll+colterug,ResetAll)
     terug = "%s  Q : Back%s" % (ResetAll+colterug,ResetAll)
     statuslijst = ["Planned","Started","Paused","Aborted","Completed","Overdue"]
     taakverdeling = ["Start","Due","TaskDescription","Name","Note","Status"]
+    teamverdeling = ["Agent Number","Given Name","Last Name","Check","Note"]
     print("Today is %s." % (LichtBlauw+str(date.today().strftime("%A %Y%m%d"))+ResetAll)) 
 else:
     checklijst = ["UIT","IN"]
@@ -109,6 +114,7 @@ else:
     terug = "%s  Q : Terug%s" % (ResetAll+colterug,ResetAll)
     statuslijst = ["Gepland","Gestart","Gepauzeerd","Afgebroken","Afgerond","Verlopen"]
     taakverdeling = ["Start","Eind","Taakomschrijving","Naam","Aantekening","Status"]
+    teamverdeling = ["Personeelsnummer","VoorNaam","AchterNaam","Check","Aantekening"]
     print("Het is vandaag %s." % (LichtBlauw+str(date.today().strftime("%A %Y%m%d"))+ResetAll))
 
 # Veel formaten niet in gebruik, maar handig om mee te testen
@@ -182,6 +188,19 @@ def taak():
         with open("takenlijst","w") as t:
             print(takenlijst, end = "", file = t)
     return takenlijst
+
+def hoeveeltaken():
+    takenlijst = taak()
+    if len(takenlijst) == 1:
+        if lang == "EN":
+            print("There is %s task." % len(takenlijst))
+        else:
+            print("Er is %s taak." % len(takenlijst))
+    else:
+        if lang == "EN":
+            print("There are %s tasks." % len(takenlijst))
+        else:
+            print("Er zijn %s taken." % len(takenlijst))
 
 def checkstatusdatum():
     if lang == "EN":
@@ -267,7 +286,11 @@ def teamnieuw():
         print(teamlijst, end = "", file = t)
     print()
 
-def teamshow():
+def teamshowbasis():
+    if lang == "EN":
+        tpmofukt = "Type the Agent ID to view the Tasks of that Agent t:\n%s" % inputindent
+    else:
+        tpmofukt = "Typ de ID van de Medewerker om de taken van die Medewerker te zien:\n%s" % inputindent
     teamlijst = team()
     lijn = "+--+----------+----------+-------------------------+-----+------------+"
     if lang == "EN":
@@ -281,6 +304,59 @@ def teamshow():
         ID = teamlijst.index(i)+1
         print(forr3(ID),forc10(i[0])[:10],forr10(i[1])[:10],forl25(i[2])[:25],iocol[int(forc5(i[3]))]+forc5(checklijst[int(forc5(i[3]))])[:5]+ResetAll,forl12(i[4])[:12])
     print(colbekijken+lijn+ResetAll)
+    print()
+ 
+def teamshow():
+    if lang == "EN":
+        tpmofukt = "View Agent's details or Tasks:\n  1 : Details\n >2 : Tasks:\n%s" % inputindent
+        tpmidq = "Type an Agent's ID:\n%s" % inputindent
+    else:
+        tpmofukt = "Bekijk details of Taken van een Medewerker:\n  1 : Details\n >2 : Taken:\n%s" % inputindent
+        tpmidq = "Typ de ID van een Medewerker:\n%s" % inputindent
+    teamlijst = team()
+    lijn = "+--+----------+----------+-------------------------+-----+------------+"
+    if lang == "EN":
+        kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("AN")[:10],forc10("GivenName")[:10],forc25("LastName")[:25],forc5("Chk")[:5],forc12("Note")[:12])
+    else:
+        kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("PN")[:10],forc10("VoorNaam")[:10],forc25("AchterNaam")[:25],forc5("Chk")[:5],forc12("Aantekening")[:12])
+    print(colbekijken+lijn+ResetAll)
+    print(kop)
+    print(lijn)
+    for i in teamlijst:
+        ID = teamlijst.index(i)+1
+        print(forr3(ID),forc10(i[0])[:10],forr10(i[1])[:10],forl25(i[2])[:25],iocol[int(forc5(i[3]))]+forc5(checklijst[int(forc5(i[3]))])[:5]+ResetAll,forl12(i[4])[:12])
+    print(colbekijken+lijn+ResetAll)
+    takenlijst = taak()
+    tpm = input(tpmofukt)
+    if tpm.upper() in afsluitlijst:
+        return
+    elif len(tpm) == 2 and tpm[0].upper() in afsluitlijst and tpm[1].upper() in skiplijst:
+        eindroutine()
+    elif tpm == "1":
+        uitklapteam()
+    else:
+        tpmid = input(tpmidq)
+        lijn = "+"+"-"*20+"+"+"-"*20
+        try:
+            tpmid = int(tpmid)-1
+            mw = teamlijst[tpmid][1]+" "+teamlijst[tpmid][2]
+            for i in takenlijst:
+                if i[3] == mw:
+                    print(lijn)
+                    tv = 0
+                    for j in i:
+                        col = statcol[i[5]-1]
+                        ij = j
+                        if j == i[5]:
+                            ij = statuslijst[j-1]
+                        if j == i[2] or j == i[5]:
+                            print(" "+forl20(taakverdeling[tv]),col+str(ij)+ResetAll)
+                        else:
+                            print(" "+forl20(taakverdeling[tv]),str(ij))
+                        tv +=1
+                    print(lijn)
+        except:
+            pass
     print()
  
 def taaknieuw():
@@ -352,9 +428,9 @@ def taaknieuw():
             eind = int(datetime.strftime(einddat,"%Y%m%d"))
             if eind >= start:
                 if lang == "EN":
-                    print("The Due date is %s." % start)
+                    print("The Due date is %s." % eind)
                 else:
-                    print("De Einddatum is %s." % start)
+                    print("De Einddatum is %s." % eind)
                 EindDatum = True
         except:
             einddat = startdat+timedelta(days = 7)
@@ -377,7 +453,7 @@ def taaknieuw():
         else:
             koe = True
     teamlijst = team()
-    teamshow()
+    teamshowbasis()
     pisang = False
     while pisang == False:
         LL = input(wie)
@@ -597,7 +673,7 @@ def takenblok():
     for i,j in takendict.items():
         breed += 1
         tel += 1
-        print(forr3(i)+" : "+statcol[collijst[tel-1]]+forl20(j[:15])+ResetAll,end = "")
+        print(forr3(i)+" : "+statcol[collijst[tel-1]]+forl20(j[:12])+ResetAll,end = "")
         if breed == breedte or tel == len(takendict):
             print()
             breed = 0
@@ -630,6 +706,7 @@ def takenshow():
         takendertig()
     else: # now == "6":
         takenblok()
+    uitklaptaak()
 
 def wijzigtaak():
     if lang == "EN":
@@ -773,7 +850,7 @@ def wijzigtaak():
                             koe = True
                 elif watte == "4":
                     teamlijst = team()
-                    teamshow()
+                    teamshowbasis()
                     pisang = False
                     while pisang == False:
                         LL = input(wie)
@@ -855,7 +932,7 @@ def wijzigmedewerker():
         hoechk = "  0 : UIT\n  1 : IN\n%s" % inputindent
     teamlijst = team()
     print(kies)
-    teamshow()
+    teamshowbasis()
     pisang = False
     while pisang == False:
         LL = input(wie)
@@ -947,7 +1024,7 @@ def wijzigteam():
         wat = "Wat wil je wijzigen?\n >1 : Check deze groep UIT of IN\n  2 : Wijzig Aantekening voor iedereen in deze groep\n%s" % inputindent
         nieuweaantekening = "Typ of wis de Aantekening:\n%s" % inputindent
     teamlijst = team()
-    teamshow()
+    teamshowbasis()
     select = input(sel).replace(" ","")
     if select.upper() in afsluitlijst:
         uit = True
@@ -1005,7 +1082,7 @@ def vergadering():
         extradeelnemer = "Voeg extra deelnemers toe, VoorNamen, gescheiden door komma's:\n%s" % inputindent
         geendeelnemers = "Check deelnemende Medewerkers in, of voeg handmatig deelnemers toe."
     teamlijst = team()
-    teamshow()
+    teamshowbasis()
     meetinglijstsorted = []
     meetinglijstrandom = {}
     gast = False
@@ -1103,7 +1180,7 @@ def verwijdermedewerker():
     else:
         sel = "Selecteer ID's van de Medewerkers die je wilt %sVERWIJDEREN%s,\ngescheiden door een komma, of * voor alle:\n%s" % (colslecht, ResetAll, inputindent)
     teamlijst = team()
-    teamshow()
+    teamshowbasis()
     select = input(sel).replace(" ","")
     if select.upper() in afsluitlijst:
         uit = True
@@ -1131,10 +1208,8 @@ def verwijdermedewerker():
 
 def uitklapteam():
     if lang == "EN":
-        teamverdeling = ["Agent Number","Given Name","Last Name","Check","Note"]
         welk = "Give the ID of the Agent you want to expand:\n%s" % inputindent
     else:
-        teamverdeling = ["Personeelsnummer","VoorNaam","AchterNaam","Check","Aantekening"]
         welk = "Geef de ID op van de Medewerker die je wilt uitklappen:\n%s" % inputindent
     teamlijst = team()
     kelapa = False
@@ -1147,23 +1222,24 @@ def uitklapteam():
             eindroutine()
         try:
             welke = int(welke)
+            lijn = "+"+"-"*20+"+"+"-"*20
             if 0 <= welke-1 <= len(teamlijst):
+                print(lijn)
                 die = teamlijst[welke-1]
                 for i in range(len(die)):
                     j = die[i]
                     if i == 3:
                         j = iocol[die[3]]+checklijst[die[3]]+ResetAll
-                    print(forl20(teamverdeling[i]),j)
+                    print(" "+forl20(teamverdeling[i]),j)
+                print(lijn)
         except:
             pass
     print()
 
 def uitklaptaak():
     if lang == "EN":
-        taakverdeling = ["Start","Due","TaskDescription","Name","Note","Status"]
         welk = "Give the ID of the Task you want to expand:\n%s" % inputindent
     else:
-        taakverdeling = ["Start","Eind","Taakomschrijving","Naam","Aantekening","Status"]
         welk = "Geef de ID op van de Taak die je wilt uitklappen:\n%s" % inputindent
     takenlijst = taak()
     kelapa = False
@@ -1175,31 +1251,33 @@ def uitklaptaak():
         elif len(welke) == 2 and welke[0].upper() in afsluitlijst and welke[1].upper() in skiplijst:
             eindroutine()
         try:
-            welke = int(welke)
-            if 0 <= welke-1 <= len(takenlijst):
-                die = takenlijst[welke-1]
-                start = die[0]
-                eind = die[1]
-                for i in range(len(die)):
-                    j = die[i]
-                    if i == 5:
-                        j = statcol[die[5]-1]+statuslijst[die[5]-1]+ResetAll
-                    #print(" "+forc3(i+1)+":",forl20(taakverdeling[i]),j)
-                    print(forl20(taakverdeling[i]),j)
+            welke = int(welke)-1
+            lijn = "+"+"-"*20+"+"+"-"*20
+            for i in takenlijst:
+                if welke == takenlijst.index(i):
+                    print(colbekijken+lijn+ResetAll)
+                    tv = 0
+                    for j in i:
+                        col = statcol[i[5]-1]
+                        ij = j
+                        if j == i[5]:
+                            ij = statuslijst[j-1]
+                        if j == i[2] or j == i[5]:
+                            print(" "+forl20(taakverdeling[tv]),col+str(ij)+ResetAll)
+                        else:
+                            print(" "+forl20(taakverdeling[tv]),str(ij))
+                        tv +=1
+            print(colbekijken+lijn+ResetAll)
         except:
             pass
     print()
 
 baas = True
 while baas == True:
-    takenlijst = taak()
-    if lang == "EN":
-        print("There are %s tasks." % len(takenlijst))
-    else:
-        print("Er zijn %s taken." % len(takenlijst))
+    hoeveeltaken()
     checkstatusdatum()
     takenveertien()
-    teamshow()
+    teamshowbasis()
     if lang == "EN":
         keuzeopties = "Choose from the following options:\n  1 : %sAdd%s\n >2 : %sView%s\n  3 : %sChange%s\n  4 : %sDelete%s\n  5 : %sMeeting%s\n  6 : %sNotepad (Vim)%s\n%s\n%s" % (coltoevoegen,ResetAll,colbekijken,ResetAll,colwijzigen,ResetAll,colverwijderen,ResetAll,colmeeting,ResetAll,colinformatie,ResetAll,weg,inputindent)
         toetom = "%sADD%s a Task or an Agent:\n >1 : Task\n  2 : Agent\n%s\n%s" % (coltoevoegen,ResetAll,terug,inputindent)
@@ -1291,7 +1369,5 @@ while baas == True:
             eindroutine()
         elif bekijken == "2":
             teamshow()
-            uitklapteam()
         else:
             takenshow()
-            uitklaptaak()
