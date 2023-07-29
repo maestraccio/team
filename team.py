@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-versie = 0.81
+versie = 0.9
 datum = 20230727
 print("Team %s: %s" % (versie,datum))
 import locale, os, ast, pathlib, subprocess, operator, random
@@ -193,21 +193,23 @@ def hoeveeltaken():
     takenlijst = taak()
     if len(takenlijst) == 1:
         if lang == "EN":
-            print("There is %s task." % len(takenlijst))
+            print("There is %s task running." % len(takenlijst))
         else:
-            print("Er is %s taak." % len(takenlijst))
+            print("Er loopt %s taak." % len(takenlijst))
     else:
         if lang == "EN":
-            print("There are %s tasks." % len(takenlijst))
+            print("There are %s tasks running." % len(takenlijst))
         else:
-            print("Er zijn %s taken." % len(takenlijst))
+            print("Er lopen %s taken." % len(takenlijst))
 
 def checkstatusdatum():
+    oei = 0
     if lang == "EN":
-        verlopentaak = "There is a Task Overdue."
+        verlopentaak = "There is 1 Task Overdue."
+        verlopentaken = "There are %s Tasks Overdue." % oei
     else:
-        verlopentaak = "Er is een Verlopen Taak."
-    oei = False
+        verlopentaak = "Er is 1 Verlopen Taak."
+        verlopentaken = "Er zijn %s Verlopen Taken." % oei
     takenlijst = taak()
     for i in takenlijst:
         if datetime.strptime(str(i[0]),"%Y%m%d") > datetime.strptime(nu,"%Y%m%d"):
@@ -217,9 +219,11 @@ def checkstatusdatum():
         if datetime.strptime(str(i[1]),"%Y%m%d") < datetime.strptime(nu,"%Y%m%d") and i[5] == 2:
             i[5] = 6
         if i[5] == 6:
-            oei = True
-    if oei == True:
-        print(colslecht+verlopentaak+ResetAll)
+            oei += 1
+    if oei == 1:
+        print(statcol[5]+verlopentaak+ResetAll)
+    elif oei > 1:
+        print(statcol[5]+verlopentaken+ResetAll)
     takenlijst = sorted(takenlijst)
     with open("takenlijst","w") as t:
         print(takenlijst, end = "", file = t)
@@ -547,15 +551,18 @@ def takenbreed():
     print()
 
 def takenzeven():
-    lijn = "+"+"----+"*7
-    eerstedatum = datetime.strptime(nu,"%Y%m%d")-timedelta(days = 1)
+    scope = 7 
+    nunu = 1
+    lijn = "+"+"----+"*scope
+    eerstedatum = datetime.strptime(nu,"%Y%m%d")-timedelta(days = nunu)
+    laatstedatum = eerstedatum + timedelta(days = scope)
     print(colbekijken+lijn+ResetAll)
     datumbereik = []
-    for i in range(7):
+    for i in range(scope):
         ij = eerstedatum + timedelta(days = i)
         j = datetime.strftime(ij,"%m%d")
         datumbereik.append(j)
-        if i == 1:
+        if i == nunu:
             if lang == "EN":
                 j = LichtBlauw+forc4("NOW")+ResetAll
             else:
@@ -565,34 +572,45 @@ def takenzeven():
     print(lijn)
     takenlijst = taak()
     for i in takenlijst:
-        if i[0] < int(datetime.strftime(eerstedatum,"%Y%m%d")) and i[1] >= int(datetime.strftime(eerstedatum,"%Y%m%d")):
-            indexstartdatum = 0
-            print("",statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:4]+ResetAll, end = "")
-        if str(i[0])[4:] in datumbereik:
-            indexstartdatum = datumbereik.index(str(i[0])[4:])
-            print("     "*indexstartdatum,statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+forl4(i[2][:4])+ResetAll, end = "")
-        if str(i[1])[4:] == str(i[0])[4:]:
-            print()
-        elif str(i[1])[4:] in datumbereik:
-            indexeinddatum = datumbereik.index(str(i[1])[4:])
-            print(statcol[int(i[5])-1]+"....."*(indexeinddatum-indexstartdatum-1)+ResetAll+forl4(i[3][:4]))
-        elif i[1] < int(datetime.strftime(eerstedatum,"%Y%m%d")) or i[0] > int(datetime.strftime(eerstedatum,"%Y%m%d")):
-            print()
-        else:
-            print(statcol[int(i[5])-1]+"....."*(7-1-1-indexstartdatum)+ResetAll+forl4(i[3][:4]))
+        lentaak = (datetime.strptime(str(i[1]),"%Y%m%d") - datetime.strptime(str(i[0]),"%Y%m%d")).days
+        deltas = (datetime.strptime(str(i[0]),"%Y%m%d") - eerstedatum).days
+        deltae = (datetime.strptime(str(i[1]),"%Y%m%d") - eerstedatum).days
+        klaar = False
+        if deltae < 0:
+            print("<"+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll)
+            klaar = True
+        elif deltas > scope:
+            print("     "*(scope-1)+"    "+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll+">")
+            klaar = True
+        if deltas <= 0 and klaar == False:
+            deltas = 0
+            print("<"+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:4]+ResetAll, end = "")
+        elif deltas > 0 and klaar == False:
+            print(" "+"     "*deltas+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:4]+ResetAll, end = "")
+        if i[0] == i[1]:
+            klaar = True
+        if deltae <= scope-1 and deltas == 0 and klaar == False:
+            print(statcol[int(i[5])-1]+"....."*(deltae-1)+ResetAll+forl4(i[3][:4]))
+        elif deltae <= scope-1 and deltas > 0 and klaar == False:
+            print(statcol[int(i[5])-1]+"....."*(lentaak-1)+ResetAll+forl4(i[3][:4]))
+        elif deltae > scope-1 and klaar == False:
+            print(statcol[int(i[5])-1]+"....."*(scope-deltas-2)+ResetAll+forl4(i[3][:4])+">")
     print(colbekijken+lijn+ResetAll)
     print()
 
 def takenveertien():
-    lijn = "+"+"----+"*14
-    eerstedatum = datetime.strptime(nu,"%Y%m%d")-timedelta(days = 3)
+    scope = 14 
+    nunu = 3
+    lijn = "+"+"----+"*scope
+    eerstedatum = datetime.strptime(nu,"%Y%m%d")-timedelta(days = nunu)
+    laatstedatum = eerstedatum + timedelta(days = scope)
     print(colbekijken+lijn+ResetAll)
     datumbereik = []
-    for i in range(14):
+    for i in range(scope):
         ij = eerstedatum + timedelta(days = i)
         j = datetime.strftime(ij,"%m%d")
         datumbereik.append(j)
-        if i == 3:
+        if i == nunu:
             if lang == "EN":
                 j = LichtBlauw+forc4("NOW")+ResetAll
             else:
@@ -602,34 +620,45 @@ def takenveertien():
     print(lijn)
     takenlijst = taak()
     for i in takenlijst:
-        if i[0] < int(datetime.strftime(eerstedatum,"%Y%m%d")) and i[1] >= int(datetime.strftime(eerstedatum,"%Y%m%d")):
-            indexstartdatum = 0
-            print("",statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:4]+ResetAll, end = "")
-        if str(i[0])[4:] in datumbereik:
-            indexstartdatum = datumbereik.index(str(i[0])[4:])
-            print("     "*indexstartdatum,statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+forl4(i[2][:4])+ResetAll, end = "")
-        if str(i[1])[4:] == str(i[0])[4:]:
-            print()
-        elif str(i[1])[4:] in datumbereik:
-            indexeinddatum = datumbereik.index(str(i[1])[4:])
-            print(statcol[int(i[5])-1]+"....."*(indexeinddatum-indexstartdatum-1)+ResetAll+forl4(i[3][:4]))
-        elif i[1] < int(datetime.strftime(eerstedatum,"%Y%m%d")) or i[0] > int(datetime.strftime(eerstedatum,"%Y%m%d")):
-            print()
-        else:
-            print(statcol[int(i[5])-1]+"....."*(14-1-1-indexstartdatum)+ResetAll+forl4(i[3][:4]))
+        lentaak = (datetime.strptime(str(i[1]),"%Y%m%d") - datetime.strptime(str(i[0]),"%Y%m%d")).days
+        deltas = (datetime.strptime(str(i[0]),"%Y%m%d") - eerstedatum).days
+        deltae = (datetime.strptime(str(i[1]),"%Y%m%d") - eerstedatum).days
+        klaar = False
+        if deltae < 0:
+            print("<"+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll)
+            klaar = True
+        elif deltas > scope:
+            print("     "*(scope-1)+"    "+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll+">")
+            klaar = True
+        if deltas <= 0 and klaar == False:
+            deltas = 0
+            print("<"+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:4]+ResetAll, end = "")
+        elif deltas > 0 and klaar == False:
+            print(" "+"     "*deltas+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:4]+ResetAll, end = "")
+        if i[0] == i[1]:
+            klaar = True
+        if deltae <= scope-1 and deltas == 0 and klaar == False:
+            print(statcol[int(i[5])-1]+"....."*(deltae-1)+ResetAll+forl4(i[3][:4]))
+        elif deltae <= scope-1 and deltas > 0 and klaar == False:
+            print(statcol[int(i[5])-1]+"....."*(lentaak-1)+ResetAll+forl4(i[3][:4]))
+        elif deltae > scope-1 and klaar == False:
+            print(statcol[int(i[5])-1]+"....."*(scope-deltas-2)+ResetAll+forl4(i[3][:4])+">")
     print(colbekijken+lijn+ResetAll)
     print()
 
 def takendertig():
-    lijn = "+"+"----+"*30
-    eerstedatum = datetime.strptime(nu,"%Y%m%d")-timedelta(days = 7)
+    scope = 30 
+    nunu = 7
+    lijn = "+"+"----+"*scope
+    eerstedatum = datetime.strptime(nu,"%Y%m%d")-timedelta(days = nunu)
+    laatstedatum = eerstedatum + timedelta(days = scope)
     print(colbekijken+lijn+ResetAll)
     datumbereik = []
-    for i in range(30):
+    for i in range(scope):
         ij = eerstedatum + timedelta(days = i)
         j = datetime.strftime(ij,"%m%d")
         datumbereik.append(j)
-        if i == 7:
+        if i == nunu:
             if lang == "EN":
                 j = LichtBlauw+forc4("NOW")+ResetAll
             else:
@@ -639,21 +668,29 @@ def takendertig():
     print(lijn)
     takenlijst = taak()
     for i in takenlijst:
-        if i[0] < int(datetime.strftime(eerstedatum,"%Y%m%d")) and i[1] >= int(datetime.strftime(eerstedatum,"%Y%m%d")):
-            indexstartdatum = 0
-            print("",statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:4]+ResetAll, end = "")
-        if str(i[0])[4:] in datumbereik:
-            indexstartdatum = datumbereik.index(str(i[0])[4:])
-            print("     "*indexstartdatum,statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+forl4(i[2][:4])+ResetAll, end = "")
-        if str(i[1])[4:] == str(i[0])[4:]:
-            print()
-        elif str(i[1])[4:] in datumbereik:
-            indexeinddatum = datumbereik.index(str(i[1])[4:])
-            print(statcol[int(i[5])-1]+"....."*(indexeinddatum-indexstartdatum-1)+ResetAll+forl4(i[3][:4]))
-        elif i[1] < int(datetime.strftime(eerstedatum,"%Y%m%d")) or i[0] > int(datetime.strftime(eerstedatum,"%Y%m%d")):
-            print()
-        else:
-            print(statcol[int(i[5])-1]+"....."*(30-1-1-indexstartdatum)+ResetAll+forl4(i[3][:4]))
+        lentaak = (datetime.strptime(str(i[1]),"%Y%m%d") - datetime.strptime(str(i[0]),"%Y%m%d")).days
+        deltas = (datetime.strptime(str(i[0]),"%Y%m%d") - eerstedatum).days
+        deltae = (datetime.strptime(str(i[1]),"%Y%m%d") - eerstedatum).days
+        klaar = False
+        if deltae < 0:
+            print("<"+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll)
+            klaar = True
+        elif deltas > scope:
+            print("     "*(scope-1)+"    "+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll+">")
+            klaar = True
+        if deltas <= 0 and klaar == False:
+            deltas = 0
+            print("<"+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:4]+ResetAll, end = "")
+        elif deltas > 0 and klaar == False:
+            print(" "+"     "*deltas+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:4]+ResetAll, end = "")
+        if i[0] == i[1]:
+            klaar = True
+        if deltae <= scope-1 and deltas == 0 and klaar == False:
+            print(statcol[int(i[5])-1]+"....."*(deltae-1)+ResetAll+forl4(i[3][:4]))
+        elif deltae <= scope-1 and deltas > 0 and klaar == False:
+            print(statcol[int(i[5])-1]+"....."*(lentaak-1)+ResetAll+forl4(i[3][:4]))
+        elif deltae > scope-1 and klaar == False:
+            print(statcol[int(i[5])-1]+"....."*(scope-deltas-2)+ResetAll+forl4(i[3][:4])+">")
     print(colbekijken+lijn+ResetAll)
     print()
 
