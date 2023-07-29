@@ -1,8 +1,8 @@
 #!/usr/bin/python3
-versie = 0.9
-datum = 20230727
+versie = 0.95
+datum = 20230730
 print("Team %s: %s" % (versie,datum))
-import locale, os, ast, pathlib, subprocess, operator, random
+import locale, os, ast, pathlib, subprocess, random
 from datetime import *
 from dateutil.relativedelta import *
 from time import sleep
@@ -292,7 +292,7 @@ def teamnieuw():
 
 def teamshowbasis():
     if lang == "EN":
-        tpmofukt = "Type the Agent ID to view the Tasks of that Agent t:\n%s" % inputindent
+        tpmofukt = "Type the Agent ID to view the Tasks of that Agent:\n%s" % inputindent
     else:
         tpmofukt = "Typ de ID van de Medewerker om de taken van die Medewerker te zien:\n%s" % inputindent
     teamlijst = team()
@@ -309,6 +309,27 @@ def teamshowbasis():
         print(forr3(ID),forc10(i[0])[:10],forr10(i[1])[:10],forl25(i[2])[:25],iocol[int(forc5(i[3]))]+forc5(checklijst[int(forc5(i[3]))])[:5]+ResetAll,forl12(i[4])[:12])
     print(colbekijken+lijn+ResetAll)
     print()
+
+def teamshowkort():
+    numin = 0
+    teamlijst = team()
+    for i in teamlijst:
+        numin += i[3]
+    if numin == 1:
+        col = iocol[1]
+        if lang == "EN":
+            aanin = "There is %s Agent checked %sIN%s." % (col+str(numin)+ResetAll,iocol[1],ResetAll)
+        else:
+            aanin = "Er is %s Medewerker %sIN%sgecheckt." % (col+str(numin)+ResetAll,iocol[1],ResetAll)
+    else:
+        col = iocol[1]
+        if numin == 0:
+            col = iocol[0]
+        if lang == "EN":
+            aaninnen = "There are %s Agents checked %sIN%s." % (col+str(numin)+ResetAll,iocol[1],ResetAll)
+        else:
+            aaninnen = "Er zijn %s Medewerkers %sIN%sgecheckt." % (col+str(numin)+ResetAll,iocol[1],ResetAll)
+        print(aaninnen)
  
 def teamshow():
     if lang == "EN":
@@ -1040,6 +1061,10 @@ def wijzigmedewerker():
                             pass
                 elif welk == "5":
                     AT = input()
+                    if AT.upper() in afsluitlijst:
+                        return
+                    elif len(AT) == 2 and AT[0].upper() in afsluitlijst and AT[1].upper() in skiplijst:
+                        eindroutine()
                     teamlijst[LL-1][4] = AT
                 with open("teamlijst","w") as t:
                     print(teamlijst, end = "", file = t)
@@ -1109,48 +1134,76 @@ def wijzigteam():
 
 def vergadering():
     if lang == "EN":
+        ingecheckt = "These Agents are checked %sIN%s and can participate:" % (iocol[1],ResetAll)
         naamkop = colmeeting+forc10("Name:")+ResetAll
         meetingstart = "Comments are collected and shown but not stored.\n%sThe meeting has started.%s End with \"Q\"." % (colmeeting,ResetAll)
-        extradeelnemer = "Add extra participants, FirstNames, divided by a comma:\n%s" % inputindent
+        extradeelnemer = "Add extra participants or the IDs of any indisposed Agent(s) (csv).\nLeave empty to continue:\n%s" % inputindent
         geendeelnemers = "Check in participating Agents, or add participants manually."
+        eindevergadering = "I end the Meeting."
     else:
+        ingecheckt = "Deze Medewerkers zijn %sIN%sgecheckt en kunnen deelnemen:" % (iocol[1],ResetAll)
         naamkop = colmeeting+forc10("Naam:")+ResetAll
         meetingstart = "Opmerkingen worden verzameld en getoond maar niet opgeslagen.\n%sDe vergadering is gestart.%s Beëindig met \"Q\"." % (colmeeting,ResetAll)
-        extradeelnemer = "Voeg extra deelnemers toe, VoorNamen, gescheiden door komma's:\n%s" % inputindent
+        extradeelnemer = "Voeg extra deelnemers toe of de ID's van verhinderde Medewerkers (csv).\nLaat leeg om door te gaan:\n%s" % inputindent
         geendeelnemers = "Check deelnemende Medewerkers in, of voeg handmatig deelnemers toe."
+        eindevergadering = "Ik beëindig de vergadering."
     teamlijst = team()
     teamshowbasis()
-    meetinglijstsorted = []
-    meetinglijstrandom = {}
+    meelijst = []
+    numin = 0
+    for i in teamlijst:
+        numin += i[3]
+        if i[3] == 1:
+            meelijst.append(i[1])
+    if len(meelijst) > 0:
+        print(ingecheckt)
+        indie = 1
+        for i in meelijst:
+            print(forr3(indie)+" : "+i)
+            indie += 1
+    print()
     gast = False
     while gast == False:
         extra = input(extradeelnemer).replace(" ","")
-        if extra.upper() in afsluitlijst:
-            gezellig = False
-            break
-        elif len(extra) == 2 and extra[0].upper() in afsluitlijst and extra[1].upper() in skiplijst:
-            eindroutine()
-        elif extra == "":
-            gast = True
-        else:
+        try:
+            extraint = int(extra.replace(",",""))
             extralijst = extra.split(",")
+            extralijst = sorted(extralijst, reverse = True)
             for i in extralijst:
-                meetinglijstsorted.append(i)
+                del meelijst[int(i)-1]
+            del extra
+            indie = 1
+            for i in meelijst:
+                print(forr3(indie)+" : "+i)
+                indie += 1
+        except:
+            if extra.upper() in afsluitlijst:
+                gezellig = False
+                return
+            elif len(extra) == 2 and extra[0].upper() in afsluitlijst and extra[1].upper() in skiplijst:
+                eindroutine()
+            elif extra == "":
                 gast = True
-    for i in teamlijst:
-        if i[3] == 1:
-            meetinglijstsorted.append(i[1])
-    while len(meetinglijstsorted) > 0:
-        r = random.choice(meetinglijstsorted)
-        meetinglijstrandom[r]= ""
-        meetinglijstsorted.remove(r)
-    if len(meetinglijstrandom) == 0:
+            else:
+                extralijst = extra.split(",")
+                for i in extralijst:
+                    meelijst.append(i)
+                indie = 1
+                for i in meelijst:
+                    print(forr3(indie)+" : "+i)
+                    indie += 1
+    meetingdictrandom = {}
+    while len(meelijst) > 0:
+        r = random.choice(meelijst)
+        meetingdictrandom[r]= []
+        meelijst.remove(r)
+    if len(meetingdictrandom) == 0:
         print(colslecht+geendeelnemers+ResetAll)
         return
-    lijn = "   +"+"----------+"*(len(meetinglijstrandom)+1)
-    print(lijn)
+    lijn = "   +"+"----------+"*(len(meetingdictrandom)+1)
+    print(colmeeting+lijn+ResetAll)
     print("    %s " % naamkop, end = "")
-    for i in meetinglijstrandom:
+    for i in meetingdictrandom:
         if len(i) <= 10:
             j = forl10(i)
         else:
@@ -1163,19 +1216,30 @@ def vergadering():
     gezellig = True
     while gezellig == True:
         puttel += 1
-        for i,j in meetinglijstrandom.items():
+        meetel = 0
+        for i,j in meetingdictrandom.items():
+            meetel += 1
             print(forr2(puttel),forr10(i[:10]),": ", end = "")
             put = input()
-            putty = meetinglijstrandom[i]+" %d: " % puttel+put
             if put.upper() in afsluitlijst:
+                meetingdictrandom[i].append(str(puttel)+": "+eindevergadering)
+                print()
                 gezellig = False
                 break
             elif len(put) == 2 and put[0].upper() in afsluitlijst and put[1].upper() in skiplijst:
                 eindroutine()
-            meetinglijstrandom[i] = putty
+            meetingdictrandom[i].append(str(puttel)+": "+put)
         print(lijn)
-    for i,j in meetinglijstrandom.items():
-        print(colmeeting+forr10(i[:10]),":",j+ResetAll)
+    try:
+        tel = 0
+        for i,j in meetingdictrandom.items():
+            print("    "+colmeeting+forl10(i[:10])+":"+ResetAll,end = "")
+            for k in j:
+                print(" "+colmeeting+k+" "+ResetAll,end = "")
+            print()
+            tel += 1
+    except:
+        pass
     print(colmeeting+lijn+ResetAll)
     print()
 
@@ -1312,9 +1376,9 @@ def uitklaptaak():
 baas = True
 while baas == True:
     hoeveeltaken()
-    checkstatusdatum()
+    teamshowkort()
     takenveertien()
-    teamshowbasis()
+    checkstatusdatum()
     if lang == "EN":
         keuzeopties = "Choose from the following options:\n  1 : %sAdd%s\n >2 : %sView%s\n  3 : %sChange%s\n  4 : %sDelete%s\n  5 : %sMeeting%s\n  6 : %sNotepad (Vim)%s\n%s\n%s" % (coltoevoegen,ResetAll,colbekijken,ResetAll,colwijzigen,ResetAll,colverwijderen,ResetAll,colmeeting,ResetAll,colinformatie,ResetAll,weg,inputindent)
         toetom = "%sADD%s a Task or an Agent:\n >1 : Task\n  2 : Agent\n%s\n%s" % (coltoevoegen,ResetAll,terug,inputindent)
