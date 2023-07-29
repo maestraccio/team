@@ -1216,9 +1216,7 @@ def vergadering():
     gezellig = True
     while gezellig == True:
         puttel += 1
-        meetel = 0
         for i,j in meetingdictrandom.items():
-            meetel += 1
             print(forr2(puttel),forr10(i[:10]),": ", end = "")
             put = input()
             if put.upper() in afsluitlijst:
