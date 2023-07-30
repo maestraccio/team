@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-versie = 0.95
+versie = 0.96
 datum = 20230730
 print("Team %s: %s" % (versie,datum))
 import locale, os, ast, pathlib, subprocess, random
@@ -203,14 +203,8 @@ def hoeveeltaken():
             print("Er lopen %s taken." % len(takenlijst))
 
 def checkstatusdatum():
-    oei = 0
-    if lang == "EN":
-        verlopentaak = "There is 1 Task Overdue."
-        verlopentaken = "There are %s Tasks Overdue." % oei
-    else:
-        verlopentaak = "Er is 1 Verlopen Taak."
-        verlopentaken = "Er zijn %s Verlopen Taken." % oei
     takenlijst = taak()
+    oei = 0
     for i in takenlijst:
         if datetime.strptime(str(i[0]),"%Y%m%d") > datetime.strptime(nu,"%Y%m%d"):
             i[5] = 1
@@ -221,8 +215,16 @@ def checkstatusdatum():
         if i[5] == 6:
             oei += 1
     if oei == 1:
+        if lang == "EN":
+            verlopentaak = "There is 1 Task Overdue."
+        else:
+            verlopentaak = "Er is 1 Verlopen Taak."
         print(statcol[5]+verlopentaak+ResetAll)
     elif oei > 1:
+        if lang == "EN":
+            verlopentaken = "There are %s Tasks Overdue." % oei
+        else:
+            verlopentaken = "Er zijn %s Verlopen Taken." % oei
         print(statcol[5]+verlopentaken+ResetAll)
     takenlijst = sorted(takenlijst)
     with open("takenlijst","w") as t:
@@ -606,9 +608,13 @@ def takenzeven():
         if deltas <= 0 and klaar == False:
             deltas = 0
             print("<"+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:4]+ResetAll, end = "")
+        elif deltas == scope -1 and klaar == False:
+            print(" "+"     "*deltas+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:3]+ResetAll+">")
+            klaar = True
         elif deltas > 0 and klaar == False:
             print(" "+"     "*deltas+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:4]+ResetAll, end = "")
         if i[0] == i[1]:
+            print()
             klaar = True
         if deltae <= scope-1 and deltas == 0 and klaar == False:
             print(statcol[int(i[5])-1]+"....."*(deltae-1)+ResetAll+forl4(i[3][:4]))
@@ -654,9 +660,13 @@ def takenveertien():
         if deltas <= 0 and klaar == False:
             deltas = 0
             print("<"+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:4]+ResetAll, end = "")
+        elif deltas == scope -1 and klaar == False:
+            print(" "+"     "*deltas+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:3]+ResetAll+">")
+            klaar = True
         elif deltas > 0 and klaar == False:
             print(" "+"     "*deltas+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:4]+ResetAll, end = "")
         if i[0] == i[1]:
+            print()
             klaar = True
         if deltae <= scope-1 and deltas == 0 and klaar == False:
             print(statcol[int(i[5])-1]+"....."*(deltae-1)+ResetAll+forl4(i[3][:4]))
@@ -702,9 +712,13 @@ def takendertig():
         if deltas <= 0 and klaar == False:
             deltas = 0
             print("<"+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:4]+ResetAll, end = "")
+        elif deltas == scope -1 and klaar == False:
+            print(" "+"     "*deltas+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:3]+ResetAll+">")
+            klaar = True
         elif deltas > 0 and klaar == False:
             print(" "+"     "*deltas+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:4]+ResetAll, end = "")
         if i[0] == i[1]:
+            print()
             klaar = True
         if deltae <= scope-1 and deltas == 0 and klaar == False:
             print(statcol[int(i[5])-1]+"....."*(deltae-1)+ResetAll+forl4(i[3][:4]))
@@ -1139,14 +1153,14 @@ def vergadering():
         meetingstart = "Comments are collected and shown but not stored.\n%sThe meeting has started.%s End with \"Q\"." % (colmeeting,ResetAll)
         extradeelnemer = "Add extra participants or the IDs of any indisposed Agent(s) (csv).\nLeave empty to continue:\n%s" % inputindent
         geendeelnemers = "Check in participating Agents, or add participants manually."
-        eindevergadering = "I end the Meeting."
+        eindevergadering = "Here ends the Meeting."
     else:
         ingecheckt = "Deze Medewerkers zijn %sIN%sgecheckt en kunnen deelnemen:" % (iocol[1],ResetAll)
         naamkop = colmeeting+forc10("Naam:")+ResetAll
         meetingstart = "Opmerkingen worden verzameld en getoond maar niet opgeslagen.\n%sDe vergadering is gestart.%s Beëindig met \"Q\"." % (colmeeting,ResetAll)
         extradeelnemer = "Voeg extra deelnemers toe of de ID's van verhinderde Medewerkers (csv).\nLaat leeg om door te gaan:\n%s" % inputindent
         geendeelnemers = "Check deelnemende Medewerkers in, of voeg handmatig deelnemers toe."
-        eindevergadering = "Ik beëindig de vergadering."
+        eindevergadering = "Hier stopt de vergadering."
     teamlijst = team()
     teamshowbasis()
     meelijst = []
@@ -1159,7 +1173,7 @@ def vergadering():
         print(ingecheckt)
         indie = 1
         for i in meelijst:
-            print(forr3(indie)+" : "+i)
+            print(forr3(indie)+" : "+iocol[1]+i+ResetAll)
             indie += 1
     print()
     gast = False
@@ -1174,7 +1188,7 @@ def vergadering():
             del extra
             indie = 1
             for i in meelijst:
-                print(forr3(indie)+" : "+i)
+                print(forr3(indie)+" : "+iocol[1]+i+ResetAll)
                 indie += 1
         except:
             if extra.upper() in afsluitlijst:
@@ -1190,7 +1204,7 @@ def vergadering():
                     meelijst.append(i)
                 indie = 1
                 for i in meelijst:
-                    print(forr3(indie)+" : "+i)
+                    print(forr3(indie)+" : "+iocol[1]+i+ResetAll)
                     indie += 1
     meetingdictrandom = {}
     while len(meelijst) > 0:
@@ -1201,6 +1215,8 @@ def vergadering():
         print(colslecht+geendeelnemers+ResetAll)
         return
     lijn = "   +"+"----------+"*(len(meetingdictrandom)+1)
+    print(meetingstart)
+    print()
     print(colmeeting+lijn+ResetAll)
     print("    %s " % naamkop, end = "")
     for i in meetingdictrandom:
@@ -1210,12 +1226,10 @@ def vergadering():
             j = i[:10]
         print(j, end = " ")
     print()
-    print(lijn)
-    print(meetingstart)
-    puttel = 0
+    print(colmeeting+lijn+ResetAll)
+    puttel = 1
     gezellig = True
     while gezellig == True:
-        puttel += 1
         for i,j in meetingdictrandom.items():
             print(forr2(puttel),forr10(i[:10]),": ", end = "")
             put = input()
@@ -1228,13 +1242,14 @@ def vergadering():
                 eindroutine()
             meetingdictrandom[i].append(str(puttel)+": "+put)
         print(lijn)
+        puttel += 1
     try:
         tel = 0
         for i,j in meetingdictrandom.items():
             print("    "+colmeeting+forl10(i[:10])+":"+ResetAll,end = "")
-            for k in j:
-                print(" "+colmeeting+k+" "+ResetAll,end = "")
-            print()
+            print(" "+colmeeting+j[0]+" "+ResetAll)
+            for k in j[1:]:
+                print("                "+colmeeting+k+" "+ResetAll)
             tel += 1
     except:
         pass
@@ -1247,7 +1262,7 @@ def verwijdertaak():
     else:
         sel = "Selecteer ID's van de Taken die je wilt %sVERWIJDEREN%s,\ngescheiden door een komma, of * voor alle:\n%s" % (colslecht, ResetAll, inputindent)
     takenlijst = taak()
-    takenshow()
+    takenblok()
     select = input(sel).replace(" ","")
     if select.upper() in afsluitlijst:
         uit = True
