@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-versie = 1.00
-datum = 20230730
+versie = 1.01
+datum = 20230731
 import locale, os, ast, pathlib, subprocess, random
 from datetime import *
 from dateutil.relativedelta import *
@@ -90,6 +90,7 @@ skiplijst = ["!",">","S","D"] # Skip, Standaard, Default
 inputindent = "  : "
 dagenlijstEN = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
 dagenlijstNL = ["maandag","dinsdag","woensdag","donderdag","vrijdag","zaterdag","zondag"]
+scopenunu = {}
 print()
 
 lang = False
@@ -618,157 +619,9 @@ def takenbreed():
     print(colbekijken+lijn+ResetAll)
     print()
 
-def takenzeven():
-    scope = 8 
-    nunu = 1
-    lijn = "+"+"----+"*scope
-    eerstedatum = datetime.strptime(nu,"%Y%m%d")-timedelta(days = nunu)
-    laatstedatum = eerstedatum + timedelta(days = scope)
-    print(colbekijken+lijn+ResetAll)
-    datumbereik = []
-    for i in range(scope):
-        ij = eerstedatum + timedelta(days = i)
-        j = datetime.strftime(ij,"%m%d")
-        datumbereik.append(j)
-        if i == nunu-1:
-            if lang == "EN":
-                dij = datetime.strftime(ij,"%A")
-                for d in range(len(dagenlijstNL)):
-                    dij = dij.replace(dagenlijstNL[d],dagenlijstEN[d])
-                j = statcol[5]+forc4(dij[:2])+ResetAll
-            else:
-                dij = datetime.strftime(ij,"%A")
-                for d in range(len(dagenlijstEN)):
-                    dij = dij.replace(dagenlijstEN[d],dagenlijstNL[d])
-                j = statcol[5]+forc4(dij[:2])+ResetAll
-        if i == nunu:
-            if lang == "EN":
-                j = statcol[1]+forc4("NOW")+ResetAll
-            else:
-                j = statcol[1]+forc4("NU")+ResetAll
-        if i == nunu+1:
-            if lang == "EN":
-                dij = datetime.strftime(ij,"%A")
-                for d in range(len(dagenlijstNL)):
-                    dij = dij.replace(dagenlijstNL[d],dagenlijstEN[d])
-                j = statcol[0]+forc4(dij[:2])+ResetAll
-            else:
-                dij = datetime.strftime(ij,"%A")
-                for d in range(len(dagenlijstEN)):
-                    dij = dij.replace(dagenlijstEN[d],dagenlijstNL[d])
-                j = statcol[0]+forc4(dij[:2])+ResetAll
-        print(" "+j, end = "")
-    print()
-    print(lijn)
-    takenlijst = taak()
-    for i in takenlijst:
-        lentaak = (datetime.strptime(str(i[1]),"%Y%m%d") - datetime.strptime(str(i[0]),"%Y%m%d")).days
-        deltas = (datetime.strptime(str(i[0]),"%Y%m%d") - eerstedatum).days
-        deltae = (datetime.strptime(str(i[1]),"%Y%m%d") - eerstedatum).days
-        klaar = False
-        if deltae < 0:
-            print("<"+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll)
-            klaar = True
-        elif deltas > scope:
-            print("     "*(scope-1)+"    "+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll+">")
-            klaar = True
-        if deltas <= 0 and klaar == False:
-            deltas = 0
-            print("<"+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:4]+ResetAll, end = "")
-        elif deltas == scope -1 and klaar == False:
-            print(" "+"     "*deltas+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:3]+ResetAll+">")
-            klaar = True
-        elif deltas > 0 and klaar == False:
-            print(" "+"     "*deltas+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:4]+ResetAll, end = "")
-        if i[0] == i[1]:
-            print()
-            klaar = True
-        if deltae <= scope-1 and deltas == 0 and klaar == False:
-            print(statcol[int(i[5])-1]+"....."*(deltae-1)+ResetAll+forl4(i[3][:4]))
-        elif deltae <= scope-1 and deltas > 0 and klaar == False:
-            print(statcol[int(i[5])-1]+"....."*(lentaak-1)+ResetAll+forl4(i[3][:4]))
-        elif deltae > scope-1 and klaar == False:
-            print(statcol[int(i[5])-1]+"....."*(scope-deltas-2)+ResetAll+forl4(i[3][:4])+">")
-    print(colbekijken+lijn+ResetAll)
-    print()
-
-def takenveertien():
-    scope = 15 
-    nunu = 3
-    lijn = "+"+"----+"*scope
-    eerstedatum = datetime.strptime(nu,"%Y%m%d")-timedelta(days = nunu)
-    laatstedatum = eerstedatum + timedelta(days = scope)
-    print(colbekijken+lijn+ResetAll)
-    datumbereik = []
-    for i in range(scope):
-        ij = eerstedatum + timedelta(days = i)
-        j = datetime.strftime(ij,"%m%d")
-        datumbereik.append(j)
-        if i == nunu-1:
-            if lang == "EN":
-                dij = datetime.strftime(ij,"%A")
-                for d in range(len(dagenlijstNL)):
-                    dij = dij.replace(dagenlijstNL[d],dagenlijstEN[d])
-                j = statcol[5]+forc4(dij[:2])+ResetAll
-            else:
-                dij = datetime.strftime(ij,"%A")
-                for d in range(len(dagenlijstEN)):
-                    dij = dij.replace(dagenlijstEN[d],dagenlijstNL[d])
-                j = statcol[5]+forc4(dij[:2])+ResetAll
-        if i == nunu:
-            if lang == "EN":
-                j = statcol[1]+forc4("NOW")+ResetAll
-            else:
-                j = statcol[1]+forc4("NU")+ResetAll
-        if i == nunu+1:
-            if lang == "EN":
-                dij = datetime.strftime(ij,"%A")
-                for d in range(len(dagenlijstNL)):
-                    dij = dij.replace(dagenlijstNL[d],dagenlijstEN[d])
-                j = statcol[0]+forc4(dij[:2])+ResetAll
-            else:
-                dij = datetime.strftime(ij,"%A")
-                for d in range(len(dagenlijstEN)):
-                    dij = dij.replace(dagenlijstEN[d],dagenlijstNL[d])
-                j = statcol[0]+forc4(dij[:2])+ResetAll
-        print(" "+j, end = "")
-    print()
-    print(lijn)
-    takenlijst = taak()
-    for i in takenlijst:
-        lentaak = (datetime.strptime(str(i[1]),"%Y%m%d") - datetime.strptime(str(i[0]),"%Y%m%d")).days
-        deltas = (datetime.strptime(str(i[0]),"%Y%m%d") - eerstedatum).days
-        deltae = (datetime.strptime(str(i[1]),"%Y%m%d") - eerstedatum).days
-        klaar = False
-        if deltae < 0:
-            print("<"+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll)
-            klaar = True
-        elif deltas > scope:
-            print("     "*(scope-1)+"    "+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll+">")
-            klaar = True
-        if deltas <= 0 and klaar == False:
-            deltas = 0
-            print("<"+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:4]+ResetAll, end = "")
-        elif deltas == scope -1 and klaar == False:
-            print(" "+"     "*deltas+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:3]+ResetAll+">")
-            klaar = True
-        elif deltas > 0 and klaar == False:
-            print(" "+"     "*deltas+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:4]+ResetAll, end = "")
-        if i[0] == i[1]:
-            print()
-            klaar = True
-        if deltae <= scope-1 and deltas == 0 and klaar == False:
-            print(statcol[int(i[5])-1]+"....."*(deltae-1)+ResetAll+forl4(i[3][:4]))
-        elif deltae <= scope-1 and deltas > 0 and klaar == False:
-            print(statcol[int(i[5])-1]+"....."*(lentaak-1)+ResetAll+forl4(i[3][:4]))
-        elif deltae > scope-1 and klaar == False:
-            print(statcol[int(i[5])-1]+"....."*(scope-deltas-2)+ResetAll+forl4(i[3][:4])+">")
-    print(colbekijken+lijn+ResetAll)
-    print()
-
-def takendertig():
-    scope = 31 
-    nunu = 7
+def takenlijn(scopenunu):
+    scope = scopenunu["scope"]
+    nunu = scopenunu["nunu"]
     lijn = "+"+"----+"*scope
     eerstedatum = datetime.strptime(nu,"%Y%m%d")-timedelta(days = nunu)
     laatstedatum = eerstedatum + timedelta(days = scope)
@@ -882,11 +735,17 @@ def takenshow():
     elif now == 2:
         takenbreed()
     elif now == "3":
-        takenzeven()
+        scopenunu["scope"] = 8
+        scopenunu["nunu"] = 1
+        takenlijn(scopenunu)
     elif now == "4":
-        takenveertien()
+        scopenunu["scope"] =15 
+        scopenunu["nunu"] = 3
+        takenlijn(scopenunu)
     elif now == "5":
-        takendertig()
+        scopenunu["scope"] = 31
+        scopenunu["nunu"] = 7
+        takenlijn(scopenunu)
     else: # now == "6":
         takenblok()
     uitklaptaak()
@@ -1501,7 +1360,9 @@ baas = True
 while baas == True:
     hoeveeltaken()
     teamshowkort()
-    takenveertien()
+    scopenunu["scope"] =15 
+    scopenunu["nunu"] = 3
+    takenlijn(scopenunu)
     checkstatusdatum()
     if lang == "EN":
         keuzeopties = "Choose from the following options:\n  0 : %sAbout%s\n  1 : %sAdd%s\n >2 : %sView%s\n  3 : %sChange%s\n  4 : %sDelete%s\n  5 : %sMeeting%s\n  6 : %sNotepad (Vim)%s\n%s\n%s" % (colover,ResetAll,coltoevoegen,ResetAll,colbekijken,ResetAll,colwijzigen,ResetAll,colverwijderen,ResetAll,colmeeting,ResetAll,colinformatie,ResetAll,weg,inputindent)
