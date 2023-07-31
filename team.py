@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-versie = 1.01
+versie = 1.02
 datum = 20230731
 import locale, os, ast, pathlib, subprocess, random
 from datetime import *
@@ -716,11 +716,15 @@ def takenblok():
 
 def takenshow():
     if lang == "EN":
-        sob = "View:\n  1 : Narrow (60 chars)\n  2 : Wide (100 chars)\n  3 : Timeline (7 days)\n  4 : Timeline (14 days)\n  5 : Timeline (30 days)\n >6 : Compact block\n%s" % inputindent
+        sob = "View:\n  1 : Narrow (60 chars)\n  2 : Wide (100 chars)\n  3 : Timeline (7 days)\n  4 : Timeline (14 days)\n  5 : Timeline (30 days)\n  6 : Timeline (Give days)\n >7 : Compact block\n%s" % inputindent
         geentaken = "There are no tasks."
+        hoelang = "Give the number of days of the length of your timeline (default 3):\n%s" % inputindent
+        vanaf = "Give the number of days in the past (default 1):\n%s" % inputindent
     else:
-        sob = "Toon:\n  1 : Smal (60 tekens)\n  2 : Breed (100 tekens)\n  3 : Tijdlijn (7 dagen)\n  4 : Tijdlijn (14 dagen)\n  5 : Tijdlijn (30 dagen)\n >6 : Compact blok\n%s" % inputindent
+        sob = "Toon:\n  1 : Smal (60 tekens)\n  2 : Breed (100 tekens)\n  3 : Tijdlijn (7 dagen)\n  4 : Tijdlijn (14 dagen)\n  5 : Tijdlijn (30 dagen)\n  6 : Tijdlijn (Geef dagen)\n >7 : Compact blok\n%s" % inputindent
         geentaken = "Er zijn geen taken."
+        hoelang = "Geef het aantal dagen op van de lengte van de tijdlijn (standaard 3):\n%s" % inputindent
+        vanaf = "Geef het aantal dagen in het verleden op (standaard 1):\n%s" % inputindent
     takenlijst = taak()
     if len(takenlijst) == 0:
         print(geentaken)
@@ -746,7 +750,36 @@ def takenshow():
         scopenunu["scope"] = 31
         scopenunu["nunu"] = 7
         takenlijn(scopenunu)
-    else: # now == "6":
+    elif now == "6":
+        try:
+            scopein = input(hoelang).strip()
+            if scopein.upper() in afsluitlijst:
+                return
+            elif len(scopein) == 2 and scopein.upper() in afsluitlijst and scopein.upper() in skiplijst:
+                eindroutine()
+            if scopein == "":
+                scopein = "3"
+            scope = int(scopein)
+            if scope < 3:
+                scope = 3
+            scopenunu["scope"] = scope
+            nunuin = input(vanaf).strip()
+            if nunuin.upper() in afsluitlijst:
+                return
+            elif len(nunuin) == 2 and nunuin.upper() in afsluitlijst and nunuin.upper() in skiplijst:
+                eindroutine()
+            if nunuin == "":
+                nunuin = "1"
+            nunu = int(nunuin)
+            if nunu < 1:
+                nunu = 1
+            scopenunu["nunu"] = nunu
+        except(Exception) as fout:
+            print(fout)
+            scopenunu["scope"] = 3
+            scopenunu["nunu"] = 1
+        takenlijn(scopenunu)
+    else: # now == "7":
         takenblok()
     uitklaptaak()
 
@@ -1360,10 +1393,10 @@ baas = True
 while baas == True:
     hoeveeltaken()
     teamshowkort()
+    checkstatusdatum()
     scopenunu["scope"] =15 
     scopenunu["nunu"] = 3
     takenlijn(scopenunu)
-    checkstatusdatum()
     if lang == "EN":
         keuzeopties = "Choose from the following options:\n  0 : %sAbout%s\n  1 : %sAdd%s\n >2 : %sView%s\n  3 : %sChange%s\n  4 : %sDelete%s\n  5 : %sMeeting%s\n  6 : %sNotepad (Vim)%s\n%s\n%s" % (colover,ResetAll,coltoevoegen,ResetAll,colbekijken,ResetAll,colwijzigen,ResetAll,colverwijderen,ResetAll,colmeeting,ResetAll,colinformatie,ResetAll,weg,inputindent)
         toetom = "%sADD%s a Task or an Agent:\n >1 : Task\n  2 : Agent\n%s\n%s" % (coltoevoegen,ResetAll,terug,inputindent)
