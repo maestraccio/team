@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-versie = 1.03
+versie = 1.04
 datum = 20230802
 import locale, os, ast, pathlib, subprocess, random
 from datetime import *
@@ -70,17 +70,24 @@ colgoed = Groen
 colslecht = Rood
 statcol = [Geel,LichtGeel,Magenta,Rood,Groen,LichtRood]
 iocol = [Rood,Groen]
+logocol = [LichtGroen,LichtGeel,LichtCyaan,LichtRood]
 
-TeamLogo = """%s
-    .______. 
-    |/ \\/ \|___   __ ____ __
-       ||  //_\\\\ 6_\\\\|| \V \\\\
-       || ||'   // |||| || ||
-      _/\_ \\\\_/|\\\\/|\/\ || /\\%s
-""" % (Magenta,ResetAll)
-for i in TeamLogo:
-    print(i, end = "", flush=True)
-    sleep(0.005)
+TeamLogo = """.______.                 
+|/ \/ \|__.   _. ___. _. 
+   ||  //_\\\\ 6_\\\\|| \V \\\\
+   || ||'   // |||| || ||
+  _/\_ \\\\_/|\\\\/|\/\ || /\\"""
+lenlijst = 0
+try:
+    while len(TeamLogo) > 0:
+        for i in logocol:
+            sleep(0.025)
+            print(i,end = "")
+            print(TeamLogo[logocol.index(i)+lenlijst], end = "", flush = True)
+            TeamLogo = TeamLogo[0:]
+        lenlijst += len(logocol)
+except:
+    print(ResetAll)
 
 nu = datetime.strftime(datetime.today(),"%Y%m%d")
 afsluitlijst = ["X","Q"]
