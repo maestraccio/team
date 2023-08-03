@@ -1,7 +1,7 @@
 #!/usr/bin/python3
-versie = 1.04
-datum = 20230802
-import locale, os, ast, pathlib, subprocess, random
+versie = 1.10
+datum = 20230803
+import locale, os, ast, pathlib, subprocess, random, textwrap
 from datetime import *
 from dateutil.relativedelta import *
 from time import sleep
@@ -68,15 +68,15 @@ colmeeting = LichtMagenta
 colterug = DonkerGrijs
 colgoed = Groen
 colslecht = Rood
-statcol = [Geel,LichtGeel,Magenta,Rood,Groen,LichtRood]
+statcol = [Geel,LichtGeel,Magenta,Rood,Groen,LichtRood,DonkerGrijs]
 iocol = [Rood,Groen]
-logocol = [LichtGroen,LichtGeel,LichtCyaan,LichtRood]
+logocol = [coltoevoegen,colbekijken,colwijzigen,colverwijderen,colmeeting,colinformatie]
 
-TeamLogo = """.______.                 
-|/ \/ \|__.   _. ___. _. 
-   ||  //_\\\\ 6_\\\\|| \V \\\\
-   || ||'   // |||| || ||
-  _/\_ \\\\_/|\\\\/|\/\ || /\\"""
+TeamLogo = """.______.                     
+|/ \/ \|__.   _. ___. _.     
+   ||  //_\\\\ 6_\\\\|| \V \\\\    
+   || ||'   // |||| || ||    
+  _/\_ \\\\_/|\\\\/|\/\ || /\\    """
 lenlijst = 0
 try:
     while len(TeamLogo) > 0:
@@ -98,6 +98,7 @@ inputindent = "  : "
 dagenlijstEN = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
 dagenlijstNL = ["maandag","dinsdag","woensdag","donderdag","vrijdag","zaterdag","zondag"]
 scopenunu = {}
+wi = 60
 print()
 
 lang = False
@@ -114,7 +115,7 @@ if lang == "EN":
     checklijst = ["OUT","IN"]
     weg = "%s  Q!: Exit%s" % (ResetAll+colterug,ResetAll)
     terug = "%s  Q : Back%s" % (ResetAll+colterug,ResetAll)
-    statuslijst = ["Planned","Started","Paused","Aborted","Completed","Overdue"]
+    statuslijst = ["Planned","Started","Paused","Aborted","Completed","Overdue","OutOfOffice"]
     taakverdeling = ["Start","Due","TaskDescription","Name","Note","Status"]
     teamverdeling = ["Agent Number","Given Name","Last Name","Check","Note"]
     dag = "Today is %s." 
@@ -122,7 +123,7 @@ else:
     checklijst = ["UIT","IN"]
     weg = "%s  Q!: Afsluiten%s" % (ResetAll+colterug,ResetAll)
     terug = "%s  Q : Terug%s" % (ResetAll+colterug,ResetAll)
-    statuslijst = ["Gepland","Gestart","Gepauzeerd","Afgebroken","Afgerond","Verlopen"]
+    statuslijst = ["Gepland","Gestart","Gepauzeerd","Afgebroken","Afgerond","Verlopen","Afwezig"]
     taakverdeling = ["Start","Eind","Taakomschrijving","Naam","Aantekening","Status"]
     teamverdeling = ["Personeelsnummer","VoorNaam","AchterNaam","Check","Aantekening"]
     dag = "Het is vandaag %s."
@@ -176,33 +177,24 @@ forr25 = "{:>25}".format
 
 def printstuff():
     if lang == "EN":
-        print(colover+"""
-Version: %s
-Date: %s
-
-"TEAM" is a simple planning tool for team leads and managers. Check agents IN
-or OUT, register personal talents and expertise, assign tasks and organize
-meetings.
-Confirm every choice with "Enter", go back with "Q" or leave the program
-immediately with "Q!".
-The option "Notepad (Vim)" uses "Vim". Make sure it is installed.
-
-I wish you a lot of succes!
-""" % (versie,datum)+ResetAll)
+        ve = "Version:"
+        da = "Date:"
+        stuff1 = textwrap.wrap("\"TEAM\" is a simple planning tool for team leads and managers. Check agents IN or OUT, register personal talents and expertise, assign tasks and organize meetings.", width = wi)
+        stuff2 = textwrap.wrap("Confirm every choice with \"Enter\", go back with \"Q\" or leave the program immediately with \"Q!\". The option \"Notepad (Vim)\" uses \"Vim\". Make sure it is installed.\n", width = wi)
     else:
-        print(colover+"""
-Versie: %s
-Datum: %s
-
-"TEAM" is een simpele planningstool voor leidinggevenden en managers. Check
-medewerkers IN of UIT, registreer persoonlijke talenten en expertise, verdeel
-taken en organiseer vergaderingen.
-Bevestig iedere keuze met "Enter", ga terug met "Q" of verlaat het programma
-direct met "Q!".
-De optie "Kladblok (Vim)" maakt gebruik van "Vim". Installeer dat eerst.
-
-Ik wens u veel succes!
-""" % (versie,datum)+ResetAll)
+        ve = "Versie:"
+        da = "Datum:"
+        stuff1 = textwrap.wrap("\"TEAM\" is een simpele planningstool voor leidinggevenden en managers. Check medewerkers IN of UIT, registreer persoonlijke talenten en expertise, verdeel taken en organiseer vergaderingen.", width = wi)
+        stuff2 = textwrap.wrap("Bevestig iedere keuze met \"Enter\", ga terug met \"Q\" of verlaat het programma direct met \"Q!\". De optie \"Kladblok (Vim)\" maakt gebruik van \"Vim\". Installeer dat eerst.", width = wi)
+    print()
+    print(colover+forl8(ve)+str(versie)+ResetAll)
+    print(colover+forl8(da)+str(datum)+ResetAll)
+    print()
+    for i in stuff1:
+        print(colover+i+ResetAll)
+    for i in stuff2:
+        print(colover+i+ResetAll)
+    print()
 
 
 def eindroutine():
@@ -259,7 +251,7 @@ def checkstatusdatum():
     takenlijst = taak()
     oei = 0
     for i in takenlijst:
-        if datetime.strptime(str(i[0]),"%Y%m%d") > datetime.strptime(nu,"%Y%m%d") and i[5] not in [3,4,5]:
+        if datetime.strptime(str(i[0]),"%Y%m%d") > datetime.strptime(nu,"%Y%m%d") and i[5] not in [3,4,5,7]:
             i[5] = 1
         if datetime.strptime(str(i[0]),"%Y%m%d") <= datetime.strptime(nu,"%Y%m%d") and i[5] == 1:
             i[5] = 2
@@ -636,18 +628,17 @@ def takenlijn(scopenunu):
     datumbereik = []
     for i in range(scope):
         ij = eerstedatum + timedelta(days = i)
-        j = datetime.strftime(ij,"%m%d")
+        j = datetime.strftime(ij,"%y%m")
         datumbereik.append(j)
+        wdcol = ResetAll
+        if ij.weekday() in [5,6]:
+            wdcol = DonkerGrijs
         if i == nunu-1:
             if lang == "EN":
-                dij = datetime.strftime(ij,"%A")
-                for d in range(len(dagenlijstNL)):
-                    dij = dij.replace(dagenlijstNL[d],dagenlijstEN[d])
+                dij = "yd"
                 j = statcol[5]+forc4(dij[:2])+ResetAll
             else:
-                dij = datetime.strftime(ij,"%A")
-                for d in range(len(dagenlijstEN)):
-                    dij = dij.replace(dagenlijstEN[d],dagenlijstNL[d])
+                dij = "gi"
                 j = statcol[5]+forc4(dij[:2])+ResetAll
         if i == nunu:
             if lang == "EN":
@@ -656,16 +647,31 @@ def takenlijn(scopenunu):
                 j = statcol[1]+forc4("NU")+ResetAll
         if i == nunu+1:
             if lang == "EN":
-                dij = datetime.strftime(ij,"%A")
-                for d in range(len(dagenlijstNL)):
-                    dij = dij.replace(dagenlijstNL[d],dagenlijstEN[d])
+                dij = "tm"
                 j = statcol[0]+forc4(dij[:2])+ResetAll
             else:
-                dij = datetime.strftime(ij,"%A")
-                for d in range(len(dagenlijstEN)):
-                    dij = dij.replace(dagenlijstEN[d],dagenlijstNL[d])
+                dij = "mo"
                 j = statcol[0]+forc4(dij[:2])+ResetAll
-        print(" "+j, end = "")
+        print(" "+wdcol+j+ResetAll, end = "")
+    print()
+    for i in range(scope):
+        ij = eerstedatum + timedelta(days = i)
+        j = datetime.strftime(ij,"%m%d")
+        datumbereik.append(j)
+        wdcol = ResetAll
+        if ij.weekday() in [5,6]:
+            wdcol = DonkerGrijs
+        if lang == "EN":
+            dij = datetime.strftime(ij,"%A")
+            for d in range(len(dagenlijstNL)):
+                dij = dij.replace(dagenlijstNL[d],dagenlijstEN[d])
+            j = forc4(dij[:2]+j[2:])
+        else:
+            dij = datetime.strftime(ij,"%A")
+            for d in range(len(dagenlijstEN)):
+                dij = dij.replace(dagenlijstEN[d],dagenlijstNL[d])
+            j = forc4(dij[:2]+j[2:])
+        print(" "+wdcol+j+ResetAll, end = "")
     print()
     print(lijn)
     takenlijst = taak()
@@ -683,9 +689,12 @@ def takenlijn(scopenunu):
         if deltas <= 0 and klaar == False:
             deltas = 0
             print("<"+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:4]+ResetAll, end = "")
+        elif deltas > 0 and deltas == scope-1 and klaar == False:
+            print(" "+"     "*deltas+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:3]+ResetAll+">")
+            klaar = True
         elif deltas > 0 and klaar == False:
             print(" "+"     "*deltas+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:4]+ResetAll, end = "")
-        if i[0] == i[1]:
+        if i[0] == i[1] and deltae <= scope:
             print()
             klaar = True
         if deltae <= scope-1 and deltas == 0 and klaar == False:
@@ -720,12 +729,12 @@ def takenblok():
 
 def takenshow():
     if lang == "EN":
-        sob = "View:\n  1 : Narrow (60 chars)\n  2 : Wide (100 chars)\n  3 : Timeline (7 days)\n  4 : Timeline (14 days)\n  5 : Timeline (30 days)\n  6 : Timeline (Give days)\n >7 : Compact block\n%s" % inputindent
+        sob = "View:\n >1 : Narrow (60 chars)\n  2 : Wide (100 chars)\n  3 : Timeline ( 7+1 days: Narrow)\n  4 : Timeline (14+1 days: Normal)\n  5 : Timeline (30+1 days: Wide)\n  6 : Timeline (Give days)\n  7 : Compact block\n%s" % inputindent
         geentaken = "There are no tasks."
         hoelang = "Give the number of days of the length of your timeline (default 3):\n%s" % inputindent
         vanaf = "Give the number of days in the past (default 1):\n%s" % inputindent
     else:
-        sob = "Toon:\n  1 : Smal (60 tekens)\n  2 : Breed (100 tekens)\n  3 : Tijdlijn (7 dagen)\n  4 : Tijdlijn (14 dagen)\n  5 : Tijdlijn (30 dagen)\n  6 : Tijdlijn (Geef dagen)\n >7 : Compact blok\n%s" % inputindent
+        sob = "Toon:\n >1 : Smal (60 tekens)\n  2 : Breed (100 tekens)\n  3 : Tijdlijn ( 7+1 dagen: Smal)\n  4 : Tijdlijn (14+1 dagen: Normaal)\n  5 : Tijdlijn (30+1 dagen: Breed)\n  6 : Tijdlijn (Geef dagen)\n  7 : Compact blok\n%s" % inputindent
         geentaken = "Er zijn geen taken."
         hoelang = "Geef het aantal dagen op van de lengte van de tijdlijn (standaard 3):\n%s" % inputindent
         vanaf = "Geef het aantal dagen in het verleden op (standaard 1):\n%s" % inputindent
@@ -738,9 +747,7 @@ def takenshow():
         return
     elif len(now) == 2 and now[0].upper() in afsluitlijst and now[1].upper() in skiplijst:
         eindroutine()
-    if now == "1":
-        takensmal()
-    elif now == 2:
+    if now == "2":
         takenbreed()
     elif now == "3":
         scopenunu["scope"] = 8
@@ -783,8 +790,10 @@ def takenshow():
             scopenunu["scope"] = 3
             scopenunu["nunu"] = 1
         takenlijn(scopenunu)
-    else: # now == "7":
+    elif now == "7":
         takenblok()
+    else: # now == "1":
+        takensmal()
     uitklaptaak()
 
 def wijzigtaak():
@@ -1166,7 +1175,7 @@ def vergadering():
         ingecheckt = "Deze Medewerkers zijn %sIN%sgecheckt en kunnen deelnemen:" % (iocol[1],ResetAll)
         naamkop = colmeeting+forc10("Naam:")+ResetAll
         meetingstart = "Opmerkingen worden verzameld en getoond maar niet opgeslagen.\n%sDe vergadering is gestart.%s Beëindig met \"Q\"." % (colmeeting,ResetAll)
-        extradeelnemer = "Voeg extra deelnemers toe door hun namen te typen, of\ngeef de ID's van verhinderde Medewerkers (csv stijl).\nLaat leeg om door te gaan:\n%s" % inputindent
+        extradeelnemer = "Voeg extra deelnemers toe door hun namen te typen, of\ngeef de ID's van verhinderde Medewerkers (csv-stijl).\nLaat leeg om door te gaan:\n%s" % inputindent
         geendeelnemers = "Check deelnemende Medewerkers in, of voeg handmatig deelnemers toe."
         perdeelnemer = "Genoteerde opmerkingen gegroepeerd per Deelnemer:"
         eindevergadering = "Hier stopt de vergadering."
