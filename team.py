@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-versie = 1.10
-datum = 20230803
+versie = "1.11"
+datum = "20230804"
 import locale, os, ast, pathlib, subprocess, random, textwrap
 from datetime import *
 from dateutil.relativedelta import *
@@ -72,11 +72,11 @@ statcol = [Geel,LichtGeel,Magenta,Rood,Groen,LichtRood,DonkerGrijs]
 iocol = [Rood,Groen]
 logocol = [coltoevoegen,colbekijken,colwijzigen,colverwijderen,colmeeting,colinformatie]
 
-TeamLogo = """.______.                     
-|/ \/ \|__.   _. ___. _.     
-   ||  //_\\\\ 6_\\\\|| \V \\\\    
-   || ||'   // |||| || ||    
-  _/\_ \\\\_/|\\\\/|\/\ || /\\    """
+TeamLogo = """ .______.                    
+ |/ \/ \|__.   _. ___. _.    
+    ||  //_\\\\ 6_\\\\|| \V \\\\   
+    || ||'   // |||| || ||   
+   _/\_ \\\\_/|\\\\/|\/\ || /\\   """
 lenlijst = 0
 try:
     while len(TeamLogo) > 0:
@@ -118,7 +118,6 @@ if lang == "EN":
     statuslijst = ["Planned","Started","Paused","Aborted","Completed","Overdue","OutOfOffice"]
     taakverdeling = ["Start","Due","TaskDescription","Name","Note","Status"]
     teamverdeling = ["Agent Number","Given Name","Last Name","Check","Note"]
-    dag = "Today is %s." 
 else:
     checklijst = ["UIT","IN"]
     weg = "%s  Q!: Afsluiten%s" % (ResetAll+colterug,ResetAll)
@@ -126,15 +125,16 @@ else:
     statuslijst = ["Gepland","Gestart","Gepauzeerd","Afgebroken","Afgerond","Verlopen","Afwezig"]
     taakverdeling = ["Start","Eind","Taakomschrijving","Naam","Aantekening","Status"]
     teamverdeling = ["Personeelsnummer","VoorNaam","AchterNaam","Check","Aantekening"]
-    dag = "Het is vandaag %s."
 
 def printdag():
     todaag = datetime.strftime(datetime.today(),"%A %Y%m%d")
     if lang == "EN":
+        dag = "Today is %s." 
         for i in range(len(dagenlijstNL)):
             todaag = todaag.replace(dagenlijstNL[i],dagenlijstEN[i])
         print(dag % (statcol[1]+todaag+ResetAll))
     else:
+        dag = "Het is vandaag %s."
         for i in range(len(dagenlijstEN)):
             todaag = todaag.replace(dagenlijstEN[i],dagenlijstNL[i])
         print(dag % (statcol[1]+todaag+ResetAll))
@@ -187,8 +187,8 @@ def printstuff():
         stuff1 = textwrap.wrap("\"TEAM\" is een simpele planningstool voor leidinggevenden en managers. Check medewerkers IN of UIT, registreer persoonlijke talenten en expertise, verdeel taken en organiseer vergaderingen.", width = wi)
         stuff2 = textwrap.wrap("Bevestig iedere keuze met \"Enter\", ga terug met \"Q\" of verlaat het programma direct met \"Q!\". De optie \"Kladblok (Vim)\" maakt gebruik van \"Vim\". Installeer dat eerst.", width = wi)
     print()
-    print(colover+forl8(ve)+str(versie)+ResetAll)
-    print(colover+forl8(da)+str(datum)+ResetAll)
+    print(colover+forl8(ve)+versie+ResetAll)
+    print(colover+forl8(da)+datum+ResetAll)
     print()
     for i in stuff1:
         print(colover+i+ResetAll)
@@ -238,14 +238,14 @@ def hoeveeltaken():
     takenlijst = taak()
     if len(takenlijst) == 1:
         if lang == "EN":
-            print("There is %s task running." % len(takenlijst))
+            print("There is %s task in the list." % len(takenlijst))
         else:
-            print("Er loopt %s taak." % len(takenlijst))
+            print("Er staat %s taak in de lijst." % len(takenlijst))
     else:
         if lang == "EN":
-            print("There are %s tasks running." % len(takenlijst))
+            print("There are %s tasks in the list." % len(takenlijst))
         else:
-            print("Er lopen %s taken." % len(takenlijst))
+            print("Er staan %s taken in de lijst." % len(takenlijst))
 
 def checkstatusdatum():
     takenlijst = taak()
@@ -281,11 +281,13 @@ def teamnieuw():
         nieuwevoornaam = "Type the GivenName:\n%s" % inputindent
         nieuweachternaam = "Type the LastName:\n%s" % inputindent
         nieuwpersoneelsnummer = "Type the AgentNumber:\n%s" % inputindent
+        nietuniek = "This AgentNumber already exists."
         nieuweaantekening = "Type a Note (opt):\n%s" % inputindent
     else:
         nieuwevoornaam = "Typ de VoorNaam:\n%s" % inputindent
         nieuweachternaam = "Typ de AchterNaam:\n%s" % inputindent
         nieuwpersoneelsnummer = "Typ het PersoneelsNummer:\n%s" % inputindent
+        nietuniek = "Dit Personeelsnummer bestaat al."
         nieuweaantekening = "Typ een Aantekening (opt):\n%s" % inputindent
     teamlijst = team()
     voornaam = False
@@ -323,7 +325,14 @@ def teamnieuw():
         elif len(PN) < 1:
             pass
         else:
-            personeelsnummer = True
+            u = True
+            for i in teamlijst:
+                if PN == i[0]:
+                    u = False
+            if u == False:
+                print(colslecht+nietuniek+ResetAll)
+            else:
+                personeelsnummer = True
     AT = input(nieuweaantekening)
     if AT.upper() in afsluitlijst:
         uit = True
@@ -365,17 +374,17 @@ def teamshowkort():
     if numin == 1:
         col = iocol[1]
         if lang == "EN":
-            aanin = "There is %s Agent checked %sIN%s." % (col+str(numin)+ResetAll,iocol[1],ResetAll)
+            aanin = "There is %s Agent - of %s - checked %sIN%s." % (col+str(numin)+ResetAll,str(len(teamlijst)),iocol[1],ResetAll)
         else:
-            aanin = "Er is %s Medewerker %sIN%sgecheckt." % (col+str(numin)+ResetAll,iocol[1],ResetAll)
+            aanin = "Er is %s Medewerker - van %s - %sIN%sgecheckt." % (col+str(numin)+ResetAll,str(len(teamlijst)),iocol[1],ResetAll)
     else:
         col = iocol[1]
         if numin == 0:
             col = iocol[0]
         if lang == "EN":
-            aaninnen = "There are %s Agents checked %sIN%s." % (col+str(numin)+ResetAll,iocol[1],ResetAll)
+            aaninnen = "There are %s Agents - of %s - checked %sIN%s." % (col+str(numin)+ResetAll,str(len(teamlijst)),iocol[1],ResetAll)
         else:
-            aaninnen = "Er zijn %s Medewerkers %sIN%sgecheckt." % (col+str(numin)+ResetAll,iocol[1],ResetAll)
+            aaninnen = "Er zijn %s Medewerkers - van %s - %sIN%sgecheckt." % (col+str(numin)+ResetAll,str(len(teamlijst)),iocol[1],ResetAll)
         print(aaninnen)
  
 def teamshow():
@@ -1013,11 +1022,13 @@ def wijzigmedewerker():
         wie = "Give the ID of the Agent:\n%s" % inputindent
         wat = "What do you want to change?:\n  1 : Agent Number\n  2 : Given Name\n  3 : Last Name\n  4 : Check\n  5 : Note\n%s" % inputindent
         hoechk = "  0 : OUT\n  1 : IN\n%s" % inputindent
+        nietuniek = "This AgentNumber already exists."
     else:
         kies = "Kies een Medewerker om te %sWIJZIGEN%s:" % (colwijzigen, ResetAll)
         wie = "Geef de ID van de Medewerker:\n%s" % inputindent
         wat = "Wat wil je Wijzigen?:\n  1 : Personeelsnummer\n  2 : VoorNaam\n  3 : AchterNaam\n  4 : Check\n  5 : Aantekening\n%s" % inputindent
         hoechk = "  0 : UIT\n  1 : IN\n%s" % inputindent
+        nietuniek = "Dit Personeelsnummer bestaat al."
     teamlijst = team()
     print(kies)
     teamshowbasis()
@@ -1049,8 +1060,15 @@ def wijzigmedewerker():
                         elif len(PN) < 1:
                             pass
                         else:
-                            teamlijst[LL-1][0] = PN
-                            personeelsnummer = True
+                            u = True
+                            for i in teamlijst:
+                                if PN == i[0]:
+                                    u = False
+                            if u == False:
+                                print(colslecht+nietuniek+ResetAll)
+                            else:
+                                teamlijst[LL-1][0] = PN
+                                personeelsnummer = True
                 elif welk == "2":
                     voornaam = False
                     while voornaam == False:
