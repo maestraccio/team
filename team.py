@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-versie = "1.11"
-datum = "20230804"
+versie = "1.20"
+datum = "20230805"
 import locale, os, ast, pathlib, subprocess, random, textwrap
 from datetime import *
 from dateutil.relativedelta import *
@@ -685,33 +685,52 @@ def takenlijn(scopenunu):
     print(lijn)
     takenlijst = taak()
     for i in takenlijst:
+        klaar = False
         lentaak = (datetime.strptime(str(i[1]),"%Y%m%d") - datetime.strptime(str(i[0]),"%Y%m%d")).days
         deltas = (datetime.strptime(str(i[0]),"%Y%m%d") - eerstedatum).days
         deltae = (datetime.strptime(str(i[1]),"%Y%m%d") - eerstedatum).days
-        klaar = False
+# Meteen klaar:
         if deltae < 0:
             print("<"+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll)
             klaar = True
-        elif deltas >= scope:
-            print("     "*(scope-1)+"    "+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll+">")
+        if deltas < 0 and deltae == 0:
+            print("<"+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll+forl4(i[3][:5-len(str(takenlijst.index(i)+1))]))
             klaar = True
-        if deltas <= 0 and klaar == False:
-            deltas = 0
-            print("<"+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:4]+ResetAll, end = "")
-        elif deltas > 0 and deltas == scope-1 and klaar == False:
-            print(" "+"     "*deltas+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:3]+ResetAll+">")
+        if deltas == 0 and lentaak == 0:
+            print(" "+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll+forl4(i[3][:5-len(str(takenlijst.index(i)+1))]))
             klaar = True
-        elif deltas > 0 and klaar == False:
-            print(" "+"     "*deltas+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:4]+ResetAll, end = "")
-        if i[0] == i[1] and deltae <= scope:
+        if deltas == scope-1 and lentaak == 0:
+            print(" "+"     "*deltas+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll+i[3][:5-len(str(takenlijst.index(i)+1))])
+            klaar = True
+        if deltas == scope-1 and lentaak > 0:
+            print(" "+"     "*deltas+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll+i[3][:5-len(str(takenlijst.index(i)+1))]+">")
+            klaar = True
+        if deltas > scope -1:
+            print(" "+"     "*(scope-1)+statcol[int(i[5])-1]+forr4(takenlijst.index(i)+1)+ResetAll+">")
+            klaar = True
+# Klaarzetten voor meer:
+        if deltas < 0 and deltae > 0:
+            print("<"+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+forl4(i[2][:5-len(str(takenlijst.index(i)+1))])+ResetAll,end = "")
+        if deltas == 0 and lentaak > 0:
+            print(" "+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+forl4(i[2][:5-len(str(takenlijst.index(i)+1))])+ResetAll,end = "")
+        if deltas > 0 and deltas < scope -1:
+            print(" "+"     "*deltas+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:5-len(str(takenlijst.index(i)+1))]+ResetAll, end = "")
+# Meteen afmaken:
+        if klaar == False and lentaak == 0:
             print()
             klaar = True
-        if deltae <= scope-1 and deltas == 0 and klaar == False:
-            print(statcol[int(i[5])-1]+"....."*(deltae-1)+ResetAll+forl4(i[3][:4]))
-        elif deltae <= scope-1 and deltas > 0 and klaar == False:
+# Aanvullen en afmaken:
+        if deltas < 0:
+            deltas = 0
+        if klaar == False and deltae < scope-1:
+            print(statcol[int(i[5])-1]+"....."*(deltae-deltas-1)+ResetAll+forl4(i[3][:4]))
+            klaar = True
+        if klaar == False and deltae == scope-1:
             print(statcol[int(i[5])-1]+"....."*(lentaak-1)+ResetAll+forl4(i[3][:4]))
-        elif deltae > scope-1 and klaar == False:
-            print(statcol[int(i[5])-1]+"....."*(scope-deltas-2)+ResetAll+forl4(i[3][:4])+">")
+            klaar = True
+        if klaar == False and deltae > scope-1:
+            print(statcol[int(i[5])-1]+"....."*(scope - deltas-2)+ResetAll+forl4(i[3][:4])+">")
+            klaar = True
     print(colbekijken+lijn+ResetAll)
     print()
 
@@ -915,11 +934,11 @@ def wijzigtaak():
                             else:
                                 einddat = datetime.strptime(ED,"%Y%m%d")
                             eind = int(datetime.strftime(einddat,"%Y%m%d"))
-                            if eind > start:
+                            if eind >= start:
                                 if lang == "EN":
-                                    print("The Due date is %s." % start)
+                                    print("The Due date is %s." % eind)
                                 else:
-                                    print("De Einddatum is %s." % start)
+                                    print("De Einddatum is %s." % eind)
                                 takenlijst[welke-1][2-1] = eind
                                 EindDatum = True
                         except:
