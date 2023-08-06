@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-versie = "1.20"
-datum = "20230805"
+versie = "1.25"
+datum = "20230806"
 import locale, os, ast, pathlib, subprocess, random, textwrap
 from datetime import *
 from dateutil.relativedelta import *
@@ -99,6 +99,13 @@ dagenlijstEN = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","S
 dagenlijstNL = ["maandag","dinsdag","woensdag","donderdag","vrijdag","zaterdag","zondag"]
 scopenunu = {}
 wi = 60
+vim = """NL:
+    Ga naar schrijfmodus met "i", verlaat schrijfmodus met "Esc"
+    Opslaan met ":w"+"Enter", verlaat Vim met ":q"+"Enter"
+EN:
+    Enter input mode with "i", leave input mode with "Esc"
+    Save/write with ":w"+"Enter", Exit/quit Vim with ":q"+"Enter"
+"""
 print()
 
 lang = False
@@ -1312,11 +1319,92 @@ def vergadering():
     print(colmeeting+lijn+ResetAll)
     print()
 
-def verwijdertaak():
+def archiveerteam(medewerkerlijst):
     if lang == "EN":
-        sel = "Select the IDs of the Tasks that you want to %sDELETE%s,\nseparated by commas, or * for all:\n%s" % (colslecht, ResetAll, inputindent)
+        archop = "\nArchived on %s:" % nu
+        archok = "Agent(s) archived successfully."
     else:
-        sel = "Selecteer ID's van de Taken die je wilt %sVERWIJDEREN%s,\ngescheiden door een komma, of * voor alle:\n%s" % (colslecht, ResetAll, inputindent)
+        archop = "\nGearchiveerd op %s:" % nu
+        archok = "Medewerker(s) succesvol gearchiveerd."
+    with open("team.txt","a+") as t:
+        try:
+            for i in medewerkerlijst:
+                lijn = "+"+"-"*20+"+"+"-"*20
+                print(archop, file = t)
+                print(lijn, file = t)
+                tv = 0
+                for j in i:
+                    ij = j
+                    if j == i[3]:
+                        ij = checklijst[int(i[3])]
+                    print(" "+forl20(teamverdeling[tv]),str(ij), file = t)
+                    tv +=1
+                print(lijn, file = t)
+            print(archok)
+        except(Exception) as f:
+            print(f)
+            pass
+    print()
+
+def verwijderteam(medewerkerlijst):
+    if lang == "EN":
+        verwok = "Agent(s) deleted successfully."
+    else:
+        verwok = "Medewerker(s) succesvol verwijderd."
+    teamlijst = team()
+    for i in medewerkerlijst:
+        teamlijst.remove(i)
+    with open("teamlijst","w") as t:
+        print(teamlijst, end = "", file = t)
+    print(verwok)
+    print()
+
+def archiveertaak(taaklijst):
+    if lang == "EN":
+        archop = "\nArchived on %s:" % nu
+        archok = "Task(s) archived successfully."
+    else:
+        archop = "\nGearchiveerd op %s:" % nu
+        archok = "Ta(a)k(en) succesvol gearchiveerd."
+    with open("team.txt","a+") as t:
+        try:
+            for i in taaklijst:
+                lijn = "+"+"-"*20+"+"+"-"*20
+                print(archop, file = t)
+                print(lijn, file = t)
+                tv = 0
+                for j in i:
+                    ij = j
+                    if j == i[5]:
+                        ij = statuslijst[int(i[5])-1]
+                    print(" "+forl20(taakverdeling[tv]),str(ij), file = t)
+                    tv +=1
+                print(lijn, file = t)
+            print(archok)
+        except:
+            pass
+    print()
+
+def verwijdertaak(taaklijst):
+    if lang == "EN":
+        verwok = "Task(s) deleted successfully."
+    else:
+        verwok = "Ta(a)ken succesvol verwijderd."
+    takenlijst = taak()
+    for i in taaklijst:
+        takenlijst.remove(i)
+    with open("takenlijst","w") as t:
+        print(takenlijst, end = "", file = t)
+    print(verwok)
+    print()
+
+def archiveerofverwijdertaak():
+    if lang == "EN":
+        sel = "Give the IDs of the Tasks that you want to %sARCHIVE and/or DELETE%s,\nin CSV style (separated by commas), or * for all:\n%s" % (colverwijderen, ResetAll, inputindent)
+        archov = "Select:\n  1 : Only Archive (append to Notepad)\n  2 : Only Delete\n >3 : Archive and Delete\n%s" % inputindent
+    else:
+        sel = "Geef ID's op van de Taken die je wilt %sARCHIVEREN en/of VERWIJDEREN%s,\nin CSV-stijl (gescheiden door een komma), of * voor alle:\n%s" % (colverwijderen, ResetAll, inputindent)
+        archov = "Selecteer:\n  1 : Alleen Archiveren (toevoegen aan Kladblok)\n  2 : Alleen Verwijderen\n >3 : Archiveren en Verwijderen\n%s" % inputindent
     takenlijst = taak()
     takenblok()
     select = input(sel).replace(" ","")
@@ -1336,19 +1424,35 @@ def verwijdertaak():
                 taaklijst.append(takenlijst[i-1])
         except:
             pass
-    for i in taaklijst:
-        takenlijst.remove(i)
-    with open("takenlijst","w") as t:
-        print(takenlijst, end = "", file = t)
-    takenlijst = taak()
-    uit = True
-    return uit
-
-def verwijdermedewerker():
-    if lang == "EN":
-        sel = "Select the IDs of the Agents that you want to %sDELETE%s,\nseparated by commas, or * for all:\n%s" % (colslecht, ResetAll, inputindent)
+    aov = input(archov)
+    if aov.upper() in afsluitlijst:
+        uit = True
+        return uit
+    elif len(aov) == 2 and aov[0].upper() in afsluitlijst and aov[1].upper() in skiplijst:
+        eindroutine()
+    if aov == "1":
+        archiveertaak(taaklijst)
+        uit = True
+        return uit
+    elif aov == "2":
+        verwijdertaak(taaklijst)
+        takenlijst = taak()
+        uit = True
+        return uit
     else:
-        sel = "Selecteer ID's van de Medewerkers die je wilt %sVERWIJDEREN%s,\ngescheiden door een komma, of * voor alle:\n%s" % (colslecht, ResetAll, inputindent)
+        archiveertaak(taaklijst)
+        verwijdertaak(taaklijst)
+        takenlijst = taak()
+        uit = True
+        return uit
+
+def archiveerofverwijdermedewerker():
+    if lang == "EN":
+        sel = "Select the IDs of the Agents that you want to %sARCHIVE and/or DELETE%s,\nin CSV style (separated by commas), or * for all:\n%s" % (colverwijderen, ResetAll, inputindent)
+        archov = "Select:\n  1 : Only Archive (append to Notepad)\n  2 : Only Delete\n >3 : Archive and Delete\n%s" % inputindent
+    else:
+        sel = "Selecteer ID's van de Medewerkers die je wilt %sARCHIVEREN en/of VERWIJDEREN%s,\nin CSV-stijl (gescheiden door een komma), of * voor alle:\n%s" % (colverwijderen, ResetAll, inputindent)
+        archov = "Selecteer:\n  1 : Alleen Archiveren (toevoegen aan Kladblok)\n  2 : Alleen Verwijderen\n >3 : Archiveren en Verwijderen\n%s" % inputindent
     teamlijst = team()
     teamshowbasis()
     select = input(sel).replace(" ","")
@@ -1368,13 +1472,27 @@ def verwijdermedewerker():
                 medewerkerlijst.append(teamlijst[i-1])
         except:
             pass
-    for i in medewerkerlijst:
-        teamlijst.remove(i)
-    with open("teamlijst","w") as t:
-        print(teamlijst, end = "", file = t)
-    teamlijst = team()
-    uit = True
-    return uit
+    aov = input(archov)
+    if aov.upper() in afsluitlijst:
+        uit = True
+        return uit
+    elif len(aov) == 2 and aov[0].upper() in afsluitlijst and aov[1].upper() in skiplijst:
+        eindroutine()
+    if aov == "1":
+        archiveerteam(medewerkerlijst)
+        uit = True
+        return uit
+    elif aov == "2":
+        verwijderteam(medewerkerlijst)
+        teamlijst = team()
+        uit = True
+        return uit
+    else:
+        archiveerteam(medewerkerlijst)
+        verwijderteam(medewerkerlijst)
+        teamlijst = team()
+        uit = True
+        return uit
 
 def uitklapteam():
     if lang == "EN":
@@ -1444,6 +1562,12 @@ def uitklaptaak():
 
 baas = True
 while baas == True:
+    try:
+        with open("team.txt","r") as t:
+            pass
+    except:
+        with open("team.txt","w") as t:
+            print(vim, file = t)
     hoeveeltaken()
     teamshowkort()
     checkstatusdatum()
@@ -1451,17 +1575,17 @@ while baas == True:
     scopenunu["nunu"] = 3
     takenlijn(scopenunu)
     if lang == "EN":
-        keuzeopties = "Choose from the following options:\n  0 : %sAbout%s\n  1 : %sAdd%s\n >2 : %sView%s\n  3 : %sChange%s\n  4 : %sDelete%s\n  5 : %sMeeting%s\n  6 : %sNotepad (Vim)%s\n%s\n%s" % (colover,ResetAll,coltoevoegen,ResetAll,colbekijken,ResetAll,colwijzigen,ResetAll,colverwijderen,ResetAll,colmeeting,ResetAll,colinformatie,ResetAll,weg,inputindent)
+        keuzeopties = "Choose from the following options:\n  0 : %sAbout%s\n  1 : %sAdd%s\n >2 : %sView%s\n  3 : %sChange%s\n  4 : %sArchive and Delete%s\n  5 : %sMeeting%s\n  6 : %sNotepad (Vim)%s\n%s\n%s" % (colover,ResetAll,coltoevoegen,ResetAll,colbekijken,ResetAll,colwijzigen,ResetAll,colverwijderen,ResetAll,colmeeting,ResetAll,colinformatie,ResetAll,weg,inputindent)
         toetom = "%sADD%s a Task or an Agent:\n >1 : Task\n  2 : Agent\n%s\n%s" % (coltoevoegen,ResetAll,terug,inputindent)
         zietom = "%sVIEW%s Tasks or Agents:\n >1 : Tasks\n  2 : Agents\n%s\n%s" % (colbekijken,ResetAll,terug,inputindent)
         andiot = "%sCHANGE%s a Task or Team data:\n  1 : Task\n  2 : One Agent\n >3 : Group\n%s\n%s" % (colwijzigen,ResetAll,terug,inputindent)
-        watweg = "%sDELETE%s a Task or an Agent:\n >1 : Task\n  2 : Agent\n%s\n%s" % (colverwijderen,ResetAll,terug,inputindent)
+        watweg = "%sARCHIVE and/or DELETE%s a Task or an Agent:\n >1 : Task\n  2 : Agent\n%s\n%s" % (colverwijderen,ResetAll,terug,inputindent)
     else:
-        keuzeopties = "Kies uit de volgende opties:\n  0 : %sOver dit programma%s\n  1 : %sToevoegen%s\n >2 : %sBekijken%s\n  3 : %sWijzigen%s\n  4 : %sVerwijderen%s\n  5 : %sVergadering%s\n  6 : %sKladblok (Vim)%s\n%s\n%s" % (colover,ResetAll,coltoevoegen,ResetAll,colbekijken,ResetAll,colwijzigen,ResetAll,colverwijderen,ResetAll,colmeeting,ResetAll,colinformatie,ResetAll,weg,inputindent)
+        keuzeopties = "Kies uit de volgende opties:\n  0 : %sOver dit programma%s\n  1 : %sToevoegen%s\n >2 : %sBekijken%s\n  3 : %sWijzigen%s\n  4 : %sArchiveren en Verwijderen%s\n  5 : %sVergadering%s\n  6 : %sKladblok (Vim)%s\n%s\n%s" % (colover,ResetAll,coltoevoegen,ResetAll,colbekijken,ResetAll,colwijzigen,ResetAll,colverwijderen,ResetAll,colmeeting,ResetAll,colinformatie,ResetAll,weg,inputindent)
         toetom = "%sVOEG%s een Taak of een Medewerker %sTOE%s:\n >1 : Taak\n  2 : Medewerker\n%s\n%s" % (coltoevoegen,ResetAll,coltoevoegen,ResetAll,terug,inputindent)
         zietom = "%sBEKIJK%s Taken of Medewerkers:\n >1 : Taken\n  2 : Medewerkers\n%s\n%s" % (colbekijken,ResetAll,terug,inputindent)
         andiot = "%sWIJZIG%s een Taak of Team gegevens:\n  1 : Taak\n  2 : Één Medewerker\n >3 : Groep\n%s\n%s" % (colwijzigen,ResetAll,terug,inputindent)
-        watweg = "%sVERWIJDER%s een Taak of een Medewerker:\n >1 : Taak\n  2 : Medewerker\n%s\n%s" % (colverwijderen,ResetAll,terug,inputindent)
+        watweg = "%sARCHIVEER en/of VERWIJDER%s een Taak of een Medewerker:\n >1 : Taak\n  2 : Medewerker\n%s\n%s" % (colverwijderen,ResetAll,terug,inputindent)
     keuze = input(keuzeopties)
     if keuze.upper() in afsluitlijst:
         eindroutine()
@@ -1520,13 +1644,13 @@ while baas == True:
         elif verwijderen == "2":
             veme = True
             while veme == True:
-                uit = verwijdermedewerker()
+                uit = archiveerofverwijdermedewerker()
                 if uit == True:
                     veme = False
         else:
             veta = True
             while veta == True:
-                uit = verwijdertaak()
+                uit = archiveerofverwijdertaak()
                 if uit == True:
                     veta = False
     elif keuze == "5":
