@@ -99,12 +99,12 @@ dagenlijstEN = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","S
 dagenlijstNL = ["maandag","dinsdag","woensdag","donderdag","vrijdag","zaterdag","zondag"]
 scopenunu = {}
 wi = 60
-vim = """NL:
-    Ga naar schrijfmodus met "i", verlaat schrijfmodus met "Esc"
-    Opslaan met ":w"+"Enter", verlaat Vim met ":q"+"Enter"
-EN:
-    Enter input mode with "i", leave input mode with "Esc"
-    Save/write with ":w"+"Enter", Exit/quit Vim with ":q"+"Enter"
+vim = """# NL:
+#     Ga naar schrijfmodus met "i", verlaat schrijfmodus met "Esc"
+#     Opslaan met ":w"+"Enter", verlaat Vim met ":q"+"Enter"
+# EN:
+#     Enter input mode with "i", leave input mode with "Esc"
+#     Save/write with ":w"+"Enter", Exit/quit Vim with ":q"+"Enter"
 """
 print()
 
