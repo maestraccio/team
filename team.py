@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-versie = "1.25"
+versie = "1.26"
 datum = "20230806"
 import locale, os, ast, pathlib, subprocess, random, textwrap
 from datetime import *
@@ -1150,13 +1150,13 @@ def wijzigmedewerker():
 
 def wijzigteam():
     if lang == "EN":
-        sel = "Select the IDs of the Agents you want to %sCHANGE%s,\nseparated by commas, or * for all:\n%s" % (colwijzigen,ResetAll,inputindent)
-        tog = "Check these Agents OUT or IN:\n  0 : OUT\n  1 : IN\n%s" % inputindent
+        sel = "Select the IDs of the Agents you want to %sCHANGE%s,\nin CSV style (separated by commas), or * for all:\n%s" % (colwijzigen,ResetAll,inputindent)
+        tog = "Check these Agents OUT or IN:\n  0 : OUT\n  1 : IN\n >2 : Toggle\n%s" % inputindent
         wat = "What do you want to change?\n >1 : Check this group OUT or IN\n  2 : Change Note for everyone in this group\n%s" % inputindent
         nieuweaantekening = "Type or clear the Note:\n%s" % inputindent
     else:
-        sel = "Selecteer ID's van de Medewerkers die je wilt %sWIJZIGEN%s,\ngescheiden door een komma, of * voor alle:\n%s" % (colwijzigen,ResetAll,inputindent)
-        tog = "Check deze Medewerkers UIT of IN:\n  0 : UIT\n  1 : IN\n%s" % inputindent
+        sel = "Selecteer ID's van de Medewerkers die je wilt %sWIJZIGEN%s,\nin CSV-stijl (gescheiden door een komma), of * voor alle:\n%s" % (colwijzigen,ResetAll,inputindent)
+        tog = "Check deze Medewerkers UIT of IN:\n  0 : UIT\n  1 : IN\n >2 : Omkeren\n%s" % inputindent
         wat = "Wat wil je wijzigen?\n >1 : Check deze groep UIT of IN\n  2 : Wijzig Aantekening voor iedereen in deze groep\n%s" % inputindent
         nieuweaantekening = "Typ of wis de Aantekening:\n%s" % inputindent
     teamlijst = team()
@@ -1201,6 +1201,12 @@ def wijzigteam():
         elif toggleall == "1":
             for i in medewerkerlijst:
                 i[3] = 1
+        else:
+            for i in medewerkerlijst:
+                if i[3] == 0:
+                    i[3] = 1
+                else:
+                    i[3] = 0
     with open("teamlijst","w") as t:
         print(teamlijst, end = "", file = t)
     teamlijst = team()
@@ -1575,7 +1581,7 @@ while baas == True:
     scopenunu["nunu"] = 3
     takenlijn(scopenunu)
     if lang == "EN":
-        keuzeopties = "Choose from the following options:\n  0 : %sAbout%s\n  1 : %sAdd%s\n >2 : %sView%s\n  3 : %sChange%s\n  4 : %sArchive and Delete%s\n  5 : %sMeeting%s\n  6 : %sNotepad (Vim)%s\n%s\n%s" % (colover,ResetAll,coltoevoegen,ResetAll,colbekijken,ResetAll,colwijzigen,ResetAll,colverwijderen,ResetAll,colmeeting,ResetAll,colinformatie,ResetAll,weg,inputindent)
+        keuzeopties = "Choose from the following options:\n  0 : %sAbout this program%s\n  1 : %sAdd%s\n >2 : %sView%s\n  3 : %sChange%s\n  4 : %sArchive and Delete%s\n  5 : %sMeeting%s\n  6 : %sNotepad (Vim)%s\n%s\n%s" % (colover,ResetAll,coltoevoegen,ResetAll,colbekijken,ResetAll,colwijzigen,ResetAll,colverwijderen,ResetAll,colmeeting,ResetAll,colinformatie,ResetAll,weg,inputindent)
         toetom = "%sADD%s a Task or an Agent:\n >1 : Task\n  2 : Agent\n%s\n%s" % (coltoevoegen,ResetAll,terug,inputindent)
         zietom = "%sVIEW%s Tasks or Agents:\n >1 : Tasks\n  2 : Agents\n%s\n%s" % (colbekijken,ResetAll,terug,inputindent)
         andiot = "%sCHANGE%s a Task or Team data:\n  1 : Task\n  2 : One Agent\n >3 : Group\n%s\n%s" % (colwijzigen,ResetAll,terug,inputindent)
