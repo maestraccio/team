@@ -710,7 +710,7 @@ def takenlijn(scopenunu):
             print(" "+"     "*deltas+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll+i[3][:5-len(str(takenlijst.index(i)+1))])
             klaar = True
         if deltas == scope-1 and lentaak > 0:
-            print(" "+"     "*deltas+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll+i[3][:5-len(str(takenlijst.index(i)+1))]+">")
+            print(" "+"     "*deltas+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll+i[3][:4-len(str(takenlijst.index(i)+1))]+">")
             klaar = True
         if deltas > scope -1:
             print(" "+"     "*(scope-1)+statcol[int(i[5])-1]+forr4(takenlijst.index(i)+1)+ResetAll+">")
