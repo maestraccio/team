@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-versie = "1.27"
-datum = "20230807"
+versie = "1.28"
+datum = "20230808"
 import locale, os, ast, pathlib, subprocess, random, textwrap
 from datetime import *
 from dateutil.relativedelta import *
@@ -762,37 +762,60 @@ def takenblok():
             print()
             breed = 0
 
-def filtertaak(uitklapofstatus):
-    col = statcol[statuslijst.index(uitklapofstatus)]
+def filterstatustaak(uitklapofstatus):
     takenlijst = taak()
-    takendict = {}
-    taakindex = 1
+    if uitklapofstatus.upper() in afsluitlijst:
+        uit = True
+        return uit
+    elif len(uitklapofstatus) == 2 and uitklapofstatus[0].upper() in afsluitlijst and uitklapofstatus[1].upper() in skiplijst:
+        eindroutine()
+    uitklapofstatuslijst = uitklapofstatus.replace(" ","").split(",")
+    lijn = "+"+"-"*20+"+"+"-"*20
+    try:
+        for i in takenlijst:
+            if statuslijst.index(uitklapofstatus) == i[5]-1:
+                print(colbekijken+lijn+ResetAll)
+                tv = 0
+                for j in i:
+                    col = statcol[i[5]-1]
+                    ij = j
+                    if j == i[5]:
+                        ij = statuslijst[j-1]
+                    if j == i[2] or j == i[5]:
+                        print(" "+forl20(taakverdeling[tv]),col+str(ij)+ResetAll)
+                    else:
+                        print(" "+forl20(taakverdeling[tv]),str(ij))
+                    tv +=1
+        print(colbekijken+lijn+ResetAll)
+        print()
+    except(Exception) as f:
+        print(f)
+        pass
+
+def filteromschrijvingtaak(uitklapofstatus):
+    takenlijst = taak()
+    if uitklapofstatus.upper() in afsluitlijst:
+        uit = True
+        return uit
+    elif len(uitklapofstatus) == 2 and uitklapofstatus[0].upper() in afsluitlijst and uitklapofstatus[1].upper() in skiplijst:
+        eindroutine()
+    uitklapofstatuslijst = uitklapofstatus.replace(" ","").split(",")
+    lijn = "+"+"-"*20+"+"+"-"*20
     for i in takenlijst:
-        if statuslijst.index(uitklapofstatus) == i[5]-1:
-            takendict[takenlijst.index(i)+1] = i[2]
-            taakindex += 1
-    print()
-    breedte = 3
-    breed = 0
-    tel = 0
-    for i,j in takendict.items():
-        breed += 1
-        tel += 1
-        print(forr3(i)+" : "+col+forl20(j[:12])+ResetAll,end = "")
-        if breed == breedte or tel == len(takendict):
-            print()
-            breed = 0
-    if lang == "EN":
-        inlijst1 = "There is %s Task with the status %s." % (col+str(taakindex-1)+ResetAll,col+uitklapofstatus+ResetAll)
-        inlijst2 = "There are %s Tasks with the status %s." % (col+str(taakindex-1)+ResetAll,col+uitklapofstatus+ResetAll)
-    else:
-        inlijst1 = "Er is %s Taak met de status %s." % (col+str(taakindex-1)+ResetAll,col+uitklapofstatus+ResetAll)
-        inlijst2 = "Er zijn %s Taken met de status %s." % (col+str(taakindex-1)+ResetAll,col+uitklapofstatus+ResetAll)
-    print()
-    if taakindex == 2:
-        print(inlijst1)
-    else:
-        print(inlijst2)
+        if uitklapofstatus.lower() in i[2].lower():
+            print(colbekijken+lijn+ResetAll)
+            tv = 0
+            for j in i:
+                col = statcol[i[5]-1]
+                ij = j
+                if j == i[5]:
+                    ij = statuslijst[j-1]
+                if j == i[2] or j == i[5]:
+                    print(" "+forl20(taakverdeling[tv]),col+str(ij)+ResetAll)
+                else:
+                    print(" "+forl20(taakverdeling[tv]),str(ij))
+                tv +=1
+    print(colbekijken+lijn+ResetAll)
     print()
 
 def takenshow():
@@ -801,13 +824,13 @@ def takenshow():
         geentaken = "There are no tasks."
         hoelang = "Give the number of days of the length of your timeline (default 3):\n%s" % inputindent
         vanaf = "Give the number of days in the past (default 1):\n%s" % inputindent
-        ukos = "Give the ID's of the Tasks you want to expand (in CSV style),\nor type the Status to filter on:\n%s" % inputindent
+        ukos = textwrap.wrap("To expand, give the Task ID's in CSV style, type the exact Status, or a search string in the Task description:", width = wi)
     else:
         sob = "Toon:\n >1 : Smal (60 tekens)\n  2 : Breed (100 tekens)\n  3 : Tijdlijn ( 7+1 dagen: Smal)\n  4 : Tijdlijn (14+1 dagen: Normaal)\n  5 : Tijdlijn (30+1 dagen: Breed)\n  6 : Tijdlijn (Geef dagen)\n  7 : Compact blok\n%s" % inputindent
         geentaken = "Er zijn geen taken."
         hoelang = "Geef het aantal dagen op van de lengte van de tijdlijn (standaard 3):\n%s" % inputindent
         vanaf = "Geef het aantal dagen in het verleden op (standaard 1):\n%s" % inputindent
-        ukos = "Geef de ID's op van de taken die je wilt uitklappen (in CSV-stijl),\nof typ de Status om op te filteren:\n%s" % inputindent
+        ukos = textwrap.wrap("Geef, om uit te klappen, de Taak-ID's in CSV-stijl op, typ de precieze Status, of een zoektekst in de Taakomschrijving:", width = wi)
     takenlijst = taak()
     if len(takenlijst) == 0:
         print(geentaken)
@@ -864,15 +887,32 @@ def takenshow():
         takenblok()
     else: # now == "1":
         takensmal()
-    uitklapofstatus = input(ukos).capitalize()
+    for i in ukos:
+        print(i)
+    uitklapofstatus = input(inputindent).capitalize()
     if uitklapofstatus.upper() in afsluitlijst:
         return
     elif len(uitklapofstatus) == 2 and uitklapofstatus[0].upper() in afsluitlijst and uitklapofstatus[1].upper() in skiplijst:
         eindroutine()
     if uitklapofstatus in statuslijst:
-        filtertaak(uitklapofstatus)
+    # als zoekterm precies een statusnaam is:
+        filterstatustaak(uitklapofstatus)
     else:
-        uitklaptaak(uitklapofstatus)
+    # als zoekterm een CSV van ID's is:
+        try:
+            isidcsv = uitklapofstatus.replace(" ","").split(",")
+            for i in isidcsv:
+                i = int(i)
+            uitklaptaak(uitklapofstatus)
+        except:
+            pass
+    # als zoekterm in omschrijving voorkomt:
+        inoms = False
+        for i in takenlijst:
+            if uitklapofstatus.lower() in i[2].lower():
+                inoms = True
+        if inoms == True:
+            filteromschrijvingtaak(uitklapofstatus)
 
 def wijzigtaak():
     if lang == "EN":
