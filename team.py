@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-versie = "1.28"
+versie = "1.285"
 datum = "20230808"
 import locale, os, ast, pathlib, subprocess, random, textwrap
 from datetime import *
@@ -770,10 +770,11 @@ def filterstatustaak(uitklapofstatus):
     elif len(uitklapofstatus) == 2 and uitklapofstatus[0].upper() in afsluitlijst and uitklapofstatus[1].upper() in skiplijst:
         eindroutine()
     uitklapofstatuslijst = uitklapofstatus.replace(" ","").split(",")
-    lijn = "+"+"-"*20+"+"+"-"*20
     try:
+        print()
         for i in takenlijst:
             if statuslijst.index(uitklapofstatus) == i[5]-1:
+                lijn = "+"+"-"*20+"+"+"-"*20
                 print(colbekijken+lijn+ResetAll)
                 tv = 0
                 for j in i:
@@ -786,7 +787,7 @@ def filterstatustaak(uitklapofstatus):
                     else:
                         print(" "+forl20(taakverdeling[tv]),str(ij))
                     tv +=1
-        print(colbekijken+lijn+ResetAll)
+                print(colbekijken+lijn+ResetAll)
         print()
     except(Exception) as f:
         print(f)
@@ -824,13 +825,13 @@ def takenshow():
         geentaken = "There are no tasks."
         hoelang = "Give the number of days of the length of your timeline (default 3):\n%s" % inputindent
         vanaf = "Give the number of days in the past (default 1):\n%s" % inputindent
-        ukos = textwrap.wrap("To expand, give the Task ID's in CSV style, type the exact Status, or a search string in the Task description:", width = wi)
+        ukos = textwrap.wrap("To expand Tasks, give the Task ID's in CSV style, the exact Status, a search string in the Task description, or \"*\" for all:", width = wi)
     else:
         sob = "Toon:\n >1 : Smal (60 tekens)\n  2 : Breed (100 tekens)\n  3 : Tijdlijn ( 7+1 dagen: Smal)\n  4 : Tijdlijn (14+1 dagen: Normaal)\n  5 : Tijdlijn (30+1 dagen: Breed)\n  6 : Tijdlijn (Geef dagen)\n  7 : Compact blok\n%s" % inputindent
         geentaken = "Er zijn geen taken."
         hoelang = "Geef het aantal dagen op van de lengte van de tijdlijn (standaard 3):\n%s" % inputindent
         vanaf = "Geef het aantal dagen in het verleden op (standaard 1):\n%s" % inputindent
-        ukos = textwrap.wrap("Geef, om uit te klappen, de Taak-ID's in CSV-stijl op, typ de precieze Status, of een zoektekst in de Taakomschrijving:", width = wi)
+        ukos = textwrap.wrap("Om Taken uit te klappen, geef de Taak-ID's op in CSV-stijl, de precieze Status, een zoektekst in de Taakomschrijving, of \"*\" voor alle:", width = wi)
     takenlijst = taak()
     if len(takenlijst) == 0:
         print(geentaken)
@@ -878,8 +879,7 @@ def takenshow():
             if nunu < 1:
                 nunu = 1
             scopenunu["nunu"] = nunu
-        except(Exception) as fout:
-            print(fout)
+        except:
             scopenunu["scope"] = 3
             scopenunu["nunu"] = 1
         takenlijn(scopenunu)
@@ -894,6 +894,11 @@ def takenshow():
         return
     elif len(uitklapofstatus) == 2 and uitklapofstatus[0].upper() in afsluitlijst and uitklapofstatus[1].upper() in skiplijst:
         eindroutine()
+    if uitklapofstatus == "*":
+        uitklapofstatus =  ""
+        for i in range(len(takenlijst)):
+            uitklapofstatus += str(i+1)+"," 
+        uitklapofstatus = uitklapofstatus[:len(uitklapofstatus)-1]
     if uitklapofstatus in statuslijst:
     # als zoekterm precies een statusnaam is:
         filterstatustaak(uitklapofstatus)
