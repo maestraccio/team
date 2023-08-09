@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-versie = "1.285"
-datum = "20230808"
+versie = "1.29"
+datum = "20230809"
 import locale, os, ast, pathlib, subprocess, random, textwrap
 from datetime import *
 from dateutil.relativedelta import *
@@ -894,11 +894,10 @@ def takenshow():
         return
     elif len(uitklapofstatus) == 2 and uitklapofstatus[0].upper() in afsluitlijst and uitklapofstatus[1].upper() in skiplijst:
         eindroutine()
-    if uitklapofstatus == "*":
+    if uitklapofstatus == "":
+        return
+    elif uitklapofstatus == "*":
         uitklapofstatus =  ""
-        for i in range(len(takenlijst)):
-            uitklapofstatus += str(i+1)+"," 
-        uitklapofstatus = uitklapofstatus[:len(uitklapofstatus)-1]
     if uitklapofstatus in statuslijst:
     # als zoekterm precies een statusnaam is:
         filterstatustaak(uitklapofstatus)
@@ -910,14 +909,13 @@ def takenshow():
                 i = int(i)
             uitklaptaak(uitklapofstatus)
         except:
-            pass
     # als zoekterm in omschrijving voorkomt:
-        inoms = False
-        for i in takenlijst:
-            if uitklapofstatus.lower() in i[2].lower():
-                inoms = True
-        if inoms == True:
-            filteromschrijvingtaak(uitklapofstatus)
+            inoms = False
+            for i in takenlijst:
+                if uitklapofstatus.lower() in i[2].lower():
+                    inoms = True
+            if inoms == True:
+                filteromschrijvingtaak(uitklapofstatus)
 
 def wijzigtaak():
     if lang == "EN":
