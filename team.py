@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-versie = "1.31"
+versie = "1.32"
 datum = "20230820"
 import locale, os, ast, pathlib, subprocess, random, textwrap, calendar
 from datetime import *
@@ -821,6 +821,22 @@ def filteromschrijvingtaak(uitklapofstatus):
     print()
 
 def kalender():
+    takenlijst = taak()
+    kaltaken = []
+    kaltaak = []
+    for i in takenlijst:
+        tindex = takenlijst.index(i)+1
+        kaltaak.append(tindex)
+        tstart = datetime.strptime(str(i[0]),"%Y%m%d")
+        kaltaak.append(str(i[0]))
+        teinde = datetime.strptime(str(i[1]),"%Y%m%d")
+        kaltaak.append(str(i[1]))
+        tlengt = (teinde - tstart + timedelta(days = 1)).days
+        kaltaak.append(tlengt)
+        tstcol = statcol[i[5]-1]
+        kaltaak.append(tstcol)
+        kaltaken.append(kaltaak)
+        kaltaak = []
     if lang == "EN":
         dagenlijst = dagenlijstEN
     else:
@@ -877,18 +893,27 @@ def kalender():
     dag2 = 1
     while weeklijn == weeklijn0 and dag0 <= tal0:
         weeklijn[7*0+tel0] = for0r2(dag0)
+        for i in kaltaken:
+            if i[1] == nuyyyymm0+for0r2(dag0):
+                weeklijn[7*0+tel0] = i[4]+forr2(i[0])+ResetAll
         dag0 += 1
         tel0 += 1
         if tel0 == 7:
             break
     while weeklijn == weeklijn0 and dag1 <= tal1:
         weeklijn[7*1+tel1] = for0r2(dag1)
+        for i in kaltaken:
+            if i[1] == nuyyyymm1+for0r2(dag1):
+                weeklijn[7*1+tel1] = i[4]+forr2(i[0])+ResetAll
         dag1 += 1
         tel1 += 1
         if tel1 == 7:
             break
     while weeklijn == weeklijn0 and dag2 <= tal2:
         weeklijn[7*2+tel2] = for0r2(dag2)
+        for i in kaltaken:
+            if i[1] == nuyyyymm2+for0r2(dag2):
+                weeklijn[7*2+tel2] = i[4]+forr2(i[0])+ResetAll
         dag2 += 1
         tel2 += 1
         if tel2 == 7:
@@ -898,18 +923,27 @@ def kalender():
             tel2 = 0
     while weeklijn == weeklijn1 and dag0 <= tal0:
         weeklijn[7*0+tel0] = for0r2(dag0)
+        for i in kaltaken:
+            if i[1] == nuyyyymm0+for0r2(dag0):
+                weeklijn[7*0+tel0] = i[4]+forr2(i[0])+ResetAll
         dag0 += 1
         tel0 += 1
         if tel0 == 7:
             break
     while weeklijn == weeklijn1 and dag1 <= tal1:
         weeklijn[7*1+tel1] = for0r2(dag1)
+        for i in kaltaken:
+            if i[1] == nuyyyymm1+for0r2(dag1):
+                weeklijn[7*1+tel1] = i[4]+forr2(i[0])+ResetAll
         dag1 += 1
         tel1 += 1
         if tel1 == 7:
             break
     while weeklijn == weeklijn1 and dag2 <= tal2:
         weeklijn[7*2+tel2] = for0r2(dag2)
+        for i in kaltaken:
+            if i[1] == nuyyyymm2+for0r2(dag2):
+                weeklijn[7*2+tel2] = i[4]+forr2(i[0])+ResetAll
         dag2 += 1
         tel2 += 1
         if tel2 == 7:
@@ -919,18 +953,27 @@ def kalender():
             tel2 = 0
     while weeklijn == weeklijn2 and dag0 <= tal0:
         weeklijn[7*0+tel0] = for0r2(dag0)
+        for i in kaltaken:
+            if i[1] == nuyyyymm0+for0r2(dag0):
+                weeklijn[7*0+tel0] = i[4]+forr2(i[0])+ResetAll
         dag0 += 1
         tel0 += 1
         if tel0 == 7:
             break
     while weeklijn == weeklijn2 and dag1 <= tal1:
         weeklijn[7*1+tel1] = for0r2(dag1)
+        for i in kaltaken:
+            if i[1] == nuyyyymm1+for0r2(dag1):
+                weeklijn[7*1+tel1] = i[4]+forr2(i[0])+ResetAll
         dag1 += 1
         tel1 += 1
         if tel1 == 7:
             break
     while weeklijn == weeklijn2 and dag2 <= tal2:
         weeklijn[7*2+tel2] = for0r2(dag2)
+        for i in kaltaken:
+            if i[1] == nuyyyymm2+for0r2(dag2):
+                weeklijn[7*2+tel2] = i[4]+forr2(i[0])+ResetAll
         dag2 += 1
         tel2 += 1
         if tel2 == 7:
@@ -940,18 +983,27 @@ def kalender():
             tel2 = 0
     while weeklijn == weeklijn3 and dag0 <= tal0:
         weeklijn[7*0+tel0] = for0r2(dag0)
+        for i in kaltaken:
+            if i[1] == nuyyyymm0+for0r2(dag0):
+                weeklijn[7*0+tel0] = i[4]+forr2(i[0])+ResetAll
         dag0 += 1
         tel0 += 1
         if tel0 == 7:
             break
     while weeklijn == weeklijn3 and dag1 <= tal1:
         weeklijn[7*1+tel1] = for0r2(dag1)
+        for i in kaltaken:
+            if i[1] == nuyyyymm1+for0r2(dag1):
+                weeklijn[7*1+tel1] = i[4]+forr2(i[0])+ResetAll
         dag1 += 1
         tel1 += 1
         if tel1 == 7:
             break
     while weeklijn == weeklijn3 and dag2 <= tal2:
         weeklijn[7*2+tel2] = for0r2(dag2)
+        for i in kaltaken:
+            if i[1] == nuyyyymm2+for0r2(dag2):
+                weeklijn[7*2+tel2] = i[4]+forr2(i[0])+ResetAll
         dag2 += 1
         tel2 += 1
         if tel2 == 7:
@@ -961,18 +1013,27 @@ def kalender():
             tel2 = 0
     while weeklijn == weeklijn4 and dag0 <= tal0:
         weeklijn[7*0+tel0] = for0r2(dag0)
+        for i in kaltaken:
+            if i[1] == nuyyyymm0+for0r2(dag0):
+                weeklijn[7*0+tel0] = i[4]+forr2(i[0])+ResetAll
         dag0 += 1
         tel0 += 1
         if tel0 == 7:
             break
     while weeklijn == weeklijn4 and dag1 <= tal1:
         weeklijn[7*1+tel1] = for0r2(dag1)
+        for i in kaltaken:
+            if i[1] == nuyyyymm1+for0r2(dag1):
+                weeklijn[7*1+tel1] = i[4]+forr2(i[0])+ResetAll
         dag1 += 1
         tel1 += 1
         if tel1 == 7:
             break
     while weeklijn == weeklijn4 and dag2 <= tal2:
         weeklijn[7*2+tel2] = for0r2(dag2)
+        for i in kaltaken:
+            if i[1] == nuyyyymm2+for0r2(dag2):
+                weeklijn[7*2+tel2] = i[4]+forr2(i[0])+ResetAll
         dag2 += 1
         tel2 += 1
         if tel2 == 7:
@@ -982,18 +1043,27 @@ def kalender():
             tel2 = 0
     while weeklijn == weeklijn5 and dag0 <= tal0:
         weeklijn[7*0+tel0] = for0r2(dag0)
+        for i in kaltaken:
+            if i[1] == nuyyyymm0+for0r2(dag0):
+                weeklijn[7*0+tel0] = i[4]+forr2(i[0])+ResetAll
         dag0 += 1
         tel0 += 1
         if tel0 == 7:
             break
     while weeklijn == weeklijn5 and dag1 <= tal1:
         weeklijn[7*1+tel1] = for0r2(dag1)
+        for i in kaltaken:
+            if i[1] == nuyyyymm1+for0r2(dag1):
+                weeklijn[7*1+tel1] = i[4]+forr2(i[0])+ResetAll
         dag1 += 1
         tel1 += 1
         if tel1 == 7:
             break
     while weeklijn == weeklijn5 and dag2 <= tal2:
         weeklijn[7*2+tel2] = for0r2(dag2)
+        for i in kaltaken:
+            if i[1] == nuyyyymm2+for0r2(dag2):
+                weeklijn[7*2+tel2] = i[4]+forr2(i[0])+ResetAll
         dag2 += 1
         tel2 += 1
     print(Omkeren+forc20(dezemaand0)+ResetAll+" | "+Omkeren+forc20(dezemaand1)+ResetAll+" | "+Omkeren+forc20(dezemaand2)+ResetAll)
@@ -1086,13 +1156,13 @@ def kalender():
 
 def takenshow():
     if lang == "EN":
-        sob = "View:\n >1 : Narrow (60 chars)\n  2 : Wide (100 chars)\n  3 : Timeline ( 7+1 days: Narrow)\n  4 : Timeline (14+1 days: Normal)\n  5 : Timeline (30+1 days: Wide)\n  6 : Timeline (Give days)\n  7 : Compact block\n%s" % inputindent
+        sob = "View:\n >1 : Narrow (60 chars)\n  2 : Wide (100 chars)\n  3 : Timeline ( 7+1 days: Narrow)\n  4 : Timeline (14+1 days: Normal)\n  5 : Timeline (30+1 days: Wide)\n  6 : Timeline (Give days)\n  7 : Compact block\n  0 : Calendar\n%s" % inputindent
         geentaken = "There are no tasks."
         hoelang = "Give the number of days of the length of your timeline (default 3):\n%s" % inputindent
         vanaf = "Give the number of days in the past (default 1):\n%s" % inputindent
         ukos = textwrap.wrap("To expand Tasks, give the Task ID's in CSV style, the exact Status, a search string in the Task description, or \"*\" for all:", width = wi)
     else:
-        sob = "Toon:\n >1 : Smal (60 tekens)\n  2 : Breed (100 tekens)\n  3 : Tijdlijn ( 7+1 dagen: Smal)\n  4 : Tijdlijn (14+1 dagen: Normaal)\n  5 : Tijdlijn (30+1 dagen: Breed)\n  6 : Tijdlijn (Geef dagen)\n  7 : Compact blok\n%s" % inputindent
+        sob = "Toon:\n >1 : Smal (60 tekens)\n  2 : Breed (100 tekens)\n  3 : Tijdlijn ( 7+1 dagen: Smal)\n  4 : Tijdlijn (14+1 dagen: Normaal)\n  5 : Tijdlijn (30+1 dagen: Breed)\n  6 : Tijdlijn (Geef dagen)\n  7 : Compact blok\n  0 : Kalender\n%s" % inputindent
         geentaken = "Er zijn geen taken."
         hoelang = "Geef het aantal dagen op van de lengte van de tijdlijn (standaard 3):\n%s" % inputindent
         vanaf = "Geef het aantal dagen in het verleden op (standaard 1):\n%s" % inputindent
@@ -1150,6 +1220,8 @@ def takenshow():
         takenlijn(scopenunu)
     elif now == "7":
         takenblok()
+    elif now == "0":
+        kalender()
     else: # now == "1":
         takensmal()
     for i in ukos:
@@ -1920,12 +1992,11 @@ while baas == True:
     except:
         with open("team.txt","w") as t:
             print(vim, file = t)
+    checkstatusdatum()
+    kalender()
     hoeveeltaken()
     teamshowkort()
-    checkstatusdatum()
-    scopenunu["scope"] =15 
-    scopenunu["nunu"] = 3
-    takenlijn(scopenunu)
+    print()
     if lang == "EN":
         keuzeopties = "Choose from the following options:\n  0 : %sAbout this program%s\n  1 : %sAdd%s\n >2 : %sView%s\n  3 : %sChange%s\n  4 : %sArchive and Delete%s\n  5 : %sMeeting%s\n  6 : %sNotepad (Vim)%s\n%s\n%s" % (colover,ResetAll,coltoevoegen,ResetAll,colbekijken,ResetAll,colwijzigen,ResetAll,colverwijderen,ResetAll,colmeeting,ResetAll,colinformatie,ResetAll,weg,inputindent)
         toetom = "%sADD%s a Task or an Agent:\n >1 : Task\n  2 : Agent\n%s\n%s" % (coltoevoegen,ResetAll,terug,inputindent)
@@ -1935,7 +2006,7 @@ while baas == True:
     else:
         keuzeopties = "Kies uit de volgende opties:\n  0 : %sOver dit programma%s\n  1 : %sToevoegen%s\n >2 : %sBekijken%s\n  3 : %sWijzigen%s\n  4 : %sArchiveren en Verwijderen%s\n  5 : %sVergadering%s\n  6 : %sKladblok (Vim)%s\n%s\n%s" % (colover,ResetAll,coltoevoegen,ResetAll,colbekijken,ResetAll,colwijzigen,ResetAll,colverwijderen,ResetAll,colmeeting,ResetAll,colinformatie,ResetAll,weg,inputindent)
         toetom = "%sVOEG%s een Taak of een Medewerker %sTOE%s:\n >1 : Taak\n  2 : Medewerker\n%s\n%s" % (coltoevoegen,ResetAll,coltoevoegen,ResetAll,terug,inputindent)
-        zietom = "%sBEKIJK%s Taken, Medewerkers of een Kalender:\n >1 : Taken\n  2 : Medewerkers\n  3 : Kalender\n%s\n%s" % (colbekijken,ResetAll,terug,inputindent)
+        zietom = "%sBEKIJK%s Taken of Medewerkers:\n >1 : Taken\n  2 : Medewerkers\n%s\n%s" % (colbekijken,ResetAll,terug,inputindent)
         andiot = "%sWIJZIG%s een Taak of Team gegevens:\n  1 : Taak\n  2 : Één Medewerker\n >3 : Groep\n%s\n%s" % (colwijzigen,ResetAll,terug,inputindent)
         watweg = "%sARCHIVEER en/of VERWIJDER%s een Taak of een Medewerker:\n >1 : Taak\n  2 : Medewerker\n%s\n%s" % (colverwijderen,ResetAll,terug,inputindent)
     keuze = input(keuzeopties)
@@ -2019,7 +2090,5 @@ while baas == True:
             eindroutine()
         elif bekijken == "2":
             teamshow()
-        elif bekijken == "3":
-            kalender()
         else:
             takenshow()
