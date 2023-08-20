@@ -1,7 +1,7 @@
 #!/usr/bin/python3
-versie = "1.29"
-datum = "20230809"
-import locale, os, ast, pathlib, subprocess, random, textwrap
+versie = "1.3"
+datum = "20230820"
+import locale, os, ast, pathlib, subprocess, random, textwrap, calendar
 from datetime import *
 from dateutil.relativedelta import *
 from time import sleep
@@ -151,6 +151,7 @@ printdag()
 forc2 = "{:^2}".format
 forl2 = "{:<2}".format
 forr2 = "{:>2}".format
+for0r2 = "{:0>2}".format
 forc3 = "{:^3}".format
 forl3 = "{:<3}".format
 forr3 = "{:>3}".format
@@ -245,14 +246,14 @@ def hoeveeltaken():
     takenlijst = taak()
     if len(takenlijst) == 1:
         if lang == "EN":
-            print("There is %s task in the list." % len(takenlijst))
+            print("There is %s Task in the list." % len(takenlijst))
         else:
-            print("Er staat %s taak in de lijst." % len(takenlijst))
+            print("Er staat %s Taak in de lijst." % len(takenlijst))
     else:
         if lang == "EN":
-            print("There are %s tasks in the list." % len(takenlijst))
+            print("There are %s Tasks in the list." % len(takenlijst))
         else:
-            print("Er staan %s taken in de lijst." % len(takenlijst))
+            print("Er staan %s Taken in de lijst." % len(takenlijst))
 
 def checkstatusdatum():
     takenlijst = taak()
@@ -817,6 +818,257 @@ def filteromschrijvingtaak(uitklapofstatus):
                     print(" "+forl20(taakverdeling[tv]),str(ij))
                 tv +=1
     print(colbekijken+lijn+ResetAll)
+    print()
+
+def kalender():
+    if lang == "EN":
+        dagenlijst = dagenlijstEN
+    else:
+        dagenlijst = dagenlijstNL
+    maandlijstNL = ["januari","februari","maart","april","mei","juni","juli", "augustus", "september","oktober","november","december"]
+    maandlijstEN = ["January","February","March","April","May","June","July", "August", "September","October","November","December"]
+    nuyyyymm0 = datetime.strftime(date.today(),"%Y%m")
+    dzmnd0 = datetime.strftime(datetime.strptime(nuyyyymm0,"%Y%m")+timedelta(days = 15+30*0),"%B")
+    nuyyyymm1 = datetime.strftime(datetime.strptime(nuyyyymm0,"%Y%m")+timedelta(days = 15+30*1),"%Y%m")
+    dzmnd1 = datetime.strftime(datetime.strptime(nuyyyymm0,"%Y%m")+timedelta(days = 15+30*1),"%B")
+    nuyyyymm2 = datetime.strftime(datetime.strptime(nuyyyymm0,"%Y%m")+timedelta(days = 15+30*2),"%Y%m")
+    dzmnd2 = datetime.strftime(datetime.strptime(nuyyyymm0,"%Y%m")+timedelta(days = 15+30*2),"%B")
+    dezemaand0 = dzmnd0+" "+nuyyyymm0[:4]
+    dezemaand1 = dzmnd1+" "+nuyyyymm1[:4]
+    dezemaand2 = dzmnd2+" "+nuyyyymm2[:4]
+    if lang == "EN":
+        for i in maandlijstNL:
+            if i == dzmnd0:
+                dezemaand0 = dzmnd0.replace(dzmnd0,maandlijstEN[maandlijstNL.index(i)])+" "+nuyyyymm0[:4]
+            if i == dzmnd1:
+                dezemaand1 = dzmnd1.replace(dzmnd1,maandlijstEN[maandlijstNL.index(i)])+" "+nuyyyymm1[:4]
+            if i == dzmnd2:
+                dezemaand2 = dzmnd2.replace(dzmnd2,maandlijstEN[maandlijstNL.index(i)])+" "+nuyyyymm2[:4]
+    else:
+        for i in maandlijstEN:
+            if i == dzmnd0:
+                dezemaand0 = dzmnd0.replace(dzmnd0,maandlijstNL[maandlijstEN.index(i)])+" "+nuyyyymm0[:4]
+            if i == dzmnd1:
+                dezemaand1 = dzmnd1.replace(dzmnd1,maandlijstNL[maandlijstEN.index(i)])+" "+nuyyyymm1[:4]
+            if i == dzmnd2:
+                dezemaand2 = dzmnd2.replace(dzmnd2,maandlijstNL[maandlijstEN.index(i)])+" "+nuyyyymm2[:4]
+    weeklijn0 = []
+    weeklijn1 = []
+    weeklijn2 = []
+    weeklijn3 = []
+    weeklijn4 = []
+    weeklijn5 = []
+    for i in range(21):
+        weeklijn0.append(" .")
+        weeklijn1.append(" .")
+        weeklijn2.append(" .")
+        weeklijn3.append(" .")
+        weeklijn4.append(" .")
+        weeklijn5.append(" .")
+    tel0 = calendar.monthrange(int(nuyyyymm0[:4]),int(nuyyyymm0[4:]))[0]
+    tel1 = calendar.monthrange(int(nuyyyymm1[:4]),int(nuyyyymm1[4:]))[0]
+    tel2 = calendar.monthrange(int(nuyyyymm2[:4]),int(nuyyyymm2[4:]))[0]
+    tal0 = calendar.monthrange(int(nuyyyymm0[:4]),int(nuyyyymm0[4:]))[1]
+    tal1 = calendar.monthrange(int(nuyyyymm1[:4]),int(nuyyyymm1[4:]))[1]
+    tal2 = calendar.monthrange(int(nuyyyymm2[:4]),int(nuyyyymm2[4:]))[1]
+    weeklijn = weeklijn0
+    dag0 = 1
+    dag1 = 1
+    dag2 = 1
+    while weeklijn == weeklijn0 and dag0 <= tal0:
+        weeklijn[7*0+tel0] = for0r2(dag0)
+        dag0 += 1
+        tel0 += 1
+        if tel0 == 7:
+            break
+    while weeklijn == weeklijn0 and dag1 <= tal1:
+        weeklijn[7*1+tel1] = for0r2(dag1)
+        dag1 += 1
+        tel1 += 1
+        if tel1 == 7:
+            break
+    while weeklijn == weeklijn0 and dag2 <= tal2:
+        weeklijn[7*2+tel2] = for0r2(dag2)
+        dag2 += 1
+        tel2 += 1
+        if tel2 == 7:
+            weeklijn = weeklijn1
+            tel0 = 0
+            tel1 = 0
+            tel2 = 0
+    while weeklijn == weeklijn1 and dag0 <= tal0:
+        weeklijn[7*0+tel0] = for0r2(dag0)
+        dag0 += 1
+        tel0 += 1
+        if tel0 == 7:
+            break
+    while weeklijn == weeklijn1 and dag1 <= tal1:
+        weeklijn[7*1+tel1] = for0r2(dag1)
+        dag1 += 1
+        tel1 += 1
+        if tel1 == 7:
+            break
+    while weeklijn == weeklijn1 and dag2 <= tal2:
+        weeklijn[7*2+tel2] = for0r2(dag2)
+        dag2 += 1
+        tel2 += 1
+        if tel2 == 7:
+            weeklijn = weeklijn2
+            tel0 = 0
+            tel1 = 0
+            tel2 = 0
+    while weeklijn == weeklijn2 and dag0 <= tal0:
+        weeklijn[7*0+tel0] = for0r2(dag0)
+        dag0 += 1
+        tel0 += 1
+        if tel0 == 7:
+            break
+    while weeklijn == weeklijn2 and dag1 <= tal1:
+        weeklijn[7*1+tel1] = for0r2(dag1)
+        dag1 += 1
+        tel1 += 1
+        if tel1 == 7:
+            break
+    while weeklijn == weeklijn2 and dag2 <= tal2:
+        weeklijn[7*2+tel2] = for0r2(dag2)
+        dag2 += 1
+        tel2 += 1
+        if tel2 == 7:
+            weeklijn = weeklijn3
+            tel0 = 0
+            tel1 = 0
+            tel2 = 0
+    while weeklijn == weeklijn3 and dag0 <= tal0:
+        weeklijn[7*0+tel0] = for0r2(dag0)
+        dag0 += 1
+        tel0 += 1
+        if tel0 == 7:
+            break
+    while weeklijn == weeklijn3 and dag1 <= tal1:
+        weeklijn[7*1+tel1] = for0r2(dag1)
+        dag1 += 1
+        tel1 += 1
+        if tel1 == 7:
+            break
+    while weeklijn == weeklijn3 and dag2 <= tal2:
+        weeklijn[7*2+tel2] = for0r2(dag2)
+        dag2 += 1
+        tel2 += 1
+        if tel2 == 7:
+            weeklijn = weeklijn4
+            tel0 = 0
+            tel1 = 0
+            tel2 = 0
+    while weeklijn == weeklijn4 and dag0 <= tal0:
+        weeklijn[7*0+tel0] = for0r2(dag0)
+        dag0 += 1
+        tel0 += 1
+        if tel0 == 7:
+            break
+    while weeklijn == weeklijn4 and dag1 <= tal1:
+        weeklijn[7*1+tel1] = for0r2(dag1)
+        dag1 += 1
+        tel1 += 1
+        if tel1 == 7:
+            break
+    while weeklijn == weeklijn4 and dag2 <= tal2:
+        weeklijn[7*2+tel2] = for0r2(dag2)
+        dag2 += 1
+        tel2 += 1
+        if tel2 == 7:
+            weeklijn = weeklijn5
+            tel0 = 0
+            tel1 = 0
+            tel2 = 0
+    while weeklijn == weeklijn5 and dag0 <= tal0:
+        weeklijn[7*0+tel0] = for0r2(dag0)
+        dag0 += 1
+        tel0 += 1
+        if tel0 == 7:
+            break
+    while weeklijn == weeklijn5 and dag1 <= tal1:
+        weeklijn[7*1+tel1] = for0r2(dag1)
+        dag1 += 1
+        tel1 += 1
+        if tel1 == 7:
+            break
+    while weeklijn == weeklijn5 and dag2 <= tal2:
+        weeklijn[7*2+tel2] = for0r2(dag2)
+        dag2 += 1
+        tel2 += 1
+    print(Omkeren+forc20(dezemaand0)+ResetAll+" "+Omkeren+forc20(dezemaand1)+ResetAll+" "+Omkeren+forc20(dezemaand2)+ResetAll)
+    col = ResetAll
+    for i in dagenlijst:
+        if i == dagenlijst[5] or i == dagenlijst[6]:
+            col = LichtGrijs
+        print(col+i[:2]+ResetAll,end = " " )
+    col = ResetAll
+    for i in dagenlijst:
+        if i == dagenlijst[5] or i == dagenlijst[6]:
+            col = LichtGrijs
+        print(col+i[:2]+ResetAll,end = " " )
+    col = ResetAll
+    for i in dagenlijst:
+        if i == dagenlijst[5] or i == dagenlijst[6]:
+            col = LichtGrijs
+        print(col+i[:2]+ResetAll,end = " " )
+    print()
+    col = LichtGrijs
+    for i in range(len(weeklijn0)):
+        if (i-5) % 7 == 0:
+            col = DonkerGrijs
+        if i % 7 == 0:
+            col = LichtGrijs
+        if for0r2(weeklijn0[i]) == datetime.strftime(date.today(),"%d") and weeklijn0.index(weeklijn0[i]) < 7:
+            col = LichtGeel
+        print(col+weeklijn0[i]+ResetAll,end = " ")
+    print()
+    for i in range(len(weeklijn1)):
+        if (i-5) % 7 == 0:
+            col = DonkerGrijs
+        if i % 7 == 0:
+            col = LichtGrijs
+        if for0r2(weeklijn1[i]) == datetime.strftime(date.today(),"%d") and weeklijn1.index(weeklijn1[i]) < 7:
+            col = LichtGeel
+        print(col+weeklijn1[i]+ResetAll,end = " ")
+    print()
+    for i in range(len(weeklijn2)):
+        if (i-5) % 7 == 0:
+            col = DonkerGrijs
+        if i % 7 == 0:
+            col = LichtGrijs
+        if for0r2(weeklijn2[i]) == datetime.strftime(date.today(),"%d") and weeklijn2.index(weeklijn2[i]) < 7:
+            col = LichtGeel
+        print(col+weeklijn2[i]+ResetAll,end = " ")
+    print()
+    for i in range(len(weeklijn3)):
+        if (i-5) % 7 == 0:
+            col = DonkerGrijs
+        if i % 7 == 0:
+            col = LichtGrijs
+        if for0r2(weeklijn3[i]) == datetime.strftime(date.today(),"%d") and weeklijn3.index(weeklijn3[i]) < 7:
+            col = LichtGeel
+        print(col+weeklijn3[i]+ResetAll,end = " ")
+    print()
+    for i in range(len(weeklijn4)):
+        if (i-5) % 7 == 0:
+            col = DonkerGrijs
+        if i % 7 == 0:
+            col = LichtGrijs
+        if for0r2(weeklijn4[i]) == datetime.strftime(date.today(),"%d") and weeklijn4.index(weeklijn4[i]) < 7:
+            col = LichtGeel
+        print(col+weeklijn4[i]+ResetAll,end = " ")
+    print()
+    for i in range(len(weeklijn5)):
+        if (i-5) % 7 == 0:
+            col = DonkerGrijs
+        if i % 7 == 0:
+            col = LichtGrijs
+        if for0r2(weeklijn5[i]) == datetime.strftime(date.today(),"%d") and weeklijn5.index(weeklijn5[i]) < 7:
+            col = LichtGeel
+        if "30" in weeklijn5 or "31" in weeklijn5:
+            print(col+weeklijn5[i]+ResetAll,end = " ")
+    print()
     print()
 
 def takenshow():
@@ -1670,7 +1922,7 @@ while baas == True:
     else:
         keuzeopties = "Kies uit de volgende opties:\n  0 : %sOver dit programma%s\n  1 : %sToevoegen%s\n >2 : %sBekijken%s\n  3 : %sWijzigen%s\n  4 : %sArchiveren en Verwijderen%s\n  5 : %sVergadering%s\n  6 : %sKladblok (Vim)%s\n%s\n%s" % (colover,ResetAll,coltoevoegen,ResetAll,colbekijken,ResetAll,colwijzigen,ResetAll,colverwijderen,ResetAll,colmeeting,ResetAll,colinformatie,ResetAll,weg,inputindent)
         toetom = "%sVOEG%s een Taak of een Medewerker %sTOE%s:\n >1 : Taak\n  2 : Medewerker\n%s\n%s" % (coltoevoegen,ResetAll,coltoevoegen,ResetAll,terug,inputindent)
-        zietom = "%sBEKIJK%s Taken of Medewerkers:\n >1 : Taken\n  2 : Medewerkers\n%s\n%s" % (colbekijken,ResetAll,terug,inputindent)
+        zietom = "%sBEKIJK%s Taken, Medewerkers of een Kalender:\n >1 : Taken\n  2 : Medewerkers\n  3 : Kalender\n%s\n%s" % (colbekijken,ResetAll,terug,inputindent)
         andiot = "%sWIJZIG%s een Taak of Team gegevens:\n  1 : Taak\n  2 : Één Medewerker\n >3 : Groep\n%s\n%s" % (colwijzigen,ResetAll,terug,inputindent)
         watweg = "%sARCHIVEER en/of VERWIJDER%s een Taak of een Medewerker:\n >1 : Taak\n  2 : Medewerker\n%s\n%s" % (colverwijderen,ResetAll,terug,inputindent)
     keuze = input(keuzeopties)
@@ -1754,5 +2006,7 @@ while baas == True:
             eindroutine()
         elif bekijken == "2":
             teamshow()
+        elif bekijken == "3":
+            kalender()
         else:
             takenshow()
