@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-versie = "1.33"
+versie = "1.34"
 datum = "20230822"
 import locale, os, ast, pathlib, subprocess, random, textwrap, calendar
 from datetime import *
@@ -58,6 +58,7 @@ AchtergrondLichtBlauw   = "\033[104m"
 AchtergrondLichtMagenta = "\033[105m"
 AchtergrondLichtCyaan   = "\033[106m"
 AchtergrondWit          = "\033[107m"
+coldatum = LichtCyaan
 colover = LichtGrijs
 coltoevoegen = LichtGroen
 colbekijken = LichtGeel
@@ -72,7 +73,7 @@ statcol = [Geel,LichtGeel,Magenta,Rood,Groen,LichtRood,DonkerGrijs]
 iocol = [Rood,Groen]
 logocol = [coltoevoegen,colbekijken,colwijzigen,colverwijderen,colmeeting,colinformatie]
 
-TeamLogo = """ .______.                    
+TeamLogo = """ .______.  
  |/ \/ \|__.   _. ___. _.    
     ||  //_\\\\ 6_\\\\|| \V \\\\   
     || ||'   // |||| || ||   
@@ -139,12 +140,12 @@ def printdag():
         dag = "Today is %s." 
         for i in range(len(dagenlijstNL)):
             todaag = todaag.replace(dagenlijstNL[i],dagenlijstEN[i])
-        print(dag % (statcol[1]+todaag+ResetAll))
+        print(dag % (coldatum+todaag+ResetAll))
     else:
         dag = "Het is vandaag %s."
         for i in range(len(dagenlijstEN)):
             todaag = todaag.replace(dagenlijstEN[i],dagenlijstNL[i])
-        print(dag % (statcol[1]+todaag+ResetAll))
+        print(dag % (coldatum+todaag+ResetAll))
 printdag()
 
 # Veel formaten niet in gebruik, maar handig om mee te testen
@@ -385,15 +386,27 @@ def teamshowkort():
             aanin = "There is %s Agent - of %s - checked %sIN%s." % (col+str(numin)+ResetAll,str(len(teamlijst)),iocol[1],ResetAll)
         else:
             aanin = "Er is %s Medewerker - van %s - %sIN%sgecheckt." % (col+str(numin)+ResetAll,str(len(teamlijst)),iocol[1],ResetAll)
+    elif numin == 0:
+        col = iocol[0]
+        if lang == "EN":
+            aanin = "%s - of %s - is checked %sIN%s." % (col+"No-one"+ResetAll,str(len(teamlijst)),iocol[1],ResetAll)
+        else:
+            aanin = "%s - van %s - is %sIN%sgecheckt." % (col+"Niemand"+ResetAll,str(len(teamlijst)),iocol[1],ResetAll)
+    elif numin == len(teamlijst):
+        col = iocol[1]
+        if lang == "EN":
+            aanin = "%s - of %s - is checked %sIN%s." % (col+"Everyone"+ResetAll,str(len(teamlijst)),iocol[1],ResetAll)
+        else:
+            aanin = "%s - van %s - is %sIN%sgecheckt." % (col+"Iedereen"+ResetAll,str(len(teamlijst)),iocol[1],ResetAll)
     else:
         col = iocol[1]
         if numin == 0:
             col = iocol[0]
         if lang == "EN":
-            aaninnen = "There are %s Agents - of %s - checked %sIN%s." % (col+str(numin)+ResetAll,str(len(teamlijst)),iocol[1],ResetAll)
+            aanin = "There are %s Agents - of %s - checked %sIN%s." % (col+str(numin)+ResetAll,str(len(teamlijst)),iocol[1],ResetAll)
         else:
-            aaninnen = "Er zijn %s Medewerkers - van %s - %sIN%sgecheckt." % (col+str(numin)+ResetAll,str(len(teamlijst)),iocol[1],ResetAll)
-        print(aaninnen)
+            aanin = "Er zijn %s Medewerkers - van %s - %sIN%sgecheckt." % (col+str(numin)+ResetAll,str(len(teamlijst)),iocol[1],ResetAll)
+    print(aanin)
  
 def teamshow():
     if lang == "EN":
@@ -450,7 +463,9 @@ def teamshow():
  
 def taaknieuw():
     if lang == "EN":
-        startdatum = "Give the Start date (YYYYMMDD):\n%s" % inputindent
+        maand = "m"
+        week = "w" # TODO Wat als eerste dag van de week in vorige maand ligt? Vorig jaar? Timedelta - weekday?
+        startdatum = "Give the Start date (YYYYMMDD) or \"%s\" for thismonthfirstday:\n%s" % (maand,inputindent)
         einddatum = "Give the Due date (YYYYMMDD, or \"+N\" adds days to the Start date):\n%s" % inputindent
         omschrijving = "Give the TaskDescription:\n%s" % inputindent
         moetlanger = "Give at least 4 characters."
@@ -458,7 +473,9 @@ def taaknieuw():
         aantekening = "Give extra Info (opt):\n%s" % inputindent
         staten = "Give the ID of one of these Statuses:"
     else:
-        startdatum = "Geef de Startdatum op (YYYYMMDD):\n%s" % inputindent
+        maand = "m"
+        week = "w" # TODO
+        startdatum = "Geef de Startdatum op (YYYYMMDD) of \"%s\" voor dezemaandeerstedag:\n%s" % (maand,inputindent)
         einddatum = "Geef de Einddatum op (YYYYMMDD, of \"+N\" voegt dagen toe aan Startdatum):\n%s" % inputindent
         omschrijving = "Geef de Taakbeschrijving op:\n%s" % inputindent
         moetlanger = "Geef tenminste 4 karakters op."
@@ -484,7 +501,19 @@ def taaknieuw():
                 origstart = datetime.today()
                 startdat = origstart - timedelta(days = delta)
             else:
-                startdat = datetime.strptime(SD,"%Y%m%d")
+                try:
+                    startdat = datetime.strptime(SD,"%Y%m%d")
+                except:
+                    if len(SD) > 1 and SD[0].lower() == maand:
+                        try:
+                            plus = eval(SD[1:])
+                            maandstart = datetime.strptime(datetime.strftime(datetime.today(),"%Y%m")+"01","%Y%m%d")
+                            startdat = datetime.strptime(datetime.strftime(maandstart+timedelta(days = 15 + (30*plus)),"%Y%m"+"01"),"%Y%m%d")
+                        except(Exception) as fout:
+                            print(fout)
+                            pass
+                    elif len(SD) == 1 and SD.lower() == maand:
+                        startdat = datetime.strptime(datetime.strftime(datetime.today(),"%Y%m")+"01","%Y%m%d")
             start = int(datetime.strftime(startdat,"%Y%m%d"))
             if lang == "EN":
                 print("The Start date is %s." % start)
@@ -513,7 +542,12 @@ def taaknieuw():
                 origstart = datetime.strptime(str(start),"%Y%m%d")
                 einddat = origstart + timedelta(days = delta)
             else:
-                einddat = datetime.strptime(ED,"%Y%m%d")
+                try:
+                    einddat = datetime.strptime(ED,"%Y%m%d")
+                except:
+                    if ED.lower() == maand:
+                        maandstr = datetime.strftime(startdat,"%Y%m")
+                        einddat = datetime.strptime(maandstr+str(calendar.monthrange(int(maandstr[:4]),int(maandstr[4:]))[1]),"%Y%m%d")
             eind = int(datetime.strftime(einddat,"%Y%m%d"))
             if eind >= start:
                 if lang == "EN":
@@ -521,13 +555,14 @@ def taaknieuw():
                 else:
                     print("De Einddatum is %s." % eind)
                 EindDatum = True
-        except:
-            einddat = startdat+timedelta(days = 7)
+        except(Exception) as fout:
+            print(fout)
+            einddat = startdat+timedelta(days = 6)
             eind = int(datetime.strftime(einddat,"%Y%m%d"))
             if lang == "EN":
-                print("The default Due date (Start date + 7 days: %s) is selected." % eind)
+                print("The default Due date (Start date + 6 days: %s) is selected." % eind)
             else:
-                print("De standaardEinddatum (Startdatum + 7 dagen: %s) is geselecteerd." % eind)
+                print("De standaardEinddatum (Startdatum + 6 dagen: %s) is geselecteerd." % eind)
             EindDatum = True
     koe = False
     while koe == False:
@@ -659,9 +694,9 @@ def takenlijn(scopenunu):
                 j = statcol[5]+forc4(dij[:2])+ResetAll
         if i == nunu:
             if lang == "EN":
-                j = statcol[1]+forc4("NOW")+ResetAll
+                j = coldatum+forc4("NOW")+ResetAll
             else:
-                j = statcol[1]+forc4("NU")+ResetAll
+                j = coldatum+forc4("NU")+ResetAll
         if i == nunu+1:
             if lang == "EN":
                 dij = "tm"
@@ -1066,7 +1101,7 @@ def kalender():
                 weeklijn[7*2+tel2] = i[4]+forr2(i[0])+ResetAll
         dag2 += 1
         tel2 += 1
-    print(LichtGeel+Omkeren+forc20(dezemaand0)+ResetAll+" | "+Omkeren+forc20(dezemaand1)+ResetAll+" | "+Omkeren+forc20(dezemaand2)+ResetAll)
+    print(coldatum+Omkeren+forc20(dezemaand0)+ResetAll+" | "+Omkeren+forc20(dezemaand1)+ResetAll+" | "+Omkeren+forc20(dezemaand2)+ResetAll)
     col = ResetAll
     for i in dagenlijst:
         if i == dagenlijst[5] or i == dagenlijst[6]:
@@ -1093,7 +1128,7 @@ def kalender():
             col = LichtGrijs
             print("| ", end = "")
         if for0r2(weeklijn0[i]) == datetime.strftime(date.today(),"%d") and i < 7:
-            col = LichtGeel
+            col = coldatum
         print(col+weeklijn0[i]+ResetAll,end = " ")
     print()
     for i in range(len(weeklijn1)):
@@ -1104,7 +1139,7 @@ def kalender():
             col = LichtGrijs
             print("| ", end = "")
         if for0r2(weeklijn1[i]) == datetime.strftime(date.today(),"%d") and i < 7:
-            col = LichtGeel
+            col = coldatum
         print(col+weeklijn1[i]+ResetAll,end = " ")
     print()
     for i in range(len(weeklijn2)):
@@ -1115,7 +1150,7 @@ def kalender():
             col = LichtGrijs
             print("| ", end = "")
         if for0r2(weeklijn2[i]) == datetime.strftime(date.today(),"%d") and i < 7:
-            col = LichtGeel
+            col = coldatum
         print(col+weeklijn2[i]+ResetAll,end = " ")
     print()
     for i in range(len(weeklijn3)):
@@ -1126,7 +1161,7 @@ def kalender():
             col = LichtGrijs
             print("| ", end = "")
         if for0r2(weeklijn3[i]) == datetime.strftime(date.today(),"%d") and i < 7:
-            col = LichtGeel
+            col = coldatum
         print(col+weeklijn3[i]+ResetAll,end = " ")
     print()
     for i in range(len(weeklijn4)):
@@ -1137,7 +1172,7 @@ def kalender():
             col = LichtGrijs
             print("| ", end = "")
         if for0r2(weeklijn4[i]) == datetime.strftime(date.today(),"%d") and i < 7:
-            col = LichtGeel
+            col = coldatum
         print(col+weeklijn4[i]+ResetAll,end = " ")
     print()
     if any(weeklijn5) != " .":
@@ -1149,7 +1184,7 @@ def kalender():
                 col = LichtGrijs
                 print("| ", end = "")
             if for0r2(weeklijn5[i]) == datetime.strftime(date.today(),"%d") and i < 7:
-                col = LichtGeel
+                col = coldatum
             print(col+weeklijn5[i]+ResetAll,end = " ")
     print()
     print()
@@ -1470,13 +1505,13 @@ def wijzigmedewerker():
         kies = "Choose an Agent to %sCHANGE%s:" % (colwijzigen, ResetAll)
         wie = "Give the ID of the Agent:\n%s" % inputindent
         wat = "What do you want to change?:\n  1 : Agent Number\n  2 : Given Name\n  3 : Last Name\n  4 : Check\n  5 : Note\n%s" % inputindent
-        hoechk = "  0 : OUT\n  1 : IN\n%s" % inputindent
+        tog = "Check these Agent OUT or IN:\n  0 : OUT\n  1 : IN\n >2 : Invert\n%s" % inputindent
         nietuniek = "This AgentNumber already exists."
     else:
         kies = "Kies een Medewerker om te %sWIJZIGEN%s:" % (colwijzigen, ResetAll)
         wie = "Geef de ID van de Medewerker:\n%s" % inputindent
         wat = "Wat wil je Wijzigen?:\n  1 : Personeelsnummer\n  2 : VoorNaam\n  3 : AchterNaam\n  4 : Check\n  5 : Aantekening\n%s" % inputindent
-        hoechk = "  0 : UIT\n  1 : IN\n%s" % inputindent
+        tog = "Check deze Medewerker UIT of IN:\n  0 : UIT\n  1 : IN\n >2 : Omkeren\n%s" % inputindent
         nietuniek = "Dit Personeelsnummer bestaat al."
     teamlijst = team()
     print(kies)
@@ -1546,16 +1581,16 @@ def wijzigmedewerker():
                             achternaam = True
                     teamlijst[LL-1][2] = AN
                 elif welk == "4":
-                    inofuit = False
-                    while inofuit == False:
-                        Chk = input(hoechk)
-                        try:
-                            Chk = int(Chk)
-                            if 0 <= Chk < len(checklijst):
-                                teamlijst[LL-1][3] = Chk
-                                inofuit = True
-                        except:
-                            pass
+                    toggleall = input(tog)
+                    if toggleall == "0":
+                        teamlijst[LL-1][3] = 0
+                    elif toggleall == "1":
+                        teamlijst[LL-1][3] = 1
+                    else:
+                        if teamlijst[LL-1][3] == 0:
+                            teamlijst[LL-1][3] = 1
+                        else:
+                            teamlijst[LL-1][3] = 0
                 elif welk == "5":
                     AT = input()
                     if AT.upper() in afsluitlijst:
@@ -1574,7 +1609,7 @@ def wijzigmedewerker():
 def wijzigteam():
     if lang == "EN":
         sel = "Select the IDs of the Agents you want to %sCHANGE%s,\nin CSV style (separated by commas), or * for all:\n%s" % (colwijzigen,ResetAll,inputindent)
-        tog = "Check these Agents OUT or IN:\n  0 : OUT\n  1 : IN\n >2 : Toggle\n%s" % inputindent
+        tog = "Check these Agents OUT or IN:\n  0 : OUT\n  1 : IN\n >2 : Invert\n%s" % inputindent
         wat = "What do you want to change?\n >1 : Check this group OUT or IN\n  2 : Change Note for everyone in this group\n%s" % inputindent
         nieuweaantekening = "Type or clear the Note:\n%s" % inputindent
     else:
@@ -1818,7 +1853,7 @@ def verwijdertaak(taaklijst):
     if lang == "EN":
         verwok = "Task(s) deleted successfully."
     else:
-        verwok = "Ta(a)ken succesvol verwijderd."
+        verwok = "Ta(a)k(en) succesvol verwijderd."
     takenlijst = taak()
     for i in taaklijst:
         takenlijst.remove(i)
