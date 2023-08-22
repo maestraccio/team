@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-versie = "1.32"
-datum = "20230820"
+versie = "1.33"
+datum = "20230822"
 import locale, os, ast, pathlib, subprocess, random, textwrap, calendar
 from datetime import *
 from dateutil.relativedelta import *
@@ -63,8 +63,8 @@ coltoevoegen = LichtGroen
 colbekijken = LichtGeel
 colwijzigen = LichtCyaan
 colverwijderen = LichtRood
-colinformatie = Wit
 colmeeting = LichtMagenta
+colinformatie = Wit
 colterug = DonkerGrijs
 colgoed = Groen
 colslecht = Rood
@@ -849,9 +849,9 @@ def kalender():
     dzmnd1 = datetime.strftime(datetime.strptime(nuyyyymm0,"%Y%m")+timedelta(days = 15+30*1),"%B")
     nuyyyymm2 = datetime.strftime(datetime.strptime(nuyyyymm0,"%Y%m")+timedelta(days = 15+30*2),"%Y%m")
     dzmnd2 = datetime.strftime(datetime.strptime(nuyyyymm0,"%Y%m")+timedelta(days = 15+30*2),"%B")
-    dezemaand0 = dzmnd0+" "+nuyyyymm0[:4]
-    dezemaand1 = dzmnd1+" "+nuyyyymm1[:4]
-    dezemaand2 = dzmnd2+" "+nuyyyymm2[:4]
+    dezemaand0 = nuyyyymm0[:4]+" "+dzmnd0
+    dezemaand1 = nuyyyymm1[:4]+" "+dzmnd1
+    dezemaand2 = nuyyyymm2[:4]+" "+dzmnd2
     if lang == "EN":
         for i in maandlijstNL:
             if i == dzmnd0:
@@ -874,7 +874,7 @@ def kalender():
     weeklijn3 = []
     weeklijn4 = []
     weeklijn5 = []
-    for i in range(21):
+    for i in range(7*3):
         weeklijn0.append(" .")
         weeklijn1.append(" .")
         weeklijn2.append(" .")
@@ -882,10 +882,10 @@ def kalender():
         weeklijn4.append(" .")
         weeklijn5.append(" .")
     tel0 = calendar.monthrange(int(nuyyyymm0[:4]),int(nuyyyymm0[4:]))[0]
-    tel1 = calendar.monthrange(int(nuyyyymm1[:4]),int(nuyyyymm1[4:]))[0]
-    tel2 = calendar.monthrange(int(nuyyyymm2[:4]),int(nuyyyymm2[4:]))[0]
     tal0 = calendar.monthrange(int(nuyyyymm0[:4]),int(nuyyyymm0[4:]))[1]
+    tel1 = calendar.monthrange(int(nuyyyymm1[:4]),int(nuyyyymm1[4:]))[0]
     tal1 = calendar.monthrange(int(nuyyyymm1[:4]),int(nuyyyymm1[4:]))[1]
+    tel2 = calendar.monthrange(int(nuyyyymm2[:4]),int(nuyyyymm2[4:]))[0]
     tal2 = calendar.monthrange(int(nuyyyymm2[:4]),int(nuyyyymm2[4:]))[1]
     weeklijn = weeklijn0
     dag0 = 1
@@ -1066,7 +1066,7 @@ def kalender():
                 weeklijn[7*2+tel2] = i[4]+forr2(i[0])+ResetAll
         dag2 += 1
         tel2 += 1
-    print(Omkeren+forc20(dezemaand0)+ResetAll+" | "+Omkeren+forc20(dezemaand1)+ResetAll+" | "+Omkeren+forc20(dezemaand2)+ResetAll)
+    print(LichtGeel+Omkeren+forc20(dezemaand0)+ResetAll+" | "+Omkeren+forc20(dezemaand1)+ResetAll+" | "+Omkeren+forc20(dezemaand2)+ResetAll)
     col = ResetAll
     for i in dagenlijst:
         if i == dagenlijst[5] or i == dagenlijst[6]:
@@ -1085,71 +1085,71 @@ def kalender():
             col = LichtGrijs
         print(col+i[:2]+ResetAll,end = " " )
     print()
-    col = LichtGrijs
     for i in range(len(weeklijn0)):
-        if (i-5) % 7 == 0:
+        col = LichtGrijs
+        if (i-5) % 7 == 0 or (i-6) % 7 == 0:
             col = DonkerGrijs
         if i % 7 == 0 and i != 0:
             col = LichtGrijs
             print("| ", end = "")
-        if for0r2(weeklijn0[i]) == datetime.strftime(date.today(),"%d") and weeklijn0.index(weeklijn0[i]) < 7:
+        if for0r2(weeklijn0[i]) == datetime.strftime(date.today(),"%d") and i < 7:
             col = LichtGeel
         print(col+weeklijn0[i]+ResetAll,end = " ")
     print()
-    col = LichtGrijs
     for i in range(len(weeklijn1)):
-        if (i-5) % 7 == 0:
+        col = LichtGrijs
+        if (i-5) % 7 == 0 or (i-6) % 7 == 0:
             col = DonkerGrijs
         if i % 7 == 0 and i != 0:
             col = LichtGrijs
             print("| ", end = "")
-        if for0r2(weeklijn1[i]) == datetime.strftime(date.today(),"%d") and weeklijn1.index(weeklijn1[i]) < 7:
+        if for0r2(weeklijn1[i]) == datetime.strftime(date.today(),"%d") and i < 7:
             col = LichtGeel
         print(col+weeklijn1[i]+ResetAll,end = " ")
     print()
-    col = LichtGrijs
     for i in range(len(weeklijn2)):
-        if (i-5) % 7 == 0:
+        col = LichtGrijs
+        if (i-5) % 7 == 0 or (i-6) % 7 == 0:
             col = DonkerGrijs
         if i % 7 == 0 and i != 0:
             col = LichtGrijs
             print("| ", end = "")
-        if for0r2(weeklijn2[i]) == datetime.strftime(date.today(),"%d") and weeklijn2.index(weeklijn2[i]) < 7:
+        if for0r2(weeklijn2[i]) == datetime.strftime(date.today(),"%d") and i < 7:
             col = LichtGeel
         print(col+weeklijn2[i]+ResetAll,end = " ")
     print()
-    col = LichtGrijs
     for i in range(len(weeklijn3)):
-        if (i-5) % 7 == 0:
+        col = LichtGrijs
+        if (i-5) % 7 == 0 or (i-6) % 7 == 0:
             col = DonkerGrijs
         if i % 7 == 0 and i != 0:
             col = LichtGrijs
             print("| ", end = "")
-        if for0r2(weeklijn3[i]) == datetime.strftime(date.today(),"%d") and weeklijn3.index(weeklijn3[i]) < 7:
+        if for0r2(weeklijn3[i]) == datetime.strftime(date.today(),"%d") and i < 7:
             col = LichtGeel
         print(col+weeklijn3[i]+ResetAll,end = " ")
     print()
-    col = LichtGrijs
     for i in range(len(weeklijn4)):
-        if (i-5) % 7 == 0:
+        col = LichtGrijs
+        if (i-5) % 7 == 0 or (i-6) % 7 == 0:
             col = DonkerGrijs
         if i % 7 == 0 and i != 0:
             col = LichtGrijs
             print("| ", end = "")
-        if for0r2(weeklijn4[i]) == datetime.strftime(date.today(),"%d") and weeklijn4.index(weeklijn4[i]) < 7:
+        if for0r2(weeklijn4[i]) == datetime.strftime(date.today(),"%d") and i < 7:
             col = LichtGeel
         print(col+weeklijn4[i]+ResetAll,end = " ")
     print()
-    col = LichtGrijs
-    for i in range(len(weeklijn5)):
-        if (i-5) % 7 == 0:
-            col = DonkerGrijs
-        if i % 7 == 0 and i != 0:
-            col = LichtGrijs
-            print("| ", end = "")
-        if for0r2(weeklijn5[i]) == datetime.strftime(date.today(),"%d") and weeklijn5.index(weeklijn5[i]) < 7:
-            col = LichtGeel
-        if "30" in weeklijn5 or "31" in weeklijn5:
+    if any(weeklijn5) != " .":
+        col = LichtGrijs
+        for i in range(len(weeklijn5)):
+            if (i-5) % 7 == 0 or (i-6) % 7 == 0:
+                col = DonkerGrijs
+            if i % 7 == 0 and i != 0:
+                col = LichtGrijs
+                print("| ", end = "")
+            if for0r2(weeklijn5[i]) == datetime.strftime(date.today(),"%d") and i < 7:
+                col = LichtGeel
             print(col+weeklijn5[i]+ResetAll,end = " ")
     print()
     print()
