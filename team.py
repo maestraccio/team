@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-versie = "1.34"
-datum = "20230822"
+versie = "1.35"
+datum = "20230824"
 import locale, os, ast, pathlib, subprocess, random, textwrap, calendar
 from datetime import *
 from dateutil.relativedelta import *
@@ -111,7 +111,7 @@ print()
 
 lang = False
 while lang == False:
-    qlang = input("Kies je taal | Choose your language:\n  > 1: NL\n    2: EN\n%s" % inputindent)
+    qlang = input("Kies uw taal | Choose your language:\n  > 1: NL\n    2: EN\n%s" % inputindent)
     if qlang.upper() in afsluitlijst:
         exit()
     elif qlang == "2":
@@ -463,9 +463,11 @@ def teamshow():
  
 def taaknieuw():
     if lang == "EN":
+        nok = "   >1 : New\n    2 : Copy\n  %s" % inputindent
+        welk = "Give the ID of the Task you want to copy:\n%s" % inputindent
         maand = "m"
-        week = "w" # TODO Wat als eerste dag van de week in vorige maand ligt? Vorig jaar? Timedelta - weekday?
-        startdatum = "Give the Start date (YYYYMMDD) or \"%s\" for thismonthfirstday:\n%s" % (maand,inputindent)
+        startdatum = "Give the Start date (YYYYMMDD) or \"%s+0\" for thismonthfirstday:\n%s" % (maand,inputindent)
+        nieuwestartdatum = "Give the new Start date (YYYYMMDD) or \"%s+0\" for thismonthfirstday:\n%s" % (maand,inputindent)
         einddatum = "Give the Due date (YYYYMMDD, or \"+N\" adds days to the Start date):\n%s" % inputindent
         omschrijving = "Give the TaskDescription:\n%s" % inputindent
         moetlanger = "Give at least 4 characters."
@@ -473,9 +475,11 @@ def taaknieuw():
         aantekening = "Give extra Info (opt):\n%s" % inputindent
         staten = "Give the ID of one of these Statuses:"
     else:
+        nok = "   >1 : Nieuw\n    2 : Kopie\n  %s" % inputindent
+        welk = "Geef de ID op van de Taak die u wilt kopiëren:\n%s" % inputindent
         maand = "m"
-        week = "w" # TODO
-        startdatum = "Geef de Startdatum op (YYYYMMDD) of \"%s\" voor dezemaandeerstedag:\n%s" % (maand,inputindent)
+        startdatum = "Geef de Startdatum op (YYYYMMDD) of \"%s+0\" voor dezemaandeerstedag:\n%s" % (maand,inputindent)
+        nieuwestartdatum = "Geef de nieuwe Startdatum op (YYYYMMDD) of \"%s+0\" voor dezemaandeerstedag:\n%s" % (maand,inputindent)
         einddatum = "Geef de Einddatum op (YYYYMMDD, of \"+N\" voegt dagen toe aan Startdatum):\n%s" % inputindent
         omschrijving = "Geef de Taakbeschrijving op:\n%s" % inputindent
         moetlanger = "Geef tenminste 4 karakters op."
@@ -483,160 +487,252 @@ def taaknieuw():
         aantekening = "Geef extra Informatie (opt):\n%s" % inputindent
         staten = "Geef de ID van één van deze Statusen:"
     takenlijst = taak()
-    StartDatum = False
-    while StartDatum == False:
-        SD = input(startdatum)
-        if SD.upper() in afsluitlijst:
-            uit = True
-            return uit
-        elif len(SD) == 2 and SD[0].upper() in afsluitlijst and SD[1].upper() in skiplijst:
-            eindroutine()
-        try:
-            if SD[0] == "+":
-                delta = int(SD[1:])
-                origstart = datetime.today()
-                startdat = origstart + timedelta(days = delta)
-            elif SD[0] == "-":
-                delta = int(SD[1:])
-                origstart = datetime.today()
-                startdat = origstart - timedelta(days = delta)
-            else:
-                try:
-                    startdat = datetime.strptime(SD,"%Y%m%d")
-                except:
-                    if len(SD) > 1 and SD[0].lower() == maand:
-                        try:
-                            plus = eval(SD[1:])
-                            maandstart = datetime.strptime(datetime.strftime(datetime.today(),"%Y%m")+"01","%Y%m%d")
-                            startdat = datetime.strptime(datetime.strftime(maandstart+timedelta(days = 15 + (30*plus)),"%Y%m"+"01"),"%Y%m%d")
-                        except(Exception) as fout:
-                            print(fout)
-                            pass
-                    elif len(SD) == 1 and SD.lower() == maand:
-                        startdat = datetime.strptime(datetime.strftime(datetime.today(),"%Y%m")+"01","%Y%m%d")
-            start = int(datetime.strftime(startdat,"%Y%m%d"))
-            if lang == "EN":
-                print("The Start date is %s." % start)
-            else:
-                print("De Startdatum is %s." % start)
-            StartDatum = True
-        except:
-            startdat = datetime.today()
-            start = int(datetime.strftime(startdat,"%Y%m%d"))
-            if lang == "EN":
-                print("The default Start date (today: %s) is selected." % start)
-            else:
-                print("De standaardStartdatum (vandaag: %s) is geselecteerd." % start)
-            StartDatum = True
-    EindDatum = False
-    while EindDatum == False:
-        ED = input(einddatum).replace(" ","").replace("-","").replace("/","").replace(":","").replace("\\","")
-        if ED.upper() in afsluitlijst:
-            uit = True
-            return uit
-        elif len(ED) == 2 and ED[0].upper() in afsluitlijst and ED[1].upper() in skiplijst:
-            eindroutine()
-        try:
-            if ED[0] == "+":
-                delta = int(ED[1:])
-                origstart = datetime.strptime(str(start),"%Y%m%d")
-                einddat = origstart + timedelta(days = delta)
-            else:
-                try:
-                    einddat = datetime.strptime(ED,"%Y%m%d")
-                except:
-                    if ED.lower() == maand:
-                        maandstr = datetime.strftime(startdat,"%Y%m")
-                        einddat = datetime.strptime(maandstr+str(calendar.monthrange(int(maandstr[:4]),int(maandstr[4:]))[1]),"%Y%m%d")
-            eind = int(datetime.strftime(einddat,"%Y%m%d"))
-            if eind >= start:
-                if lang == "EN":
-                    print("The Due date is %s." % eind)
-                else:
-                    print("De Einddatum is %s." % eind)
-                EindDatum = True
-        except(Exception) as fout:
-            print(fout)
-            einddat = startdat+timedelta(days = 6)
-            eind = int(datetime.strftime(einddat,"%Y%m%d"))
-            if lang == "EN":
-                print("The default Due date (Start date + 6 days: %s) is selected." % eind)
-            else:
-                print("De standaardEinddatum (Startdatum + 6 dagen: %s) is geselecteerd." % eind)
-            EindDatum = True
-    koe = False
-    while koe == False:
-        OS = input(omschrijving)
-        if OS.upper() in afsluitlijst:
-            uit = True
-            return uit
-        elif len(OS) == 2 and OS[0].upper() in afsluitlijst and OS[1].upper() in skiplijst:
-            eindroutine()
-        if len(OS) < 4:
-            print(moetlanger)
-        else:
-            koe = True
-    teamlijst = team()
-    teamshowbasis()
-    pisang = False
-    while pisang == False:
-        LL = input(wie)
-        if LL.upper() in afsluitlijst:
-            uit = True
-            return uit
-        elif len(LL) == 2 and LL[0].upper() in afsluitlijst and LL[1].upper() in skiplijst:
-            eindroutine()
-        try:
-            LL = int(LL)
-            if 0 <= LL-1 <= len(teamlijst):
-                die = teamlijst[LL-1]
-                if lang == "EN":
-                    print("%s %s is the chosen one." % (die[1],die[2]))
-                else:
-                    print("%s %s is gekozen." % (die[1],die[2]))
-                pisang = True
-        except:
-            pass
-    AT = input(aantekening)
-    if AT.upper() in afsluitlijst:
+    niko = input(nok)
+    if niko.upper() in afsluitlijst:
         uit = True
         return uit
-    elif len(AT) == 2 and AT[0].upper() in afsluitlijst and AT[1].upper() in skiplijst:
+    elif len(niko) == 2 and niko[0].upper() in afsluitlijst and niko[1].upper() in skiplijst:
         eindroutine()
-    staat = False
-    while staat == False:
-        print(staten)
-        statusshow()
-        ST = input(inputindent)
-        if ST.upper() in afsluitlijst:
+    elif niko == "2":
+        takensmal()
+        kopie = False
+        while kopie == False:
+            uitklapofstatus = input(welk)
+            if uitklapofstatus.upper() in afsluitlijst:
+                return
+            elif len(uitklapofstatus) == 2 and uitklapofstatus[0].upper() in afsluitlijst and uitklapofstatus[1].upper() in skiplijst:
+                eindroutine()
+            try:
+                uitklap = int(uitklapofstatus)
+                if 1 <= uitklap <= len(takenlijst):
+                    uitklaptaak(uitklapofstatus)
+                    start = str(takenlijst[uitklap-1][0])
+                    eind =  str(takenlijst[uitklap-1][1])
+                    startdat = datetime.strptime(start,"%Y%m%d")
+                    einddat = datetime.strptime(eind,"%Y%m%d")
+                    lent = einddat - startdat
+                    helemaand = False
+                    if start[6:] == "01" and start[:6] == eind[:6] and int(eind[6:]) == calendar.monthrange(int(eind[:4]),int(eind[4:6]))[1]:
+                        helemaand = True
+                    StartDatum = False
+                    while StartDatum == False:
+                        SD = input(nieuwestartdatum)
+                        if SD.upper() in afsluitlijst:
+                            return
+                        elif len(SD) == 2 and SD[0].upper() in afsluitlijst and SD[1].upper() in skiplijst:
+                            eindroutine()
+                        try:
+                            if SD[0] in ["+","-"]:
+                                delta = eval(SD)
+                                startdat = startdat + timedelta(days = delta)
+                            else:
+                                startdat = datetime.strptime(SD,"%Y%m%d")
+                            StartDatum = True
+                        except:
+                            if len(SD) > 1 and SD[0].lower() == maand:
+                                try:
+                                    plus = eval(SD[1:])
+                                    maandstart = datetime.strptime(datetime.strftime(datetime.today(),"%Y%m")+"01","%Y%m%d")
+                                    startdat = datetime.strptime(datetime.strftime(maandstart+timedelta(days = 15 + (30*plus)),"%Y%m"+"01"),"%Y%m%d")
+                                    StartDatum = True
+                                except:
+                                    pass
+                            elif len(SD) == 1 and SD.lower() == maand:
+                                startdat = datetime.strptime(datetime.strftime(datetime.today(),"%Y%m")+"01","%Y%m%d")
+                                StartDatum = True
+                            else:
+                                startdat = date.today()
+                                StartDatum = True
+                    start = int(datetime.strftime(startdat,"%Y%m%d"))
+                    if helemaand == True and str(start)[6:] == "01":
+                        einddat = startdat + timedelta(days = (calendar.monthrange(int(str(start)[:4]),int(str(start)[4:6]))[1]-1))
+                    else:
+                        einddat = startdat + lent
+                    eind = int(datetime.strftime(einddat,"%Y%m%d"))
+                    kopie =  True
+
+                else:
+                    del uitklap
+            except:
+                pass
+        kopietaak = [start,eind,takenlijst[uitklap-1][2],takenlijst[uitklap-1][3],takenlijst[uitklap-1][4],takenlijst[uitklap-1][5]]
+        takenlijst.append(kopietaak)
+        takenlijst = sorted(takenlijst)
+        nieuwetaakindex = takenlijst.index(kopietaak)+1
+        col = statcol[kopietaak[5]-1]
+        if lang == "EN":
+            print("The new Task has (for now) ID: %s" % col+str(nieuwetaakindex)+ResetAll)
+        else:
+            print("De nieuwe Taak heeft (voorlopig) ID: %s" % col+str(nieuwetaakindex)+ResetAll)
+        lijn = "+"+"-"*20+"+"+"-"*20
+        print(colbekijken+lijn+ResetAll)
+        for i in range(len(kopietaak)):
+            ij = kopietaak[i]
+            if i == 5:
+                ij = statuslijst[kopietaak[i]-1]
+            if i == 2 or i == 5:
+                print(" "+forl20(taakverdeling[i]),col+str(ij)+ResetAll)
+            else:
+                print(" "+forl20(taakverdeling[i]),str(ij))
+        print(colbekijken+lijn+ResetAll)
+        checkstatusdatum()
+        with open("takenlijst","w") as t:
+            print(takenlijst, end = "", file = t)
+    else:
+        StartDatum = False
+        while StartDatum == False:
+            SD = input(startdatum)
+            if SD.upper() in afsluitlijst:
+                uit = True
+                return uit
+            elif len(SD) == 2 and SD[0].upper() in afsluitlijst and SD[1].upper() in skiplijst:
+                eindroutine()
+            try:
+                if SD[0] == "+":
+                    delta = int(SD[1:])
+                    origstart = datetime.today()
+                    startdat = origstart + timedelta(days = delta)
+                elif SD[0] == "-":
+                    delta = int(SD[1:])
+                    origstart = datetime.today()
+                    startdat = origstart - timedelta(days = delta)
+                else:
+                    try:
+                        startdat = datetime.strptime(SD,"%Y%m%d")
+                    except:
+                        if len(SD) > 1 and SD[0].lower() == maand:
+                            try:
+                                plus = eval(SD[1:])
+                                maandstart = datetime.strptime(datetime.strftime(datetime.today(),"%Y%m")+"01","%Y%m%d")
+                                startdat = datetime.strptime(datetime.strftime(maandstart+timedelta(days = 15 + (30*plus)),"%Y%m"+"01"),"%Y%m%d")
+                            except(Exception) as fout:
+                                print(fout)
+                                pass
+                        elif len(SD) == 1 and SD.lower() == maand:
+                            startdat = datetime.strptime(datetime.strftime(datetime.today(),"%Y%m")+"01","%Y%m%d")
+                start = int(datetime.strftime(startdat,"%Y%m%d"))
+                if lang == "EN":
+                    print("The Start date is %s." % start)
+                else:
+                    print("De Startdatum is %s." % start)
+                StartDatum = True
+            except:
+                startdat = datetime.today()
+                start = int(datetime.strftime(startdat,"%Y%m%d"))
+                if lang == "EN":
+                    print("The default Start date (today: %s) is selected." % start)
+                else:
+                    print("De standaardStartdatum (vandaag: %s) is geselecteerd." % start)
+                StartDatum = True
+        EindDatum = False
+        while EindDatum == False:
+            ED = input(einddatum).replace(" ","").replace("-","").replace("/","").replace(":","").replace("\\","")
+            if ED.upper() in afsluitlijst:
+                uit = True
+                return uit
+            elif len(ED) == 2 and ED[0].upper() in afsluitlijst and ED[1].upper() in skiplijst:
+                eindroutine()
+            try:
+                if ED[0] == "+":
+                    delta = int(ED[1:])
+                    origstart = datetime.strptime(str(start),"%Y%m%d")
+                    einddat = origstart + timedelta(days = delta)
+                else:
+                    try:
+                        einddat = datetime.strptime(ED,"%Y%m%d")
+                    except:
+                        if ED.lower() == maand:
+                            maandstr = datetime.strftime(startdat,"%Y%m")
+                            einddat = datetime.strptime(maandstr+str(calendar.monthrange(int(maandstr[:4]),int(maandstr[4:]))[1]),"%Y%m%d")
+                eind = int(datetime.strftime(einddat,"%Y%m%d"))
+                if eind >= start:
+                    if lang == "EN":
+                        print("The Due date is %s." % eind)
+                    else:
+                        print("De Einddatum is %s." % eind)
+                    EindDatum = True
+            except(Exception) as fout:
+                print(fout)
+                einddat = startdat+timedelta(days = 6)
+                eind = int(datetime.strftime(einddat,"%Y%m%d"))
+                if lang == "EN":
+                    print("The default Due date (Start date + 6 days: %s) is selected." % eind)
+                else:
+                    print("De standaardEinddatum (Startdatum + 6 dagen: %s) is geselecteerd." % eind)
+                EindDatum = True
+        koe = False
+        while koe == False:
+            OS = input(omschrijving)
+            if OS.upper() in afsluitlijst:
+                uit = True
+                return uit
+            elif len(OS) == 2 and OS[0].upper() in afsluitlijst and OS[1].upper() in skiplijst:
+                eindroutine()
+            if len(OS) < 4:
+                print(moetlanger)
+            else:
+                koe = True
+        teamlijst = team()
+        teamshowbasis()
+        pisang = False
+        while pisang == False:
+            LL = input(wie)
+            if LL.upper() in afsluitlijst:
+                uit = True
+                return uit
+            elif len(LL) == 2 and LL[0].upper() in afsluitlijst and LL[1].upper() in skiplijst:
+                eindroutine()
+            try:
+                LL = int(LL)
+                if 0 <= LL-1 <= len(teamlijst):
+                    die = teamlijst[LL-1]
+                    if lang == "EN":
+                        print("%s %s is the chosen one." % (die[1],die[2]))
+                    else:
+                        print("%s %s is gekozen." % (die[1],die[2]))
+                    pisang = True
+            except:
+                pass
+        AT = input(aantekening)
+        if AT.upper() in afsluitlijst:
             uit = True
             return uit
-        elif len(ST) == 2 and ST[0].upper() in afsluitlijst and ST[1].upper() in skiplijst:
+        elif len(AT) == 2 and AT[0].upper() in afsluitlijst and AT[1].upper() in skiplijst:
             eindroutine()
-        if ST == "":
-            if datetime.strptime(str(start),"%Y%m%d") > datetime.strptime(str(nu),"%Y%m%d"):
-                ST = "1"
-            elif datetime.strptime(str(start),"%Y%m%d") <= datetime.strptime(str(nu),"%Y%m%d") <= datetime.strptime(str(eind),"%Y%m%d"):
-                ST = "2"
-            elif datetime.strptime(str(eind),"%Y%m%d") <= datetime.strptime(str(nu),"%Y%m%d"):
-                ST = "6"
-        try:
-            ST = int(ST)
-            if 0 <= ST-1 <= len(statuslijst):
-                stus = statuslijst[ST-1]
-                if lang == "EN":
-                    print("%s is the chosen status." % stus)
-                else:
-                    print("%s is de gekozen status." % stus)
-                staat = True
-        except:
-            pass
-    nieuwtaak = [start,eind,OS,die[1]+" "+die[2],AT,ST]
-    takenlijst.append(nieuwtaak)
-    takenlijst = sorted(takenlijst)
-    checkstatusdatum()
-    with open("takenlijst","w") as t:
-        print(takenlijst, end = "", file = t)
+        staat = False
+        while staat == False:
+            print(staten)
+            statusshow()
+            ST = input(inputindent)
+            if ST.upper() in afsluitlijst:
+                uit = True
+                return uit
+            elif len(ST) == 2 and ST[0].upper() in afsluitlijst and ST[1].upper() in skiplijst:
+                eindroutine()
+            if ST == "":
+                if datetime.strptime(str(start),"%Y%m%d") > datetime.strptime(str(nu),"%Y%m%d"):
+                    ST = "1"
+                elif datetime.strptime(str(start),"%Y%m%d") <= datetime.strptime(str(nu),"%Y%m%d") <= datetime.strptime(str(eind),"%Y%m%d"):
+                    ST = "2"
+                elif datetime.strptime(str(eind),"%Y%m%d") <= datetime.strptime(str(nu),"%Y%m%d"):
+                    ST = "6"
+            try:
+                ST = int(ST)
+                if 0 <= ST-1 <= len(statuslijst):
+                    stus = statuslijst[ST-1]
+                    if lang == "EN":
+                        print("%s is the chosen status." % stus)
+                    else:
+                        print("%s is de gekozen status." % stus)
+                    staat = True
+            except:
+                pass
+        nieuwtaak = [start,eind,OS,die[1]+" "+die[2],AT,ST]
+        takenlijst.append(nieuwtaak)
+        takenlijst = sorted(takenlijst)
+        checkstatusdatum()
+        with open("takenlijst","w") as t:
+            print(takenlijst, end = "", file = t)
 
 def takensmal():
     lijn = "+--+----+----+-----------+-----------+-----------+---------+"
@@ -1308,8 +1404,8 @@ def wijzigtaak():
         wie = "Geef de ID van de Medewerker:\n%s" % inputindent
         aantekening = "Geef extra Informatie (opt):\n%s" % inputindent
         staten = "Geef de ID van één van deze Statusen:"
-        welk = "Geef de ID op van de Taak die je wilt wijzigen:\n%s" % inputindent
-        wat = "Geef de ID op van wat je wilt wijzigen:"
+        welk = "Geef de ID op van de Taak die u wilt wijzigen:\n%s" % inputindent
+        wat = "Geef de ID op van wat u wilt wijzigen:"
     takenlijst = taak()
     takenblok()
     kelapa = False
@@ -1510,7 +1606,7 @@ def wijzigmedewerker():
     else:
         kies = "Kies een Medewerker om te %sWIJZIGEN%s:" % (colwijzigen, ResetAll)
         wie = "Geef de ID van de Medewerker:\n%s" % inputindent
-        wat = "Wat wil je Wijzigen?:\n  1 : Personeelsnummer\n  2 : VoorNaam\n  3 : AchterNaam\n  4 : Check\n  5 : Aantekening\n%s" % inputindent
+        wat = "Wat wilt u Wijzigen?:\n  1 : Personeelsnummer\n  2 : VoorNaam\n  3 : AchterNaam\n  4 : Check\n  5 : Aantekening\n%s" % inputindent
         tog = "Check deze Medewerker UIT of IN:\n  0 : UIT\n  1 : IN\n >2 : Omkeren\n%s" % inputindent
         nietuniek = "Dit Personeelsnummer bestaat al."
     teamlijst = team()
@@ -1613,9 +1709,9 @@ def wijzigteam():
         wat = "What do you want to change?\n >1 : Check this group OUT or IN\n  2 : Change Note for everyone in this group\n%s" % inputindent
         nieuweaantekening = "Type or clear the Note:\n%s" % inputindent
     else:
-        sel = "Selecteer ID's van de Medewerkers die je wilt %sWIJZIGEN%s,\nin CSV-stijl (gescheiden door een komma), of * voor alle:\n%s" % (colwijzigen,ResetAll,inputindent)
+        sel = "Selecteer ID's van de Medewerkers die u wilt %sWIJZIGEN%s,\nin CSV-stijl (gescheiden door een komma), of * voor alle:\n%s" % (colwijzigen,ResetAll,inputindent)
         tog = "Check deze Medewerkers UIT of IN:\n  0 : UIT\n  1 : IN\n >2 : Omkeren\n%s" % inputindent
-        wat = "Wat wil je wijzigen?\n >1 : Check deze groep UIT of IN\n  2 : Wijzig Aantekening voor iedereen in deze groep\n%s" % inputindent
+        wat = "Wat wilt u wijzigen?\n >1 : Check deze groep UIT of IN\n  2 : Wijzig Aantekening voor iedereen in deze groep\n%s" % inputindent
         nieuweaantekening = "Typ of wis de Aantekening:\n%s" % inputindent
     teamlijst = team()
     teamshowbasis()
@@ -1867,7 +1963,7 @@ def archiveerofverwijdertaak():
         sel = "Give the IDs of the Tasks that you want to %sARCHIVE and/or DELETE%s,\nin CSV style (separated by commas), or * for all:\n%s" % (colverwijderen, ResetAll, inputindent)
         archov = "Select:\n  1 : Only Archive (append to Notepad)\n  2 : Only Delete\n >3 : Archive and Delete\n%s" % inputindent
     else:
-        sel = "Geef ID's op van de Taken die je wilt %sARCHIVEREN en/of VERWIJDEREN%s,\nin CSV-stijl (gescheiden door een komma), of * voor alle:\n%s" % (colverwijderen, ResetAll, inputindent)
+        sel = "Geef ID's op van de Taken die u wilt %sARCHIVEREN en/of VERWIJDEREN%s,\nin CSV-stijl (gescheiden door een komma), of * voor alle:\n%s" % (colverwijderen, ResetAll, inputindent)
         archov = "Selecteer:\n  1 : Alleen Archiveren (toevoegen aan Kladblok)\n  2 : Alleen Verwijderen\n >3 : Archiveren en Verwijderen\n%s" % inputindent
     takenlijst = taak()
     takenblok()
@@ -1915,7 +2011,7 @@ def archiveerofverwijdermedewerker():
         sel = "Select the IDs of the Agents that you want to %sARCHIVE and/or DELETE%s,\nin CSV style (separated by commas), or * for all:\n%s" % (colverwijderen, ResetAll, inputindent)
         archov = "Select:\n  1 : Only Archive (append to Notepad)\n  2 : Only Delete\n >3 : Archive and Delete\n%s" % inputindent
     else:
-        sel = "Selecteer ID's van de Medewerkers die je wilt %sARCHIVEREN en/of VERWIJDEREN%s,\nin CSV-stijl (gescheiden door een komma), of * voor alle:\n%s" % (colverwijderen, ResetAll, inputindent)
+        sel = "Selecteer ID's van de Medewerkers die u wilt %sARCHIVEREN en/of VERWIJDEREN%s,\nin CSV-stijl (gescheiden door een komma), of * voor alle:\n%s" % (colverwijderen, ResetAll, inputindent)
         archov = "Selecteer:\n  1 : Alleen Archiveren (toevoegen aan Kladblok)\n  2 : Alleen Verwijderen\n >3 : Archiveren en Verwijderen\n%s" % inputindent
     teamlijst = team()
     teamshowbasis()
@@ -1962,7 +2058,7 @@ def uitklapteam():
     if lang == "EN":
         welk = "Give the ID of the Agent you want to expand:\n%s" % inputindent
     else:
-        welk = "Geef de ID op van de Medewerker die je wilt uitklappen:\n%s" % inputindent
+        welk = "Geef de ID op van de Medewerker die u wilt uitklappen:\n%s" % inputindent
     teamlijst = team()
     kelapa = False
     while kelapa == False:
