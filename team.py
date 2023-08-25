@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-versie = "1.35"
-datum = "20230824"
+versie = "1.36"
+datum = "20230825"
 import locale, os, ast, pathlib, subprocess, random, textwrap, calendar
 from datetime import *
 from dateutil.relativedelta import *
@@ -730,6 +730,25 @@ def taaknieuw():
         nieuwtaak = [start,eind,OS,die[1]+" "+die[2],AT,ST]
         takenlijst.append(nieuwtaak)
         takenlijst = sorted(takenlijst)
+        nieuwetaakindex = takenlijst.index(nieuwtaak)+1
+        col = statcol[nieuwtaak[5]-1]
+        if lang == "EN":
+            print("The new Task has (for now) ID: %s" % Omkeren+col+str(nieuwetaakindex)+ResetAll)
+        else:
+            print("De nieuwe Taak heeft (voorlopig) ID: %s" % Omkeren+col+str(nieuwetaakindex)+ResetAll)
+        lijn = "+"+"-"*20+"+"+"-"*20
+        print(colbekijken+lijn+ResetAll)
+        for i in range(len(nieuwtaak)):
+            ij = nieuwtaak[i]
+            if i == 5:
+                ij = statuslijst[nieuwtaak[i]-1]
+            if i == 2:
+                print(" "+forl20(taakverdeling[i]),col+str(ij)+ResetAll)
+            if i == 5:
+                print(" "+forl20(taakverdeling[i]),Omkeren+col+str(ij)+ResetAll)
+            else:
+                print(" "+forl20(taakverdeling[i]),str(ij))
+        print(colbekijken+lijn+ResetAll)
         checkstatusdatum()
         with open("takenlijst","w") as t:
             print(takenlijst, end = "", file = t)
@@ -746,7 +765,7 @@ def takensmal():
     takenlijst = taak()
     for i in takenlijst:
         ID = takenlijst.index(i)+1
-        print(forr3(ID),forc4(str(i[0]))[4:],forc4(str(i[1]))[4:],statcol[int(i[5])-1]+forl11(i[2])[:11]+ResetAll,forl11(i[3])[:11],forl11(i[4])[:11],statcol[int(i[5])-1]+forl10(statuslijst[int(i[5])-1])[:10]+ResetAll)
+        print(forr3(ID),forc4(str(i[0]))[4:],forc4(str(i[1]))[4:],statcol[int(i[5])-1]+forl11(i[2])[:11]+ResetAll,forl11(i[3])[:11],forl11(i[4])[:11],Omkeren+statcol[int(i[5])-1]+forl10(statuslijst[int(i[5])-1])[:10]+ResetAll)
     print(colbekijken+lijn+ResetAll)
     print()
 
@@ -762,7 +781,7 @@ def takenbreed():
     takenlijst = taak()
     for i in takenlijst:
         ID = takenlijst.index(i)+1
-        print(forr3(ID),forc8(str(i[0]))[:8],forc8(str(i[1]))[:8],statcol[int(i[5])-1]+forl20(i[2])[:20]+ResetAll,forl20(i[3])[:20],forl20(i[4])[:20],statcol[int(i[5])-1]+forl15(statuslijst[int(i[5])-1])[:15]+ResetAll)
+        print(forr3(ID),forc8(str(i[0]))[:8],forc8(str(i[1]))[:8],statcol[int(i[5])-1]+forl20(i[2])[:20]+ResetAll,forl20(i[3])[:20],forl20(i[4])[:20],Omkeren+statcol[int(i[5])-1]+forl15(statuslijst[int(i[5])-1])[:15]+ResetAll)
     print(colbekijken+lijn+ResetAll)
     print()
 
@@ -830,30 +849,30 @@ def takenlijn(scopenunu):
         deltae = (datetime.strptime(str(i[1]),"%Y%m%d") - eerstedatum).days
 # Meteen klaar:
         if deltae < 0:
-            print("<"+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll)
+            print("<"+Omkeren+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll)
             klaar = True
         if deltas < 0 and deltae == 0:
-            print("<"+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll+forl4(i[3][:5-len(str(takenlijst.index(i)+1))]))
+            print("<"+Omkeren+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll+forl4(i[3][:5-len(str(takenlijst.index(i)+1))]))
             klaar = True
         if deltas == 0 and lentaak == 0:
-            print(" "+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll+forl4(i[3][:5-len(str(takenlijst.index(i)+1))]))
+            print(" "+Omkeren+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll+forl4(i[3][:5-len(str(takenlijst.index(i)+1))]))
             klaar = True
         if deltas == scope-1 and lentaak == 0:
-            print(" "+"     "*deltas+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll+i[3][:5-len(str(takenlijst.index(i)+1))])
+            print(" "+"     "*deltas+Omkeren+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll+i[3][:5-len(str(takenlijst.index(i)+1))])
             klaar = True
         if deltas == scope-1 and lentaak > 0:
-            print(" "+"     "*deltas+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll+i[3][:4-len(str(takenlijst.index(i)+1))]+">")
+            print(" "+"     "*deltas+Omkeren+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll+i[3][:4-len(str(takenlijst.index(i)+1))]+">")
             klaar = True
         if deltas > scope -1:
-            print(" "+"     "*(scope-1)+statcol[int(i[5])-1]+forr4(takenlijst.index(i)+1)+ResetAll+">")
+            print(" "+"     "*(scope-1)+Omkeren+statcol[int(i[5])-1]+forr4(takenlijst.index(i)+1)+ResetAll+">")
             klaar = True
 # Klaarzetten voor meer:
         if deltas < 0 and deltae > 0:
-            print("<"+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+forl4(i[2][:5-len(str(takenlijst.index(i)+1))])+ResetAll,end = "")
+            print("<"+Omkeren+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll+statcol[int(i[5])-1]+forl4(i[2][:5-len(str(takenlijst.index(i)+1))])+ResetAll,end = "")
         if deltas == 0 and lentaak > 0:
-            print(" "+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+forl4(i[2][:5-len(str(takenlijst.index(i)+1))])+ResetAll,end = "")
+            print(" "+Omkeren+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll+statcol[int(i[5])-1]+forl4(i[2][:5-len(str(takenlijst.index(i)+1))])+ResetAll,end = "")
         if deltas > 0 and deltas < scope -1:
-            print(" "+"     "*deltas+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+i[2][:5-len(str(takenlijst.index(i)+1))]+ResetAll, end = "")
+            print(" "+"     "*deltas+Omkeren+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll+statcol[int(i[5])-1]+i[2][:5-len(str(takenlijst.index(i)+1))]+ResetAll, end = "")
 # Meteen afmaken:
         if klaar == False and lentaak == 0:
             print()
@@ -865,7 +884,7 @@ def takenlijn(scopenunu):
             print(statcol[int(i[5])-1]+"....."*(deltae-deltas-1)+ResetAll+forl4(i[3][:4]))
             klaar = True
         if klaar == False and deltae == scope-1:
-            print(statcol[int(i[5])-1]+"....."*(lentaak-1)+ResetAll+forl4(i[3][:4]))
+            print(statcol[int(i[5])-1]+"....."*(scope-2)+ResetAll+forl4(i[3][:4]))
             klaar = True
         if klaar == False and deltae > scope-1:
             print(statcol[int(i[5])-1]+"....."*(scope - deltas-2)+ResetAll+forl4(i[3][:4])+">")
@@ -914,8 +933,10 @@ def filterstatustaak(uitklapofstatus):
                     ij = j
                     if j == i[5]:
                         ij = statuslijst[j-1]
-                    if j == i[2] or j == i[5]:
+                    if j == i[2]:
                         print(" "+forl20(taakverdeling[tv]),col+str(ij)+ResetAll)
+                    if j == i[5]:
+                        print(" "+forl20(taakverdeling[tv]),Omkeren+col+str(ij)+ResetAll)
                     else:
                         print(" "+forl20(taakverdeling[tv]),str(ij))
                     tv +=1
@@ -943,8 +964,10 @@ def filteromschrijvingtaak(uitklapofstatus):
                 ij = j
                 if j == i[5]:
                     ij = statuslijst[j-1]
-                if j == i[2] or j == i[5]:
+                if j == i[2]:
                     print(" "+forl20(taakverdeling[tv]),col+str(ij)+ResetAll)
+                if j == i[5]:
+                    print(" "+forl20(taakverdeling[tv]),Omkeren+col+str(ij)+ResetAll)
                 else:
                     print(" "+forl20(taakverdeling[tv]),str(ij))
                 tv +=1
@@ -964,7 +987,7 @@ def kalender():
         kaltaak.append(str(i[1]))
         tlengt = (teinde - tstart + timedelta(days = 1)).days
         kaltaak.append(tlengt)
-        tstcol = statcol[i[5]-1]
+        tstcol = Omkeren+statcol[i[5]-1]
         kaltaak.append(tstcol)
         kaltaken.append(kaltaak)
         kaltaak = []
@@ -1287,13 +1310,13 @@ def kalender():
 
 def takenshow():
     if lang == "EN":
-        sob = "View:\n >1 : Narrow (60 chars)\n  2 : Wide (100 chars)\n  3 : Timeline ( 7+1 days: Narrow)\n  4 : Timeline (14+1 days: Normal)\n  5 : Timeline (30+1 days: Wide)\n  6 : Timeline (Give days)\n  7 : Compact block\n  0 : Calendar\n%s" % inputindent
+        sob = "View:\n >1 : Narrow (60 chars)\n  2 : Wide (100 chars)\n  3 : Timeline ( 7+1 days: Narrow)\n  4 : Timeline (14+1 days: Normal)\n  5 : Timeline (31+1 days: Wide)\n  6 : Timeline (Give days)\n  7 : Compact block\n  0 : Calendar\n%s" % inputindent
         geentaken = "There are no tasks."
         hoelang = "Give the number of days of the length of your timeline (default 3):\n%s" % inputindent
         vanaf = "Give the number of days in the past (default 1):\n%s" % inputindent
         ukos = textwrap.wrap("To expand Tasks, give the Task ID's in CSV style, the exact Status, a search string in the Task description, or \"*\" for all:", width = wi)
     else:
-        sob = "Toon:\n >1 : Smal (60 tekens)\n  2 : Breed (100 tekens)\n  3 : Tijdlijn ( 7+1 dagen: Smal)\n  4 : Tijdlijn (14+1 dagen: Normaal)\n  5 : Tijdlijn (30+1 dagen: Breed)\n  6 : Tijdlijn (Geef dagen)\n  7 : Compact blok\n  0 : Kalender\n%s" % inputindent
+        sob = "Toon:\n >1 : Smal (60 tekens)\n  2 : Breed (100 tekens)\n  3 : Tijdlijn ( 7+1 dagen: Smal)\n  4 : Tijdlijn (14+1 dagen: Normaal)\n  5 : Tijdlijn (31+1 dagen: Breed)\n  6 : Tijdlijn (Geef dagen)\n  7 : Compact blok\n  0 : Kalender\n%s" % inputindent
         geentaken = "Er zijn geen taken."
         hoelang = "Geef het aantal dagen op van de lengte van de tijdlijn (standaard 3):\n%s" % inputindent
         vanaf = "Geef het aantal dagen in het verleden op (standaard 1):\n%s" % inputindent
@@ -1310,15 +1333,15 @@ def takenshow():
     if now == "2":
         takenbreed()
     elif now == "3":
-        scopenunu["scope"] = 8
+        scopenunu["scope"] = 7+1
         scopenunu["nunu"] = 1
         takenlijn(scopenunu)
     elif now == "4":
-        scopenunu["scope"] =15 
+        scopenunu["scope"] =14+1
         scopenunu["nunu"] = 3
         takenlijn(scopenunu)
     elif now == "5":
-        scopenunu["scope"] = 31
+        scopenunu["scope"] = 31+1
         scopenunu["nunu"] = 7
         takenlijn(scopenunu)
     elif now == "6":
