@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-versie = "1.37"
+versie = "1.38"
 datum = "20230828"
 import locale, os, ast, pathlib, subprocess, random, textwrap, calendar
 from datetime import *
@@ -97,7 +97,9 @@ neelijst = ["N"]
 skiplijst = ["!",">","S","D"] # Skip, Standaard, Default
 inputindent = "  : "
 dagenlijstEN = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
+maandlijstEN = ["January","February","March","April","May","June","July", "August", "September","October","November","December"]
 dagenlijstNL = ["maandag","dinsdag","woensdag","donderdag","vrijdag","zaterdag","zondag"]
+maandlijstNL = ["januari","februari","maart","april","mei","juni","juli", "augustus", "september","oktober","november","december"]
 scopenunu = {}
 wi = 60
 vim = """# NL:
@@ -462,14 +464,14 @@ def teamshow():
                     print(lijn)
                     tv = 0
                     for j in i:
-                        col = statcol[i[5]-1]
+                        col = ResetAll
                         ij = j
-                        if j == i[5]:
-                            ij = statuslijst[j-1]
                         if j == i[2] or j == i[5]:
-                            print(" "+forl20(taakverdeling[tv]),col+str(ij)+ResetAll)
-                        else:
-                            print(" "+forl20(taakverdeling[tv]),str(ij))
+                            col = statcol[i[5]-1]
+                        if j == i[5]:
+                            col = Omkeren+statcol[i[5]-1]
+                            ij = statuslijst[j-1]
+                        print(" "+forl20(taakverdeling[tv]),col+str(ij)+ResetAll)
                         tv +=1
                     print(lijn)
         except:
@@ -620,8 +622,7 @@ def taaknieuw():
                                 plus = eval(SD[1:])
                                 maandstart = datetime.strptime(datetime.strftime(datetime.today(),"%Y%m")+"01","%Y%m%d")
                                 startdat = datetime.strptime(datetime.strftime(maandstart+timedelta(days = 15 + (30*plus)),"%Y%m"+"01"),"%Y%m%d")
-                            except(Exception) as fout:
-                                print(fout)
+                            except:
                                 pass
                         elif len(SD) == 1 and SD.lower() == maand:
                             startdat = datetime.strptime(datetime.strftime(datetime.today(),"%Y%m")+"01","%Y%m%d")
@@ -666,8 +667,7 @@ def taaknieuw():
                     else:
                         print("De Einddatum is %s." % eind)
                     EindDatum = True
-            except(Exception) as fout:
-                print(fout)
+            except:
                 einddat = startdat+timedelta(days = 6)
                 eind = int(datetime.strftime(einddat,"%Y%m%d"))
                 if lang == "EN":
@@ -754,15 +754,14 @@ def taaknieuw():
         lijn = "+"+"-"*20+"+"+"-"*20
         print(colbekijken+lijn+ResetAll)
         for i in range(len(nieuwtaak)):
+            col = ResetAll
             ij = nieuwtaak[i]
+            if i == 2:
+                col = statcol[nieuwtaak[5]-1]
             if i == 5:
+                col = Omkeren+statcol[nieuwtaak[5]-1]
                 ij = statuslijst[nieuwtaak[i]-1]
-            #if i == 2:
-            #    print(" "+forl20(taakverdeling[i]),col+str(ij)+ResetAll)
-            if i == 5:
-                print(" "+forl20(taakverdeling[i]),Omkeren+col+str(ij)+ResetAll)
-            else:
-                print(" "+forl20(taakverdeling[i]),str(ij))
+            print(" "+forl20(taakverdeling[i]),col+str(ij)+ResetAll)
         print(colbekijken+lijn+ResetAll)
         checkstatusdatum()
         with open("takenlijst","w") as t:
@@ -944,21 +943,18 @@ def filterstatustaak(uitklapofstatus):
                 print(colbekijken+lijn+ResetAll)
                 tv = 0
                 for j in i:
-                    col = statcol[i[5]-1]
+                    col = ResetAll
                     ij = j
-                    if j == i[5]:
-                        ij = statuslijst[j-1]
                     if j == i[2]:
-                        print(" "+forl20(taakverdeling[tv]),col+str(ij)+ResetAll)
+                        col = statcol[i[5]-1]
                     if j == i[5]:
-                        print(" "+forl20(taakverdeling[tv]),Omkeren+col+str(ij)+ResetAll)
-                    else:
-                        print(" "+forl20(taakverdeling[tv]),str(ij))
+                        col = Omkeren+statcol[i[5]-1]
+                        ij = statuslijst[j-1]
+                    print(" "+forl20(taakverdeling[tv]),col+str(ij)+ResetAll)
                     tv +=1
                 print(colbekijken+lijn+ResetAll)
         print()
-    except(Exception) as f:
-        print(f)
+    except:
         pass
 
 def filteromschrijvingtaak(uitklapofstatus):
@@ -975,16 +971,14 @@ def filteromschrijvingtaak(uitklapofstatus):
             print(colbekijken+lijn+ResetAll)
             tv = 0
             for j in i:
-                col = statcol[i[5]-1]
+                col = ResetAll
                 ij = j
-                if j == i[5]:
-                    ij = statuslijst[j-1]
                 if j == i[2]:
-                    print(" "+forl20(taakverdeling[tv]),col+str(ij)+ResetAll)
+                    col = statcol[i[5]-1]
                 if j == i[5]:
-                    print(" "+forl20(taakverdeling[tv]),Omkeren+col+str(ij)+ResetAll)
-                else:
-                    print(" "+forl20(taakverdeling[tv]),str(ij))
+                    col = Omkeren+statcol[i[5]-1]
+                    ij = statuslijst[j-1]
+                print(" "+forl20(taakverdeling[tv]),col+str(ij)+ResetAll)
                 tv +=1
     print(colbekijken+lijn+ResetAll)
     print()
@@ -1010,8 +1004,6 @@ def kalender():
         dagenlijst = dagenlijstEN
     else:
         dagenlijst = dagenlijstNL
-    maandlijstNL = ["januari","februari","maart","april","mei","juni","juli", "augustus", "september","oktober","november","december"]
-    maandlijstEN = ["January","February","March","April","May","June","July", "August", "September","October","November","December"]
     nuyyyymm0 = datetime.strftime(date.today(),"%Y%m")
     dzmnd0 = datetime.strftime(datetime.strptime(nuyyyymm0,"%Y%m")+timedelta(days = 15+30*0),"%B")
     nuyyyymm1 = datetime.strftime(datetime.strptime(nuyyyymm0,"%Y%m")+timedelta(days = 15+30*1),"%Y%m")
@@ -1939,8 +1931,7 @@ def archiveerteam(medewerkerlijst):
                     tv +=1
                 print(lijn, file = t)
             print(archok)
-        except(Exception) as f:
-            print(f)
+        except:
             pass
     print()
 
@@ -1961,24 +1952,30 @@ def archiveertaak(taaklijst):
     if lang == "EN":
         archop = "\nArchived on %s:" % nu
         archok = "Task(s) archived successfully."
+        archnok = "%sTask(s) NOT archived successfully.%s Is the status %s?" % (statcol[5],ResetAll,Omkeren+statcol[5]+statuslijst[5]+ResetAll)
     else:
         archop = "\nGearchiveerd op %s:" % nu
         archok = "Ta(a)k(en) succesvol gearchiveerd."
+        archnok = "%sTa(a)k(en) NIET succesvol gearchiveerd.%s Is de status %s?" % (statcol[5],ResetAll,Omkeren+statcol[5]+statuslijst[5]+ResetAll)
     with open("team.txt","a+") as t:
         try:
             for i in taaklijst:
-                lijn = "+"+"-"*20+"+"+"-"*20
-                print(archop, file = t)
-                print(lijn, file = t)
-                tv = 0
-                for j in i:
-                    ij = j
-                    if j == i[5]:
-                        ij = statuslijst[int(i[5])-1]
-                    print(" "+forl20(taakverdeling[tv]),str(ij), file = t)
-                    tv +=1
-                print(lijn, file = t)
-            print(archok)
+                if i[5] == 5+1:
+                    print(archnok)
+                    return "nok"
+                else:
+                    lijn = "+"+"-"*20+"+"+"-"*20
+                    print(archop, file = t)
+                    print(lijn, file = t)
+                    tv = 0
+                    for j in i:
+                        ij = j
+                        if j == i[5]:
+                            ij = statuslijst[j-1]
+                        print(" "+forl20(taakverdeling[tv]),str(ij), file = t)
+                        tv +=1
+                    print(lijn, file = t)
+                    print(archok)
         except:
             pass
     print()
@@ -2038,7 +2035,10 @@ def archiveerofverwijdertaak():
         uit = True
         return uit
     else:
-        archiveertaak(taaklijst)
+        arch = archiveertaak(taaklijst)
+        if arch == "nok":
+            uit = True
+            return uit
         verwijdertaak(taaklijst)
         takenlijst = taak()
         uit = True
@@ -2139,16 +2139,14 @@ def uitklaptaak(uitklapofstatus):
                     print(colbekijken+lijn+ResetAll)
                     tv = 0
                     for j in i:
-                        col = statcol[i[5]-1]
+                        col = ResetAll
                         ij = j
-                        if j == i[5]:
-                            ij = statuslijst[j-1]
                         if j == i[2]:
-                            print(" "+forl20(taakverdeling[tv]),col+str(ij)+ResetAll)
+                            col = statcol[i[5]-1]
                         if j == i[5]:
-                            print(" "+forl20(taakverdeling[tv]),Omkeren+col+str(ij)+ResetAll)
-                        else:
-                            print(" "+forl20(taakverdeling[tv]),str(ij))
+                            col = Omkeren+statcol[i[5]-1]
+                            ij = statuslijst[j-1]
+                        print(" "+forl20(taakverdeling[tv]),col+str(ij)+ResetAll)
                         tv +=1
             print(colbekijken+lijn+ResetAll)
     except:
