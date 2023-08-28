@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-versie = "1.36"
-datum = "20230825"
+versie = "1.37"
+datum = "20230828"
 import locale, os, ast, pathlib, subprocess, random, textwrap, calendar
 from datetime import *
 from dateutil.relativedelta import *
@@ -258,7 +258,7 @@ def hoeveeltaken():
 
 def checkstatusdatum():
     takenlijst = taak()
-    oei = 0
+    oeilijst = []
     for i in takenlijst:
         if datetime.strptime(str(i[0]),"%Y%m%d") > datetime.strptime(nu,"%Y%m%d") and i[5] not in [3,4,5,7]:
             i[5] = 1
@@ -267,23 +267,38 @@ def checkstatusdatum():
         if datetime.strptime(str(i[1]),"%Y%m%d") < datetime.strptime(nu,"%Y%m%d") and i[5] == 2:
             i[5] = 6
         if i[5] == 6:
-            oei += 1
-    if oei == 1:
+            oeilijst.append(i)
+    if len(oeilijst) == 1:
         if lang == "EN":
             verlopentaak = "There is 1 Task Overdue."
         else:
             verlopentaak = "Er is 1 Verlopen Taak."
         print(statcol[5]+verlopentaak+ResetAll)
-    elif oei > 1:
+    elif len(oeilijst) > 1:
         if lang == "EN":
-            verlopentaken = "There are %s Tasks Overdue." % oei
+            verlopentaken = "There are %s Tasks Overdue." % len(oeilijst)
         else:
-            verlopentaken = "Er zijn %s Verlopen Taken." % oei
+            verlopentaken = "Er zijn %s Verlopen Taken." % len(oeilijst)
         print(statcol[5]+verlopentaken+ResetAll)
     takenlijst = sorted(takenlijst)
     with open("takenlijst","w") as t:
         print(takenlijst, end = "", file = t)
+    return oeilijst
     print()
+    
+def wijzigoei(oeilijst):
+    print()
+    takenlijst = taak()
+    for i in oeilijst:
+        if i in takenlijst:
+            indi = takenlijst.index(i)+1
+            if lang == "EN":
+                print("Change the Due date or the Status of Task %s" % statcol[5]+str(indi)+ResetAll)
+            else:
+                print("Wijzig de Einddatum of de Status van Taak %s" % statcol[5]+str(indi)+ResetAll)
+    print()
+
+
 
 def teamnieuw():
     if lang == "EN":
@@ -742,8 +757,8 @@ def taaknieuw():
             ij = nieuwtaak[i]
             if i == 5:
                 ij = statuslijst[nieuwtaak[i]-1]
-            if i == 2:
-                print(" "+forl20(taakverdeling[i]),col+str(ij)+ResetAll)
+            #if i == 2:
+            #    print(" "+forl20(taakverdeling[i]),col+str(ij)+ResetAll)
             if i == 5:
                 print(" "+forl20(taakverdeling[i]),Omkeren+col+str(ij)+ResetAll)
             else:
@@ -2128,8 +2143,10 @@ def uitklaptaak(uitklapofstatus):
                         ij = j
                         if j == i[5]:
                             ij = statuslijst[j-1]
-                        if j == i[2] or j == i[5]:
+                        if j == i[2]:
                             print(" "+forl20(taakverdeling[tv]),col+str(ij)+ResetAll)
+                        if j == i[5]:
+                            print(" "+forl20(taakverdeling[tv]),Omkeren+col+str(ij)+ResetAll)
                         else:
                             print(" "+forl20(taakverdeling[tv]),str(ij))
                         tv +=1
@@ -2146,7 +2163,9 @@ while baas == True:
     except:
         with open("team.txt","w") as t:
             print(vim, file = t)
-    checkstatusdatum()
+    oeilijst = checkstatusdatum()
+    if len(oeilijst) > 0:
+        wijzigoei(oeilijst)
     kalender()
     hoeveeltaken()
     teamshowkort()
