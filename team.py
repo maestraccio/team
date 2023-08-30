@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-versie = "1.39"
+versie = "1.40"
 datum = "20230830"
 import locale, os, ast, pathlib, subprocess, random, textwrap, calendar
 from datetime import *
@@ -856,53 +856,81 @@ def takenlijn(scopenunu):
     print()
     print(lijn)
     takenlijst = taak()
+    taakinlijst = []
     for i in takenlijst:
-        klaar = False
-        lentaak = (datetime.strptime(str(i[1]),"%Y%m%d") - datetime.strptime(str(i[0]),"%Y%m%d")).days
-        deltas = (datetime.strptime(str(i[0]),"%Y%m%d") - eerstedatum).days
-        deltae = (datetime.strptime(str(i[1]),"%Y%m%d") - eerstedatum).days
-# Meteen klaar:
-        if deltae < 0:
-            print("<"+Omkeren+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll)
-            klaar = True
-        if deltas < 0 and deltae == 0:
-            print("<"+Omkeren+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll+forl4(i[3][:5-len(str(takenlijst.index(i)+1))]))
-            klaar = True
-        if deltas == 0 and lentaak == 0:
-            print(" "+Omkeren+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll+forl4(i[3][:5-len(str(takenlijst.index(i)+1))]))
-            klaar = True
-        if deltas == scope-1 and lentaak == 0:
-            print(" "+"     "*deltas+Omkeren+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll+i[3][:5-len(str(takenlijst.index(i)+1))])
-            klaar = True
-        if deltas == scope-1 and lentaak > 0:
-            print(" "+"     "*deltas+Omkeren+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll+i[3][:4-len(str(takenlijst.index(i)+1))]+">")
-            klaar = True
-        if deltas > scope -1:
-            print(" "+"     "*(scope-1)+Omkeren+statcol[int(i[5])-1]+forr4(takenlijst.index(i)+1)+ResetAll+">")
-            klaar = True
-# Klaarzetten voor meer:
-        if deltas < 0 and deltae > 0:
-            print("<"+Omkeren+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll+statcol[int(i[5])-1]+forl4(i[2][:5-len(str(takenlijst.index(i)+1))])+ResetAll,end = "")
-        if deltas == 0 and lentaak > 0:
-            print(" "+Omkeren+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll+statcol[int(i[5])-1]+forl4(i[2][:5-len(str(takenlijst.index(i)+1))])+ResetAll,end = "")
-        if deltas > 0 and deltas < scope -1:
-            print(" "+"     "*deltas+Omkeren+statcol[int(i[5])-1]+str(takenlijst.index(i)+1)+ResetAll+statcol[int(i[5])-1]+i[2][:5-len(str(takenlijst.index(i)+1))]+ResetAll, end = "")
-# Meteen afmaken:
-        if klaar == False and lentaak == 0:
-            print()
-            klaar = True
-# Aanvullen en afmaken:
-        if deltas < 0:
-            deltas = 0
-        if klaar == False and deltae < scope-1:
-            print(statcol[int(i[5])-1]+"....."*(deltae-deltas-1)+ResetAll+forl4(i[3][:4]))
-            klaar = True
-        if klaar == False and deltae == scope-1:
-            print(statcol[int(i[5])-1]+"....."*(scope-2-deltas)+ResetAll+forl4(i[3][:4]))
-            klaar = True
-        if klaar == False and deltae > scope-1:
-            print(statcol[int(i[5])-1]+"....."*(scope-2-deltas)+ResetAll+forl4(i[3][:4])+">")
-            klaar = True
+        startdatum = datetime.strptime(str(i[0]),"%Y%m%d")
+        einddatum = datetime.strptime(str(i[1]),"%Y%m%d")
+        lentaak = einddatum - startdatum
+        if einddatum < eerstedatum:
+        # Scenario 1 : Einddatum ligt voor eerstedatum
+            taakinlijst.append("<")
+            taakinlijst.append(Omkeren+statcol[i[5]-1]+str(takenlijst.index(i)+1)+ResetAll)
+        elif startdatum < eerstedatum and einddatum == eerstedatum:
+        # Scenario 2 : Startdatum ligt voor eerstedatum en Einddatum ligt op eerstedatum
+            taakinlijst.append("<")
+            taakinlijst.append(Omkeren+statcol[i[5]-1]+str(takenlijst.index(i)+1)+ResetAll+statcol[i[5]-1]+i[2][:5-len(str(takenlijst.index(i)+1))]+ResetAll)
+        elif startdatum < eerstedatum and einddatum < laatstedatum:
+        # Scenario 3 : Startdatum ligt voor eerstedatum en Einddatum ligt voor of op laatstedatum
+            taakinlijst.append("<")
+            taakinlijst.append(Omkeren+statcol[i[5]-1]+str(takenlijst.index(i)+1)+ResetAll+statcol[i[5]-1]+i[2][:5-len(str(takenlijst.index(i)+1))]+ResetAll)
+            lendezetaak = lentaak.days - (eerstedatum - startdatum).days
+            for j in range(lendezetaak-1):
+                taakinlijst.append(statcol[i[5]-1]+"....."+ResetAll)
+            taakinlijst.append(i[3][:5].replace(" ","_"))
+        elif startdatum < eerstedatum and einddatum >= laatstedatum:
+        # Scenario 4 : Startdatum ligt voor eerstedatum en Einddatum ligt na laatstedatum
+            taakinlijst.append("<")
+            taakinlijst.append(Omkeren+statcol[i[5]-1]+str(takenlijst.index(i)+1)+ResetAll+statcol[i[5]-1]+i[2][:5-len(str(takenlijst.index(i)+1))]+ResetAll)
+            lendezetaak = lentaak.days - (eerstedatum - startdatum).days - (einddatum - laatstedatum).days
+            for j in range(lendezetaak-2):
+                taakinlijst.append(statcol[i[5]-1]+"....."+ResetAll)
+            taakinlijst.append(i[3][:4].replace(" ","_"))
+            taakinlijst.append(">")
+        elif eerstedatum <= startdatum == einddatum <= laatstedatum:
+        # Scenario 5 : Startdatum ligt op of na eerstedatum en Einddatum == Startdatum ligt voor of op laatstedatum
+            taakinlijst.append(" ")
+            for j in range((startdatum - eerstedatum).days):
+                taakinlijst.append(statcol[i[5]-1]+"     "+ResetAll)
+            taakinlijst.append(Omkeren+statcol[i[5]-1]+str(takenlijst.index(i)+1)+ResetAll+statcol[i[5]-1]+i[2][:5-len(str(takenlijst.index(i)+1))]+ResetAll)
+        elif eerstedatum <= startdatum and einddatum < laatstedatum:
+        # Scenario 6 : Startdatum ligt op of na eerstedatum en Einddatum ligt voor of op laatstedatum
+            taakinlijst.append(" ")
+            for j in range((startdatum - eerstedatum).days):
+                taakinlijst.append(statcol[i[5]-1]+"     "+ResetAll)
+            taakinlijst.append(Omkeren+statcol[i[5]-1]+str(takenlijst.index(i)+1)+ResetAll+statcol[i[5]-1]+i[2][:5-len(str(takenlijst.index(i)+1))]+ResetAll)
+            lendezetaak = lentaak.days
+            for j in range(lendezetaak-1):
+                taakinlijst.append(statcol[i[5]-1]+"....."+ResetAll)
+            taakinlijst.append(i[3][:5].replace(" ","_"))
+        elif eerstedatum <= startdatum < laatstedatum and einddatum > laatstedatum:
+        # Scenario 7 : Startdatum ligt op of na eerstedatum en Einddatum ligt na laatstedatum
+            taakinlijst.append(" ")
+            for j in range((startdatum - eerstedatum).days):
+                taakinlijst.append(statcol[i[5]-1]+"     "+ResetAll)
+            taakinlijst.append(Omkeren+statcol[i[5]-1]+str(takenlijst.index(i)+1)+ResetAll+statcol[i[5]-1]+i[2][:5-len(str(takenlijst.index(i)+1))]+ResetAll)
+            lendezetaak = lentaak.days - (einddatum - laatstedatum).days
+            for j in range(lendezetaak-2):
+                taakinlijst.append(statcol[i[5]-1]+"....."+ResetAll)
+            taakinlijst.append(i[3][:4].replace(" ","_"))
+            taakinlijst.append(">")
+        elif startdatum == laatstedatum - timedelta(days = 1) <= einddatum:
+        # Scenario 8 : Startdatum ligt op laatstedatum en Einddatum ligt na laatstedatum
+            taakinlijst.append(" ")
+            for j in range((startdatum - eerstedatum).days):
+                taakinlijst.append(statcol[i[5]-1]+"     "+ResetAll)
+            taakinlijst.append(Omkeren+statcol[i[5]-1]+str(takenlijst.index(i)+1)+ResetAll+statcol[i[5]-1]+i[2][:5-len(str(takenlijst.index(i)+1))-1]+ResetAll)
+            taakinlijst.append(">")
+        elif startdatum >= laatstedatum:
+        # Scenario 9 : Startdatum ligt na laatstedatum
+            taakinlijst.append(" ")
+            for j in range((laatstedatum - eerstedatum).days-1):
+                taakinlijst.append(statcol[i[5]-1]+"     "+ResetAll)
+            taakinlijst.append(" "*(4-len(str(takenlijst.index(i)+1)))+Omkeren+statcol[i[5]-1]+str(takenlijst.index(i)+1)+ResetAll)
+            taakinlijst.append(">")
+        for j in taakinlijst:
+            print(j, end = "")
+        print()
+        taakinlijst = []
     print(colbekijken+lijn+ResetAll)
     print()
 
