@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-versie = "1.38"
-datum = "20230828"
+versie = "1.39"
+datum = "20230830"
 import locale, os, ast, pathlib, subprocess, random, textwrap, calendar
 from datetime import *
 from dateutil.relativedelta import *
@@ -91,7 +91,7 @@ except:
     print(ResetAll)
 
 nu = datetime.strftime(datetime.today(),"%Y%m%d")
-afsluitlijst = ["X","Q"]
+afsluitlijst = ["X","Q",":X",":Q"]
 jalijst = ["J","Y"]
 neelijst = ["N"]
 skiplijst = ["!",">","S","D"] # Skip, Standaard, Default
@@ -898,10 +898,10 @@ def takenlijn(scopenunu):
             print(statcol[int(i[5])-1]+"....."*(deltae-deltas-1)+ResetAll+forl4(i[3][:4]))
             klaar = True
         if klaar == False and deltae == scope-1:
-            print(statcol[int(i[5])-1]+"....."*(scope-2)+ResetAll+forl4(i[3][:4]))
+            print(statcol[int(i[5])-1]+"....."*(scope-2-deltas)+ResetAll+forl4(i[3][:4]))
             klaar = True
         if klaar == False and deltae > scope-1:
-            print(statcol[int(i[5])-1]+"....."*(scope - deltas-2)+ResetAll+forl4(i[3][:4])+">")
+            print(statcol[int(i[5])-1]+"....."*(scope-2-deltas)+ResetAll+forl4(i[3][:4])+">")
             klaar = True
     print(colbekijken+lijn+ResetAll)
     print()
