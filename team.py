@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-versie = "1.40"
-datum = "20230830"
+versie = "1.41"
+datum = "20230831"
 import locale, os, ast, pathlib, subprocess, random, textwrap, calendar
 from datetime import *
 from dateutil.relativedelta import *
@@ -868,7 +868,7 @@ def takenlijn(scopenunu):
         elif startdatum < eerstedatum and einddatum == eerstedatum:
         # Scenario 2 : Startdatum ligt voor eerstedatum en Einddatum ligt op eerstedatum
             taakinlijst.append("<")
-            taakinlijst.append(Omkeren+statcol[i[5]-1]+str(takenlijst.index(i)+1)+ResetAll+statcol[i[5]-1]+i[2][:5-len(str(takenlijst.index(i)+1))]+ResetAll)
+            taakinlijst.append(Omkeren+statcol[i[5]-1]+str(takenlijst.index(i)+1)+ResetAll+statcol[i[5]-1]+i[2][:4-len(str(takenlijst.index(i)+1))]+"|"+ResetAll)
         elif startdatum < eerstedatum and einddatum < laatstedatum:
         # Scenario 3 : Startdatum ligt voor eerstedatum en Einddatum ligt voor of op laatstedatum
             taakinlijst.append("<")
@@ -876,7 +876,7 @@ def takenlijn(scopenunu):
             lendezetaak = lentaak.days - (eerstedatum - startdatum).days
             for j in range(lendezetaak-1):
                 taakinlijst.append(statcol[i[5]-1]+"....."+ResetAll)
-            taakinlijst.append(i[3][:5].replace(" ","_"))
+            taakinlijst.append(i[3][:4].replace(" ","_")+statcol[i[5]-1]+"|"+ResetAll)
         elif startdatum < eerstedatum and einddatum >= laatstedatum:
         # Scenario 4 : Startdatum ligt voor eerstedatum en Einddatum ligt na laatstedatum
             taakinlijst.append("<")
@@ -885,13 +885,13 @@ def takenlijn(scopenunu):
             for j in range(lendezetaak-2):
                 taakinlijst.append(statcol[i[5]-1]+"....."+ResetAll)
             taakinlijst.append(i[3][:4].replace(" ","_"))
-            taakinlijst.append(">")
+            taakinlijst.append(statcol[i[5]-1]+">"+ResetAll)
         elif eerstedatum <= startdatum == einddatum <= laatstedatum:
         # Scenario 5 : Startdatum ligt op of na eerstedatum en Einddatum == Startdatum ligt voor of op laatstedatum
             taakinlijst.append(" ")
             for j in range((startdatum - eerstedatum).days):
                 taakinlijst.append(statcol[i[5]-1]+"     "+ResetAll)
-            taakinlijst.append(Omkeren+statcol[i[5]-1]+str(takenlijst.index(i)+1)+ResetAll+statcol[i[5]-1]+i[2][:5-len(str(takenlijst.index(i)+1))]+ResetAll)
+            taakinlijst.append(Omkeren+statcol[i[5]-1]+str(takenlijst.index(i)+1)+ResetAll+statcol[i[5]-1]+i[2][:4-len(str(takenlijst.index(i)+1))]+"|"+ResetAll)
         elif eerstedatum <= startdatum and einddatum < laatstedatum:
         # Scenario 6 : Startdatum ligt op of na eerstedatum en Einddatum ligt voor of op laatstedatum
             taakinlijst.append(" ")
@@ -901,8 +901,8 @@ def takenlijn(scopenunu):
             lendezetaak = lentaak.days
             for j in range(lendezetaak-1):
                 taakinlijst.append(statcol[i[5]-1]+"....."+ResetAll)
-            taakinlijst.append(i[3][:5].replace(" ","_"))
-        elif eerstedatum <= startdatum < laatstedatum and einddatum > laatstedatum:
+            taakinlijst.append(i[3][:4].replace(" ","_")+statcol[i[5]-1]+"|"+ResetAll)
+        elif eerstedatum <= startdatum < laatstedatum - timedelta(days = 1) and einddatum > laatstedatum:
         # Scenario 7 : Startdatum ligt op of na eerstedatum en Einddatum ligt na laatstedatum
             taakinlijst.append(" ")
             for j in range((startdatum - eerstedatum).days):
@@ -912,21 +912,21 @@ def takenlijn(scopenunu):
             for j in range(lendezetaak-2):
                 taakinlijst.append(statcol[i[5]-1]+"....."+ResetAll)
             taakinlijst.append(i[3][:4].replace(" ","_"))
-            taakinlijst.append(">")
+            taakinlijst.append(statcol[i[5]-1]+">"+ResetAll)
         elif startdatum == laatstedatum - timedelta(days = 1) <= einddatum:
         # Scenario 8 : Startdatum ligt op laatstedatum en Einddatum ligt na laatstedatum
             taakinlijst.append(" ")
             for j in range((startdatum - eerstedatum).days):
                 taakinlijst.append(statcol[i[5]-1]+"     "+ResetAll)
             taakinlijst.append(Omkeren+statcol[i[5]-1]+str(takenlijst.index(i)+1)+ResetAll+statcol[i[5]-1]+i[2][:5-len(str(takenlijst.index(i)+1))-1]+ResetAll)
-            taakinlijst.append(">")
+            taakinlijst.append(statcol[i[5]-1]+">"+ResetAll)
         elif startdatum >= laatstedatum:
         # Scenario 9 : Startdatum ligt na laatstedatum
             taakinlijst.append(" ")
             for j in range((laatstedatum - eerstedatum).days-1):
                 taakinlijst.append(statcol[i[5]-1]+"     "+ResetAll)
             taakinlijst.append(" "*(4-len(str(takenlijst.index(i)+1)))+Omkeren+statcol[i[5]-1]+str(takenlijst.index(i)+1)+ResetAll)
-            taakinlijst.append(">")
+            taakinlijst.append(statcol[i[5]-1]+">"+ResetAll)
         for j in taakinlijst:
             print(j, end = "")
         print()
