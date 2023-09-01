@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-versie = "1.41"
-datum = "20230831"
+versie = "1.42"
+datum = "20230901"
 import locale, os, ast, pathlib, subprocess, random, textwrap, calendar
 from datetime import *
 from dateutil.relativedelta import *
@@ -222,8 +222,9 @@ def eindroutine():
 
 def statusshow():
     for i in statuslijst:
+        col = statcol[statuslijst.index(i)]
         ID = statuslijst.index(i)+1
-        print(forr3(ID),forc15(i))
+        print("  %s : " % (ID)+col+forl15(i)+ResetAll)
 
 def team():
     try:
@@ -970,6 +971,7 @@ def filterstatustaak(uitklapofstatus):
                 lijn = "+"+"-"*20+"+"+"-"*20
                 print(colbekijken+lijn+ResetAll)
                 tv = 0
+                print(" "+statcol[i[5]-1]+forr20("ID:")+ResetAll+" "+Omkeren+statcol[i[5]-1]+forc20(takenlijst.index(i)+1)+ResetAll)
                 for j in i:
                     col = ResetAll
                     ij = j
@@ -998,6 +1000,7 @@ def filteromschrijvingtaak(uitklapofstatus):
         if uitklapofstatus.lower() in i[2].lower():
             print(colbekijken+lijn+ResetAll)
             tv = 0
+            print(" "+statcol[i[5]-1]+forr20("ID:")+ResetAll+" "+Omkeren+statcol[i[5]-1]+forc20(takenlijst.index(i)+1)+ResetAll)
             for j in i:
                 col = ResetAll
                 ij = j
@@ -2166,6 +2169,7 @@ def uitklaptaak(uitklapofstatus):
                 if uitklapofstatus == takenlijst.index(i):
                     print(colbekijken+lijn+ResetAll)
                     tv = 0
+                    print(" "+statcol[i[5]-1]+forr20("ID:")+ResetAll+" "+Omkeren+statcol[i[5]-1]+forc20(takenlijst.index(i)+1)+ResetAll)
                     for j in i:
                         col = ResetAll
                         ij = j
