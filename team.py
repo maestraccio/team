@@ -903,7 +903,7 @@ def takenlijn(scopenunu):
             for j in range(lendezetaak-1):
                 taakinlijst.append(statcol[i[5]-1]+"....."+ResetAll)
             taakinlijst.append(i[3][:4].replace(" ","_")+statcol[i[5]-1]+"|"+ResetAll)
-        elif eerstedatum <= startdatum < laatstedatum - timedelta(days = 1) and einddatum > laatstedatum:
+        elif eerstedatum <= startdatum < laatstedatum - timedelta(days = 1) and einddatum >= laatstedatum:
         # Scenario 7 : Startdatum ligt op of na eerstedatum en Einddatum ligt na laatstedatum
             taakinlijst.append(" ")
             for j in range((startdatum - eerstedatum).days):
