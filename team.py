@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-versie = "1.43"
-datum = "20230901"
+versie = "1.44"
+datum = "20231002"
 import locale, os, ast, pathlib, subprocess, random, textwrap, calendar
 from datetime import *
 from dateutil.relativedelta import *
@@ -138,16 +138,17 @@ else:
 
 def printdag():
     todaag = datetime.strftime(datetime.today(),"%A %Y%m%d")
+    week = datetime.strftime(datetime.today(),"%W")
     if lang == "EN":
         dag = "Today is %s." 
         for i in range(len(dagenlijstNL)):
             todaag = todaag.replace(dagenlijstNL[i],dagenlijstEN[i])
-        print(dag % (coldatum+todaag+ResetAll))
+        print(dag % (coldatum+todaag+" week "+week+ResetAll))
     else:
         dag = "Het is vandaag %s."
         for i in range(len(dagenlijstEN)):
             todaag = todaag.replace(dagenlijstEN[i],dagenlijstNL[i])
-        print(dag % (coldatum+todaag+ResetAll))
+        print(dag % (coldatum+todaag+" week "+week+ResetAll))
 printdag()
 
 # Veel formaten niet in gebruik, maar handig om mee te testen
