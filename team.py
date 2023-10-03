@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-versie = "1.44"
-datum = "20231002"
+versie = "1.45"
+datum = "20231003"
 import locale, os, ast, pathlib, subprocess, random, textwrap, calendar
 from datetime import *
 from dateutil.relativedelta import *
@@ -149,7 +149,6 @@ def printdag():
         for i in range(len(dagenlijstEN)):
             todaag = todaag.replace(dagenlijstEN[i],dagenlijstNL[i])
         print(dag % (coldatum+todaag+" week "+week+ResetAll))
-printdag()
 
 # Veel formaten niet in gebruik, maar handig om mee te testen
 forc2 = "{:^2}".format
@@ -952,7 +951,7 @@ def takenblok():
     for i,j in takendict.items():
         breed += 1
         tel += 1
-        print(forr3(i)+" : "+statcol[collijst[tel-1]]+forl20(j[:12])+ResetAll,end = "")
+        print(forr3(i)+" : "+statcol[collijst[tel-1]]+forl15(j[:12])+ResetAll,end = "")
         if breed == breedte or tel == len(takendict):
             print()
             breed = 0
@@ -2194,6 +2193,7 @@ def uitklaptaak(uitklapofstatus):
 
 baas = True
 while baas == True:
+    printdag()
     try:
         with open("team.txt","r") as t:
             pass
