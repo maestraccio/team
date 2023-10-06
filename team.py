@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-versie = "1.48"
+versie = "1.50"
 datum = "20231006"
 import locale, os, ast, pathlib, subprocess, random, textwrap, calendar
 from datetime import *
@@ -191,12 +191,14 @@ def printstuff():
         ve = "Version:"
         da = "Date:"
         stuff1 = textwrap.wrap("\"TEAM\" is a simple planning tool for team leads and managers. Check agents IN or OUT, register personal talents and expertise, assign tasks and organize meetings.", width = wi)
-        stuff2 = textwrap.wrap("Confirm every choice with \"Enter\", go back with \"Q\" or leave the program immediately with \"Q!\". The option \"Notepad (Vim)\" uses \"Vim\". Make sure it is installed.\n", width = wi)
+        stuff2 = textwrap.wrap("To facilitate usage, all tasks and agents are assigned an ad hoc ID on which operations can be performed. An additional agent called \"Whole Team\" is present by default with ID \"0\", not shown in the overviews.", width = wi)
+        stuff3 = textwrap.wrap("Confirm every choice with \"Enter\", go back with \"Q\" or leave the program immediately with \"Q!\". The option \"Notepad (Vim)\" uses \"Vim\". Make sure it is installed.\n", width = wi)
     else:
         ve = "Versie:"
         da = "Datum:"
         stuff1 = textwrap.wrap("\"TEAM\" is een simpele planningstool voor leidinggevenden en managers. Check medewerkers IN of UIT, registreer persoonlijke talenten en expertise, verdeel taken en organiseer vergaderingen.", width = wi)
-        stuff2 = textwrap.wrap("Bevestig iedere keuze met \"Enter\", ga terug met \"Q\" of verlaat het programma direct met \"Q!\". De optie \"Kladblok (Vim)\" maakt gebruik van \"Vim\". Installeer dat eerst.", width = wi)
+        stuff2 = textwrap.wrap("Om het gebruik te vergemakkelijken krijgen alle taken en medewerkers ad hoc een ID waarop de bewerkingen kunnen worden uitgevoerd. Een extra medewerker \"Hele Team\" is standaard aanwezig met ID \"0\", deze wordt in de overzichten niet getoond.", width = wi)
+        stuff3 = textwrap.wrap("Bevestig iedere keuze met \"Enter\", ga terug met \"Q\" of verlaat het programma direct met \"Q!\". De optie \"Kladblok (Vim)\" maakt gebruik van \"Vim\". Installeer dat eerst.", width = wi)
     print()
     print(colover+forl8(ve)+versie+ResetAll)
     print(colover+forl8(da)+datum+ResetAll)
@@ -204,6 +206,8 @@ def printstuff():
     for i in stuff1:
         print(colover+i+ResetAll)
     for i in stuff2:
+        print(colover+i+ResetAll)
+    for i in stuff3:
         print(colover+i+ResetAll)
     print()
 
