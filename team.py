@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-versie = "1.46"
-datum = "20231004"
+versie = "1.47"
+datum = "20231006"
 import locale, os, ast, pathlib, subprocess, random, textwrap, calendar
 from datetime import *
 from dateutil.relativedelta import *
@@ -379,17 +379,17 @@ def teamshowbasis():
     else:
         tpmofukt = "Typ de ID van de Medewerker om de taken van die Medewerker te zien:\n%s" % inputindent
     teamlijst = team()
-    lijn = "+--+----------+----------+-------------------------+-----+------------+"
+    lijn = "+--+----------+----------+--------------------+-----+------------+"
     if lang == "EN":
-        kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("AN")[:10],forc10("GivenName")[:10],forc25("LastName")[:25],forc5("Chk")[:5],forc12("Note")[:12])
+        kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("AN")[:10],forc10("GivenName")[:10],forc20("LastName")[:20],forc5("Chk")[:5],forc12("Note")[:12])
     else:
-        kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("PN")[:10],forc10("VoorNaam")[:10],forc25("AchterNaam")[:25],forc5("Chk")[:5],forc12("Aantekening")[:12])
+        kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("PN")[:10],forc10("VoorNaam")[:10],forc20("AchterNaam")[:20],forc5("Chk")[:5],forc12("Aantekening")[:12])
     print(colbekijken+lijn+ResetAll)
     print(kop)
     print(lijn)
     for i in teamlijst:
         ID = teamlijst.index(i)+1
-        print(forr3(ID),forc10(i[0])[:10],forr10(i[1])[:10],forl25(i[2])[:25],iocol[int(forc5(i[3]))]+forc5(checklijst[int(forc5(i[3]))])[:5]+ResetAll,forl12(i[4])[:12])
+        print(forr3(ID),forc10(i[0])[:10],forr10(i[1])[:10],forl20(i[2])[:20],iocol[int(forc5(i[3]))]+forc5(checklijst[int(forc5(i[3]))])[:5]+ResetAll,forl12(i[4])[:12])
     print(colbekijken+lijn+ResetAll)
     print()
 
