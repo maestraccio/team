@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-versie = "1.47"
+versie = "1.48"
 datum = "20231006"
 import locale, os, ast, pathlib, subprocess, random, textwrap, calendar
 from datetime import *
@@ -229,9 +229,14 @@ def statusshow():
 def team():
     try:
         with open("teamlijst","r") as t:
-            teamlijst = ast.literal_eval(t.read())
+            teamlijst = sorted(ast.literal_eval(t.read()))
+        with open("teamlijst","w") as t:
+            print(teamlijst, end = "", file = t)
     except:
-        teamlijst = []
+        if lang == "EN":
+            teamlijst = [['00000','Whole','Team',0,'Whole Team']]
+        else:
+            teamlijst = [['00000','Hele','Team',0,'Hele Team']]
         with open("teamlijst","w") as t:
             print(teamlijst, end = "", file = t)
     return teamlijst
@@ -388,42 +393,46 @@ def teamshowbasis():
     print(kop)
     print(lijn)
     for i in teamlijst:
-        ID = teamlijst.index(i)+1
-        print(forr3(ID),forc10(i[0])[:10],forr10(i[1])[:10],forl20(i[2])[:20],iocol[int(forc5(i[3]))]+forc5(checklijst[int(forc5(i[3]))])[:5]+ResetAll,forl12(i[4])[:12])
+        if i[0] != "00000":
+            ID = teamlijst.index(i)
+            print(forr3(ID),forc10(i[0])[:10],forr10(i[1])[:10],forl20(i[2])[:20],iocol[int(forc5(i[3]))]+forc5(checklijst[int(forc5(i[3]))])[:5]+ResetAll,forl12(i[4])[:12])
     print(colbekijken+lijn+ResetAll)
     print()
 
 def teamshowkort():
+    lenlist = 0
     numin = 0
     teamlijst = team()
     for i in teamlijst:
-        numin += i[3]
+        if i[0] != "00000":
+            numin += i[3]
+            lenlist += 1
     if numin == 1:
         col = iocol[1]
         if lang == "EN":
-            aanin = "There is %s Agent - of %s - checked %sIN%s." % (col+str(numin)+ResetAll,str(len(teamlijst)),iocol[1],ResetAll)
+            aanin = "There is %s Agent - of %s - checked %sIN%s." % (col+str(numin)+ResetAll,str(lenlist),iocol[1],ResetAll)
         else:
-            aanin = "Er is %s Medewerker - van %s - %sIN%sgecheckt." % (col+str(numin)+ResetAll,str(len(teamlijst)),iocol[1],ResetAll)
+            aanin = "Er is %s Medewerker - van %s - %sIN%sgecheckt." % (col+str(numin)+ResetAll,str(lenlist),iocol[1],ResetAll)
     elif numin == 0:
         col = iocol[0]
         if lang == "EN":
-            aanin = "%s - of %s - is checked %sIN%s." % (col+"No-one"+ResetAll,str(len(teamlijst)),iocol[1],ResetAll)
+            aanin = "%s - of %s - is checked %sIN%s." % (col+"No-one"+ResetAll,str(lenlist),iocol[1],ResetAll)
         else:
-            aanin = "%s - van %s - is %sIN%sgecheckt." % (col+"Niemand"+ResetAll,str(len(teamlijst)),iocol[1],ResetAll)
-    elif numin == len(teamlijst):
+            aanin = "%s - van %s - is %sIN%sgecheckt." % (col+"Niemand"+ResetAll,str(lenlist),iocol[1],ResetAll)
+    elif numin == lenlist:
         col = iocol[1]
         if lang == "EN":
-            aanin = "%s - of %s - is checked %sIN%s." % (col+"Everyone"+ResetAll,str(len(teamlijst)),iocol[1],ResetAll)
+            aanin = "%s - of %s - is checked %sIN%s." % (col+"Everyone"+ResetAll,str(lenlist),iocol[1],ResetAll)
         else:
-            aanin = "%s - van %s - is %sIN%sgecheckt." % (col+"Iedereen"+ResetAll,str(len(teamlijst)),iocol[1],ResetAll)
+            aanin = "%s - van %s - is %sIN%sgecheckt." % (col+"Iedereen"+ResetAll,str(lenlist),iocol[1],ResetAll)
     else:
         col = iocol[1]
         if numin == 0:
             col = iocol[0]
         if lang == "EN":
-            aanin = "There are %s Agents - of %s - checked %sIN%s." % (col+str(numin)+ResetAll,str(len(teamlijst)),iocol[1],ResetAll)
+            aanin = "There are %s Agents - of %s - checked %sIN%s." % (col+str(numin)+ResetAll,str(lenlist),iocol[1],ResetAll)
         else:
-            aanin = "Er zijn %s Medewerkers - van %s - %sIN%sgecheckt." % (col+str(numin)+ResetAll,str(len(teamlijst)),iocol[1],ResetAll)
+            aanin = "Er zijn %s Medewerkers - van %s - %sIN%sgecheckt." % (col+str(numin)+ResetAll,str(lenlist),iocol[1],ResetAll)
     print(aanin)
  
 def teamshow():
@@ -443,8 +452,9 @@ def teamshow():
     print(kop)
     print(lijn)
     for i in teamlijst:
-        ID = teamlijst.index(i)+1
-        print(forr3(ID),forc10(i[0])[:10],forr10(i[1])[:10],forl25(i[2])[:20],iocol[int(forc5(i[3]))]+forc5(checklijst[int(forc5(i[3]))])[:5]+ResetAll,forl12(i[4])[:12])
+        if i[0] != "00000":
+            ID = teamlijst.index(i)
+            print(forr3(ID),forc10(i[0])[:10],forr10(i[1])[:10],forl25(i[2])[:20],iocol[int(forc5(i[3]))]+forc5(checklijst[int(forc5(i[3]))])[:5]+ResetAll,forl12(i[4])[:12])
     print(colbekijken+lijn+ResetAll)
     takenlijst = taak()
     tpm = input(tpmofukt)
@@ -458,7 +468,7 @@ def teamshow():
         tpmid = input(tpmidq)
         lijn = "+"+"-"*20+"+"+"-"*20
         try:
-            tpmid = int(tpmid)-1
+            tpmid = int(tpmid)
             mw = teamlijst[tpmid][1]+" "+teamlijst[tpmid][2]
             for i in takenlijst:
                 if i[3] == mw:
@@ -700,8 +710,8 @@ def taaknieuw():
                 eindroutine()
             try:
                 LL = int(LL)
-                if 0 <= LL-1 <= len(teamlijst):
-                    die = teamlijst[LL-1]
+                if 0 <= LL <= len(teamlijst):
+                    die = teamlijst[LL]
                     if lang == "EN":
                         print("%s %s is the chosen one." % (die[1],die[2]))
                     else:
@@ -1689,8 +1699,8 @@ def wijzigmedewerker():
             eindroutine()
         try:
             LL = int(LL)
-            if 0 <= LL-1 <= len(teamlijst):
-                die = teamlijst[LL-1]
+            if 0 <= LL <= len(teamlijst):
+                die = teamlijst[LL]
                 welk = input(wat)
                 if welk.upper() in afsluitlijst:
                     return
@@ -1714,7 +1724,7 @@ def wijzigmedewerker():
                             if u == False:
                                 print(colslecht+nietuniek+ResetAll)
                             else:
-                                teamlijst[LL-1][0] = PN
+                                teamlijst[LL][0] = PN
                                 personeelsnummer = True
                 elif welk == "2":
                     voornaam = False
@@ -1727,7 +1737,7 @@ def wijzigmedewerker():
                         elif len(VN) < 1:
                             pass
                         else:
-                            teamlijst[LL-1][1] = VN
+                            teamlijst[LL][1] = VN
                             voornaam = True
                 elif welk == "3":
                     achternaam = False
@@ -1740,27 +1750,27 @@ def wijzigmedewerker():
                         elif len(AN) < 1:
                             pass
                         else:
-                            teamlijst[LL-1][2] = AN
+                            teamlijst[LL][2] = AN
                             achternaam = True
-                    teamlijst[LL-1][2] = AN
+                    teamlijst[LL][2] = AN
                 elif welk == "4":
                     toggleall = input(tog)
                     if toggleall == "0":
-                        teamlijst[LL-1][3] = 0
+                        teamlijst[LL][3] = 0
                     elif toggleall == "1":
-                        teamlijst[LL-1][3] = 1
+                        teamlijst[LL][3] = 1
                     else:
-                        if teamlijst[LL-1][3] == 0:
-                            teamlijst[LL-1][3] = 1
+                        if teamlijst[LL][3] == 0:
+                            teamlijst[LL][3] = 1
                         else:
-                            teamlijst[LL-1][3] = 0
+                            teamlijst[LL][3] = 0
                 elif welk == "5":
                     AT = input()
                     if AT.upper() in afsluitlijst:
                         return
                     elif len(AT) == 2 and AT[0].upper() in afsluitlijst and AT[1].upper() in skiplijst:
                         eindroutine()
-                    teamlijst[LL-1][4] = AT
+                    teamlijst[LL][4] = AT
                 with open("teamlijst","w") as t:
                     print(teamlijst, end = "", file = t)
                 teamlijst = team()
@@ -1796,7 +1806,7 @@ def wijzigteam():
             selectlijst = select.split(",")
             for i in selectlijst:
                 i = int(i)
-                medewerkerlijst.append(teamlijst[i-1])
+                medewerkerlijst.append(teamlijst[i])
         except:
             pass
     wijzig = input(wat)
@@ -2146,9 +2156,9 @@ def uitklapteam():
         try:
             welke = int(welke)
             lijn = "+"+"-"*20+"+"+"-"*20
-            if 0 <= welke-1 <= len(teamlijst):
+            if 0 <= welke <= len(teamlijst):
                 print(lijn)
-                die = teamlijst[welke-1]
+                die = teamlijst[welke]
                 for i in range(len(die)):
                     j = die[i]
                     if i == 3:
