@@ -905,7 +905,7 @@ def takenlijn(scopenunu):
         # Scenario 5 : Startdatum ligt op of na eerstedatum en Einddatum == Startdatum ligt voor of op laatstedatum
             taakinlijst.append(" ")
             for j in range((startdatum - eerstedatum).days):
-                taakinlijst.append(statcol[i[5]-1]+"  5  "+ResetAll)
+                taakinlijst.append(statcol[i[5]-1]+"     "+ResetAll)
             taakinlijst.append(Omkeren+statcol[i[5]-1]+str(takenlijst.index(i)+1)+ResetAll+statcol[i[5]-1]+i[2][:4-len(str(takenlijst.index(i)+1))]+"|"+ResetAll)
         elif eerstedatum <= startdatum and einddatum < laatstedatum:
         # Scenario 6 : Startdatum ligt op of na eerstedatum en Einddatum ligt voor of op laatstedatum
