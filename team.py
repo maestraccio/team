@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-versie = "1.50"
-datum = "20231006"
+versie = "1.51"
+datum = "20231018"
 import locale, os, ast, pathlib, subprocess, random, textwrap, calendar
 from datetime import *
 from dateutil.relativedelta import *
@@ -901,11 +901,11 @@ def takenlijn(scopenunu):
                 taakinlijst.append(statcol[i[5]-1]+"....."+ResetAll)
             taakinlijst.append(i[3][:4].replace(" ","_"))
             taakinlijst.append(statcol[i[5]-1]+">"+ResetAll)
-        elif eerstedatum <= startdatum == einddatum <= laatstedatum:
+        elif eerstedatum <= startdatum == einddatum <= (laatstedatum - timedelta(days = 1)):
         # Scenario 5 : Startdatum ligt op of na eerstedatum en Einddatum == Startdatum ligt voor of op laatstedatum
             taakinlijst.append(" ")
             for j in range((startdatum - eerstedatum).days):
-                taakinlijst.append(statcol[i[5]-1]+"     "+ResetAll)
+                taakinlijst.append(statcol[i[5]-1]+"  5  "+ResetAll)
             taakinlijst.append(Omkeren+statcol[i[5]-1]+str(takenlijst.index(i)+1)+ResetAll+statcol[i[5]-1]+i[2][:4-len(str(takenlijst.index(i)+1))]+"|"+ResetAll)
         elif eerstedatum <= startdatum and einddatum < laatstedatum:
         # Scenario 6 : Startdatum ligt op of na eerstedatum en Einddatum ligt voor of op laatstedatum
