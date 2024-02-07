@@ -1,11 +1,13 @@
 #!/usr/bin/python3
-versie = "1.51"
-datum = "20231018"
+versie = "1.6"
+datum = "20240207"
 import locale, os, ast, pathlib, subprocess, random, textwrap, calendar
 from datetime import *
 from dateutil.relativedelta import *
 from time import sleep
 
+key = "emailadres"
+#key = "personeelsnummer"
 basismap = os.path.dirname(os.path.realpath(__file__))
 os.chdir(basismap)
 locale.setlocale(locale.LC_ALL, "")
@@ -127,14 +129,20 @@ if lang == "EN":
     terug = "%s  Q : Back%s" % (ResetAll+colterug,ResetAll)
     statuslijst = ["Planned","Started","Paused","Aborted","Completed","Overdue","Absent"]
     taakverdeling = ["Start","Due","TaskDescription","Name","Note","Status"]
-    teamverdeling = ["Agent Number","Given Name","Last Name","Check","Note"]
+    if key == "emailadres":
+        teamverdeling = ["EMail address","Given Name","Last Name","Check","Note"]
+    else:
+        teamverdeling = ["Agent Number","Given Name","Last Name","Check","Note"]
 else:
     checklijst = ["UIT","IN"]
     weg = "%s  Q!: Afsluiten%s" % (ResetAll+colterug,ResetAll)
     terug = "%s  Q : Terug%s" % (ResetAll+colterug,ResetAll)
     statuslijst = ["Gepland","Gestart","Gepauzeerd","Afgebroken","Afgerond","Verlopen","Afwezig"]
     taakverdeling = ["Start","Eind","Taakomschrijving","Naam","Aantekening","Status"]
-    teamverdeling = ["Personeelsnummer","VoorNaam","AchterNaam","Check","Aantekening"]
+    if key == "emailadres":
+        teamverdeling = ["EMailadres","VoorNaam","AchterNaam","Check","Aantekening"]
+    else:
+        teamverdeling = ["Personeelsnummer","VoorNaam","AchterNaam","Check","Aantekening"]
 
 def printdag():
     todaag = datetime.strftime(datetime.today(),"%A %Y%m%d")
@@ -316,14 +324,22 @@ def teamnieuw():
     if lang == "EN":
         nieuwevoornaam = "Type the GivenName:\n%s" % inputindent
         nieuweachternaam = "Type the LastName:\n%s" % inputindent
-        nieuwpersoneelsnummer = "Type the AgentNumber:\n%s" % inputindent
-        nietuniek = "This AgentNumber already exists."
+        if key == "emailadres":
+            nieuwemail = "Type the EMail:\n%s" % inputindent
+            nietuniek = "This EMail already exists."
+        else:
+            nieuwpersoneelsnummer = "Type the AgentNumber:\n%s" % inputindent
+            nietuniek = "This AgentNumber already exists."
         nieuweaantekening = "Type a Note (opt):\n%s" % inputindent
     else:
         nieuwevoornaam = "Typ de VoorNaam:\n%s" % inputindent
         nieuweachternaam = "Typ de AchterNaam:\n%s" % inputindent
-        nieuwpersoneelsnummer = "Typ het PersoneelsNummer:\n%s" % inputindent
-        nietuniek = "Dit Personeelsnummer bestaat al."
+        if key == "emailadres":
+            nieuwemail = "Typ het EMailadres:\n%s" % inputindent
+            nietuniek = "Dit EMailadres bestaat al."
+        else:
+            nieuwpersoneelsnummer = "Typ het PersoneelsNummer:\n%s" % inputindent
+            nietuniek = "Dit Personeelsnummer bestaat al."
         nieuweaantekening = "Typ een Aantekening (opt):\n%s" % inputindent
     teamlijst = team()
     voornaam = False
@@ -350,32 +366,56 @@ def teamnieuw():
             pass
         else:
             achternaam = True
-    personeelsnummer = False
-    while personeelsnummer == False:
-        PN = input(nieuwpersoneelsnummer)
-        if PN.upper() in afsluitlijst:
-            uit = True
-            return uit
-        elif len(PN) == 2 and PN[0].upper() in afsluitlijst and PN[1].upper() in skiplijst:
-            eindroutine()
-        elif len(PN) < 1:
-            pass
-        else:
-            u = True
-            for i in teamlijst:
-                if PN == i[0]:
-                    u = False
-            if u == False:
-                print(colslecht+nietuniek+ResetAll)
+    if key == "emailadres":
+        email = False
+        while email == False:
+            EM = input(nieuwemail)
+            if EM.upper() in afsluitlijst:
+                uit = True
+                return uit
+            elif len(EM) == 2 and EM[0].upper() in afsluitlijst and EM[1].upper() in skiplijst:
+                eindroutine()
+            elif len(EM) < 1:
+                pass
             else:
-                personeelsnummer = True
+                u = True
+                for i in teamlijst:
+                    if EM == i[0]:
+                        u = False
+                if u == False:
+                    print(colslecht+nietuniek+ResetAll)
+                else:
+                    email = True
+    else:
+        personeelsnummer = False
+        while personeelsnummer == False:
+            PN = input(nieuwpersoneelsnummer)
+            if PN.upper() in afsluitlijst:
+                uit = True
+                return uit
+            elif len(PN) == 2 and PN[0].upper() in afsluitlijst and PN[1].upper() in skiplijst:
+                eindroutine()
+            elif len(PN) < 1:
+                pass
+            else:
+                u = True
+                for i in teamlijst:
+                    if PN == i[0]:
+                        u = False
+                if u == False:
+                    print(colslecht+nietuniek+ResetAll)
+                else:
+                    personeelsnummer = True
     AT = input(nieuweaantekening)
     if AT.upper() in afsluitlijst:
         uit = True
         return uit
     elif len(AT) == 2 and AT[0].upper() in afsluitlijst and AT[1].upper() in skiplijst:
         eindroutine()
-    nieuwteam = [PN,VN,AN,0,AT]
+    if key == "emailadres":
+        nieuwteam = [EM,VN,AN,0,AT]
+    else:
+        nieuwteam = [PN,VN,AN,0,AT]
     teamlijst.append(nieuwteam)
     teamlijst = sorted(teamlijst)
     with open("teamlijst","w") as t:
@@ -390,9 +430,15 @@ def teamshowbasis():
     teamlijst = team()
     lijn = "+--+----------+----------+--------------------+-----+------------+"
     if lang == "EN":
-        kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("AN")[:10],forc10("GivenName")[:10],forc20("LastName")[:20],forc5("Chk")[:5],forc12("Note")[:12])
+        if key == "emailadres":
+            kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("EMail")[:10],forc10("GivenName")[:10],forc20("LastName")[:20],forc5("Chk")[:5],forc12("Note")[:12])
+        else:
+            kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("AN")[:10],forc10("GivenName")[:10],forc20("LastName")[:20],forc5("Chk")[:5],forc12("Note")[:12])
     else:
-        kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("PN")[:10],forc10("VoorNaam")[:10],forc20("AchterNaam")[:20],forc5("Chk")[:5],forc12("Aantekening")[:12])
+        if key == "emailadres":
+            kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("EMail")[:10],forc10("VoorNaam")[:10],forc20("AchterNaam")[:20],forc5("Chk")[:5],forc12("Aantekening")[:12])
+        else:
+            kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("PN")[:10],forc10("VoorNaam")[:10],forc20("AchterNaam")[:20],forc5("Chk")[:5],forc12("Aantekening")[:12])
     print(colbekijken+lijn+ResetAll)
     print(kop)
     print(lijn)
@@ -449,9 +495,15 @@ def teamshow():
     teamlijst = team()
     lijn = "+--+----------+----------+--------------------+-----+------------+"
     if lang == "EN":
-        kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("AN")[:10],forc10("GivenName")[:10],forc20("LastName")[:20],forc5("Chk")[:5],forc12("Note")[:12])
+        if key == "emailadres":
+            kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("EMail")[:10],forc10("GivenName")[:10],forc20("LastName")[:20],forc5("Chk")[:5],forc12("Note")[:12])
+        else:
+            kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("AN")[:10],forc10("GivenName")[:10],forc20("LastName")[:20],forc5("Chk")[:5],forc12("Note")[:12])
     else:
-        kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("PN")[:10],forc10("VoorNaam")[:10],forc20("AchterNaam")[:20],forc5("Chk")[:5],forc12("Aantekening")[:12])
+        if key == "emailadres":
+            kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("EMail")[:10],forc10("VoorNaam")[:10],forc20("AchterNaam")[:20],forc5("Chk")[:5],forc12("Aantekening")[:12])
+        else:
+            kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("PN")[:10],forc10("VoorNaam")[:10],forc20("AchterNaam")[:20],forc5("Chk")[:5],forc12("Aantekening")[:12])
     print(colbekijken+lijn+ResetAll)
     print(kop)
     print(lijn)
@@ -1352,16 +1404,20 @@ def kalender():
         print(col+weeklijn4[i]+ResetAll,end = " ")
     print()
 
-    col = LichtGrijs
-    for i in range(len(weeklijn5)):
-        if (i-5) % 7 == 0 or (i-6) % 7 == 0:
-            col = DonkerGrijs
-        if i % 7 == 0 and i != 0:
-            col = LichtGrijs
-            print("| ", end = "")
-        if for0r2(weeklijn5[i]) == datetime.strftime(date.today(),"%d") and i < 7:
-            col = coldatum
-        if any(weeklijn5) != " .":
+    alldots = True
+    for i in weeklijn5:
+        if i != " .":
+            alldots = False
+    if alldots == False:
+        col = LichtGrijs
+        for i in range(len(weeklijn5)):
+            if (i-5) % 7 == 0 or (i-6) % 7 == 0:
+                col = DonkerGrijs
+            if i % 7 == 0 and i != 0:
+                col = LichtGrijs
+                print("| ", end = "")
+            if for0r2(weeklijn5[i]) == datetime.strftime(date.today(),"%d") and i < 7:
+                col = coldatum
             print(col+weeklijn5[i]+ResetAll,end = " ")
     print()
     print()
@@ -1681,15 +1737,23 @@ def wijzigmedewerker():
     if lang == "EN":
         kies = "Choose an Agent to %sCHANGE%s:" % (colwijzigen, ResetAll)
         wie = "Give the ID of the Agent:\n%s" % inputindent
-        wat = "What do you want to change?:\n  1 : Agent Number\n  2 : Given Name\n  3 : Last Name\n  4 : Check\n  5 : Note\n%s" % inputindent
+        if key == "emailadres":
+            keyhere = "EMail address"
+        else:
+            keyhere = "Agent Number"
+        wat = "What do you want to change?:\n  1 : %s\n  2 : Given Name\n  3 : Last Name\n  4 : Check\n  5 : Note\n%s" % (keyhere,inputindent)
+        nietuniek = "This %s already exists." % keyhere
         tog = "Check these Agent OUT or IN:\n  0 : OUT\n  1 : IN\n >2 : Invert\n%s" % inputindent
-        nietuniek = "This AgentNumber already exists."
     else:
         kies = "Kies een Medewerker om te %sWIJZIGEN%s:" % (colwijzigen, ResetAll)
         wie = "Geef de ID van de Medewerker:\n%s" % inputindent
-        wat = "Wat wilt u Wijzigen?:\n  1 : Personeelsnummer\n  2 : VoorNaam\n  3 : AchterNaam\n  4 : Check\n  5 : Aantekening\n%s" % inputindent
+        if key == "emailadres":
+            keyhere = "EMailadres"
+        else:
+            keyhere = "PersoneelsNummer"
+        wat = "Wat wilt u Wijzigen?:\n  1 : %s\n  2 : VoorNaam\n  3 : AchterNaam\n  4 : Check\n  5 : Aantekening\n%s" % (keyhere,inputindent)
+        nietuniek = "Dit %s bestaat al." % keyhere
         tog = "Check deze Medewerker UIT of IN:\n  0 : UIT\n  1 : IN\n >2 : Omkeren\n%s" % inputindent
-        nietuniek = "Dit Personeelsnummer bestaat al."
     teamlijst = team()
     print(kies)
     teamshowbasis()
@@ -1711,25 +1775,46 @@ def wijzigmedewerker():
                 elif len(welk) == 2 and welk[0].upper() in afsluitlijst and welk[1].upper() in skiplijst:
                     eindroutine()
                 if welk == "1":
-                    personeelsnummer = False
-                    while personeelsnummer == False:
-                        PN = input()
-                        if PN.upper() in afsluitlijst:
-                            return
-                        elif len(PN) == 2 and PN[0].upper() in afsluitlijst and PN[1].upper() in skiplijst:
-                            eindroutine()
-                        elif len(PN) < 1:
-                            pass
-                        else:
-                            u = True
-                            for i in teamlijst:
-                                if PN == i[0]:
-                                    u = False
-                            if u == False:
-                                print(colslecht+nietuniek+ResetAll)
+                    if key == "emailadres":
+                        emailadres = False
+                        while emailadres == False:
+                            EM = input()
+                            if EM.upper() in afsluitlijst:
+                                return
+                            elif len(EM) == 2 and EM[0].upper() in afsluitlijst and EM[1].upper() in skiplijst:
+                                eindroutine()
+                            elif len(EM) < 1:
+                                pass
                             else:
-                                teamlijst[LL][0] = PN
-                                personeelsnummer = True
+                                u = True
+                                for i in teamlijst:
+                                    if EM == i[0]:
+                                        u = False
+                                if u == False:
+                                    print(colslecht+nietuniek+ResetAll)
+                                else:
+                                    teamlijst[LL][0] = EM
+                                    emailadres = True
+                    else:
+                        personeelsnummer = False
+                        while personeelsnummer == False:
+                            PN = input()
+                            if PN.upper() in afsluitlijst:
+                                return
+                            elif len(PN) == 2 and PN[0].upper() in afsluitlijst and PN[1].upper() in skiplijst:
+                                eindroutine()
+                            elif len(PN) < 1:
+                                pass
+                            else:
+                                u = True
+                                for i in teamlijst:
+                                    if PN == i[0]:
+                                        u = False
+                                if u == False:
+                                    print(colslecht+nietuniek+ResetAll)
+                                else:
+                                    teamlijst[LL][0] = PN
+                                    personeelsnummer = True
                 elif welk == "2":
                     voornaam = False
                     while voornaam == False:
@@ -2118,7 +2203,7 @@ def archiveerofverwijdermedewerker():
             selectlijst = select.split(",")
             for i in selectlijst:
                 i = int(i)
-                medewerkerlijst.append(teamlijst[i-1])
+                medewerkerlijst.append(teamlijst[i])
         except:
             pass
     aov = input(archov)
