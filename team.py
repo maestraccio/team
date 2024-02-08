@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-versie = "1.6"
-datum = "20240207"
+versie = "1.61"
+datum = "20240208"
 import locale, os, ast, pathlib, subprocess, random, textwrap, calendar
 from datetime import *
 from dateutil.relativedelta import *
@@ -94,7 +94,7 @@ except:
 
 nu = datetime.strftime(datetime.today(),"%Y%m%d")
 afsluitlijst = ["X","Q",":X",":Q"]
-jalijst = ["J","Y"]
+jalijst = ["J","JA","Y","YES","OK","K","SURE","JAZEKER","ZEKER","INDERDAAD","IDD"]
 neelijst = ["N"]
 skiplijst = ["!",">","S","D"] # Skip, Standaard, Default
 inputindent = "  : "
@@ -199,14 +199,14 @@ def printstuff():
         ve = "Version:"
         da = "Date:"
         stuff1 = textwrap.wrap("\"TEAM\" is a simple planning tool for team leads and managers. Check agents IN or OUT, register personal talents and expertise, assign tasks and organize meetings.", width = wi)
-        stuff2 = textwrap.wrap("To facilitate usage, all tasks and agents are assigned an ad hoc ID on which operations can be performed. An additional agent called \"Whole Team\" is present by default with ID \"0\", not shown in the overviews.", width = wi)
-        stuff3 = textwrap.wrap("Confirm every choice with \"Enter\", go back with \"Q\" or leave the program immediately with \"Q!\". The option \"Notepad (Vim)\" uses \"Vim\". Make sure it is installed.\n", width = wi)
+        stuff2 = textwrap.wrap("To facilitate usage, all tasks and agents are assigned an ad hoc ID on which operations can be performed. An additional agent called \"Whole Team\" is present by default with ID \"0\", not shown in the overviews. If it is deleted (if the first agent has ID \"0\"), you can add this \"Agent\" with Agent Number or EMail address \"00000\" manually.", width = wi)
+        stuff3 = textwrap.wrap("Confirm every choice with \"Enter\", go back with \"Q\" or leave the program immediately with \"Q!\". The option \"Notepad (Vim)\" uses the application \"Vim\". Make sure it is installed.\n", width = wi)
     else:
         ve = "Versie:"
         da = "Datum:"
         stuff1 = textwrap.wrap("\"TEAM\" is een simpele planningstool voor leidinggevenden en managers. Check medewerkers IN of UIT, registreer persoonlijke talenten en expertise, verdeel taken en organiseer vergaderingen.", width = wi)
-        stuff2 = textwrap.wrap("Om het gebruik te vergemakkelijken krijgen alle taken en medewerkers ad hoc een ID waarop de bewerkingen kunnen worden uitgevoerd. Een extra medewerker \"Hele Team\" is standaard aanwezig met ID \"0\", deze wordt in de overzichten niet getoond.", width = wi)
-        stuff3 = textwrap.wrap("Bevestig iedere keuze met \"Enter\", ga terug met \"Q\" of verlaat het programma direct met \"Q!\". De optie \"Kladblok (Vim)\" maakt gebruik van \"Vim\". Installeer dat eerst.", width = wi)
+        stuff2 = textwrap.wrap("Om het gebruik te vergemakkelijken krijgen alle taken en medewerkers ad hoc een ID waarop de bewerkingen kunnen worden uitgevoerd. Een extra medewerker \"Hele Team\" is standaard aanwezig met ID \"0\", deze wordt in de overzichten niet getoond. Als deze \"medewerker\" werd verwijderd (als de eerste medewerker ID \"0\" heeft), dan kunt u die handmatig toevoegen met PersoneelsNummer of EMailadres \"00000\".", width = wi)
+        stuff3 = textwrap.wrap("Bevestig iedere keuze met \"Enter\", ga terug met \"Q\" of verlaat het programma direct met \"Q!\". De optie \"Kladblok (Vim)\" maakt gebruik van de applicatie \"Vim\". Installeer dat eerst.", width = wi)
     print()
     print(colover+forl8(ve)+versie+ResetAll)
     print(colover+forl8(da)+datum+ResetAll)
@@ -2055,17 +2055,18 @@ def archiveerteam(medewerkerlijst):
     with open("team.txt","a+") as t:
         try:
             for i in medewerkerlijst:
-                lijn = "+"+"-"*20+"+"+"-"*20
-                print(archop, file = t)
-                print(lijn, file = t)
-                tv = 0
-                for j in i:
-                    ij = j
-                    if j == i[3]:
-                        ij = checklijst[int(i[3])]
-                    print(" "+forl20(teamverdeling[tv]),str(ij), file = t)
-                    tv +=1
-                print(lijn, file = t)
+                if i[0] != "00000":
+                    lijn = "+"+"-"*20+"+"+"-"*20
+                    print(archop, file = t)
+                    print(lijn, file = t)
+                    tv = 0
+                    for j in i:
+                        ij = j
+                        if j == i[3]:
+                            ij = checklijst[int(i[3])]
+                        print(" "+forl20(teamverdeling[tv]),str(ij), file = t)
+                        tv +=1
+                    print(lijn, file = t)
             print(archok)
         except:
             pass
@@ -2077,8 +2078,11 @@ def verwijderteam(medewerkerlijst):
     else:
         verwok = "Medewerker(s) succesvol verwijderd."
     teamlijst = team()
+    print(medewerkerlijst)
+    print(teamlijst)
     for i in medewerkerlijst:
-        teamlijst.remove(i)
+        if i[0] != "00000":
+            teamlijst.remove(i)
     with open("teamlijst","w") as t:
         print(teamlijst, end = "", file = t)
     print(verwok)
