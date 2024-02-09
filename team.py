@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-versie = "1.61"
-datum = "20240208"
+versie = "1.65"
+datum = "20240209"
 import locale, os, ast, pathlib, subprocess, random, textwrap, calendar
 from datetime import *
 from dateutil.relativedelta import *
@@ -199,13 +199,13 @@ def printstuff():
         ve = "Version:"
         da = "Date:"
         stuff1 = textwrap.wrap("\"TEAM\" is a simple planning tool for team leads and managers. Check agents IN or OUT, register personal talents and expertise, assign tasks and organize meetings.", width = wi)
-        stuff2 = textwrap.wrap("To facilitate usage, all tasks and agents are assigned an ad hoc ID on which operations can be performed. An additional agent called \"Whole Team\" is present by default with ID \"0\", not shown in the overviews. If it is deleted (if the first agent has ID \"0\"), you can add this \"Agent\" with Agent Number or EMail address \"00000\" manually.", width = wi)
+        stuff2 = textwrap.wrap("To facilitate usage, all tasks and agents are assigned an ad hoc ID on which operations can be performed. An additional agent called \"Whole Team\" is present by default with ID \"0\", not shown in the overviews. If it is deleted (if the first agent has ID \"0\"), you can add this \"Agent\" with Agent Number or EMail address \"00000\" manually. Agents can be combined into subteams, for collaborating Tasks. Just add a new Agent and explore the options.", width = wi)
         stuff3 = textwrap.wrap("Confirm every choice with \"Enter\", go back with \"Q\" or leave the program immediately with \"Q!\". The option \"Notepad (Vim)\" uses the application \"Vim\". Make sure it is installed.\n", width = wi)
     else:
         ve = "Versie:"
         da = "Datum:"
         stuff1 = textwrap.wrap("\"TEAM\" is een simpele planningstool voor leidinggevenden en managers. Check medewerkers IN of UIT, registreer persoonlijke talenten en expertise, verdeel taken en organiseer vergaderingen.", width = wi)
-        stuff2 = textwrap.wrap("Om het gebruik te vergemakkelijken krijgen alle taken en medewerkers ad hoc een ID waarop de bewerkingen kunnen worden uitgevoerd. Een extra medewerker \"Hele Team\" is standaard aanwezig met ID \"0\", deze wordt in de overzichten niet getoond. Als deze \"medewerker\" werd verwijderd (als de eerste medewerker ID \"0\" heeft), dan kunt u die handmatig toevoegen met PersoneelsNummer of EMailadres \"00000\".", width = wi)
+        stuff2 = textwrap.wrap("Om het gebruik te vergemakkelijken krijgen alle taken en medewerkers ad hoc een ID waarop de bewerkingen kunnen worden uitgevoerd. Een extra medewerker \"Hele Team\" is standaard aanwezig met ID \"0\", deze wordt in de overzichten niet getoond. Als deze \"medewerker\" werd verwijderd (als de eerste medewerker ID \"0\" heeft), dan kunt u die handmatig toevoegen met PersoneelsNummer of EMailadres \"00000\". Medewerkers kunnen worden gecombineerd tot subteams voor samenwerkingsTaken. Voeg gewoon een nieuwe Medewerker toe en ontdek de mogelijkheden.", width = wi)
         stuff3 = textwrap.wrap("Bevestig iedere keuze met \"Enter\", ga terug met \"Q\" of verlaat het programma direct met \"Q!\". De optie \"Kladblok (Vim)\" maakt gebruik van de applicatie \"Vim\". Installeer dat eerst.", width = wi)
     print()
     print(colover+forl8(ve)+versie+ResetAll)
@@ -321,8 +321,10 @@ def wijzigoei(oeilijst):
 
 
 def teamnieuw():
+    teamshowbasis()
     if lang == "EN":
-        nieuwevoornaam = "Type the GivenName:\n%s" % inputindent
+        nieuwevoornaam = "Type the GivenName or an ID (for a SubTeam):\n%s" % inputindent
+        eindsubteam = "Stop adding Agents to the SubTeam with \"~\"."
         nieuweachternaam = "Type the LastName:\n%s" % inputindent
         if key == "emailadres":
             nieuwemail = "Type the EMail:\n%s" % inputindent
@@ -332,7 +334,8 @@ def teamnieuw():
             nietuniek = "This AgentNumber already exists."
         nieuweaantekening = "Type a Note (opt):\n%s" % inputindent
     else:
-        nieuwevoornaam = "Typ de VoorNaam:\n%s" % inputindent
+        nieuwevoornaam = "Typ de VoorNaam of een ID (voor een SubTeam):\n%s" % inputindent
+        eindsubteam = "Stop het toevoegen van namen aan dit SubTeam met \"~\"."
         nieuweachternaam = "Typ de AchterNaam:\n%s" % inputindent
         if key == "emailadres":
             nieuwemail = "Typ het EMailadres:\n%s" % inputindent
@@ -342,6 +345,15 @@ def teamnieuw():
             nietuniek = "Dit Personeelsnummer bestaat al."
         nieuweaantekening = "Typ een Aantekening (opt):\n%s" % inputindent
     teamlijst = team()
+    nep = []
+    echt = []
+    for i in teamlijst:
+        if i[0] == "00000" or i[0][0] == "~":
+            nep.append(i)
+    for i in teamlijst:
+        if i not in nep:
+            echt.append(i)
+    subteamvoornaam = "~"
     voornaam = False
     while voornaam == False:
         VN = input(nieuwevoornaam)
@@ -350,62 +362,82 @@ def teamnieuw():
             return uit
         elif len(VN) == 2 and VN[0].upper() in afsluitlijst and VN[1].upper() in skiplijst:
             eindroutine()
-        elif len(VN) < 1:
-            pass
-        else:
-            voornaam = True
-    achternaam = False
-    while achternaam == False:
-        AN = input(nieuweachternaam)
-        if AN.upper() in afsluitlijst:
-            uit = True
-            return uit
-        elif len(AN) == 2 and AN[0].upper() in afsluitlijst and AN[1].upper() in skiplijst:
-            eindroutine()
-        elif len(AN) < 1:
-            pass
-        else:
-            achternaam = True
-    if key == "emailadres":
-        email = False
-        while email == False:
-            EM = input(nieuwemail)
-            if EM.upper() in afsluitlijst:
-                uit = True
-                return uit
-            elif len(EM) == 2 and EM[0].upper() in afsluitlijst and EM[1].upper() in skiplijst:
-                eindroutine()
-            elif len(EM) < 1:
+        try:
+            if int(VN)-1 in range(len(echt)):
+                subteamvoornaam += echt[int(VN)-1][1]+"~"
+            print(subteamvoornaam)
+            print(eindsubteam)
+        except:
+            if VN == "~":
+                AN = subteamvoornaam
+                print(AN)
+                if lang == "EN":
+                    VN = "SubTeam"
+                else:
+                    VN = "SubTeam"
+            if key == "emailadres":
+                EM = subteamvoornaam
+            else:
+                PN = subteamvoornaam
+            if len(VN) == 0:
                 pass
             else:
-                u = True
-                for i in teamlijst:
-                    if EM == i[0]:
-                        u = False
-                if u == False:
-                    print(colslecht+nietuniek+ResetAll)
-                else:
-                    email = True
-    else:
-        personeelsnummer = False
-        while personeelsnummer == False:
-            PN = input(nieuwpersoneelsnummer)
-            if PN.upper() in afsluitlijst:
+                voornaam = True
+    try:
+        print(VN)
+    except:
+        achternaam = False
+        while achternaam == False:
+            AN = input(nieuweachternaam)
+            if AN.upper() in afsluitlijst:
                 uit = True
                 return uit
-            elif len(PN) == 2 and PN[0].upper() in afsluitlijst and PN[1].upper() in skiplijst:
+            elif len(AN) == 2 and AN[0].upper() in afsluitlijst and AN[1].upper() in skiplijst:
                 eindroutine()
-            elif len(PN) < 1:
+            elif len(AN) < 1:
                 pass
             else:
-                u = True
-                for i in teamlijst:
-                    if PN == i[0]:
-                        u = False
-                if u == False:
-                    print(colslecht+nietuniek+ResetAll)
+                achternaam = True
+        if key == "emailadres":
+            email = False
+            while email == False:
+                EM = input(nieuwemail)
+                if EM.upper() in afsluitlijst:
+                    uit = True
+                    return uit
+                elif len(EM) == 2 and EM[0].upper() in afsluitlijst and EM[1].upper() in skiplijst:
+                    eindroutine()
+                elif len(EM) < 1:
+                    pass
                 else:
-                    personeelsnummer = True
+                    u = True
+                    for i in teamlijst:
+                        if EM == i[0]:
+                            u = False
+                    if u == False:
+                        print(colslecht+nietuniek+ResetAll)
+                    else:
+                        email = True
+        else:
+            personeelsnummer = False
+            while personeelsnummer == False:
+                PN = input(nieuwpersoneelsnummer)
+                if PN.upper() in afsluitlijst:
+                    uit = True
+                    return uit
+                elif len(PN) == 2 and PN[0].upper() in afsluitlijst and PN[1].upper() in skiplijst:
+                    eindroutine()
+                elif len(PN) < 1:
+                    pass
+                else:
+                    u = True
+                    for i in teamlijst:
+                        if PN == i[0]:
+                            u = False
+                    if u == False:
+                        print(colslecht+nietuniek+ResetAll)
+                    else:
+                        personeelsnummer = True
     AT = input(nieuweaantekening)
     if AT.upper() in afsluitlijst:
         uit = True
@@ -453,10 +485,17 @@ def teamshowkort():
     lenlist = 0
     numin = 0
     teamlijst = team()
+    nep = []
+    echt = []
     for i in teamlijst:
-        if i[0] != "00000":
-            numin += i[3]
-            lenlist += 1
+        if i[0] == "00000" or i[0][0] == "~":
+            nep.append(i)
+    for i in teamlijst:
+        if i not in nep:
+            echt.append(i)
+    for i in echt:
+        numin += i[3]
+        lenlist += 1
     if numin == 1:
         col = iocol[1]
         if lang == "EN":
@@ -2078,8 +2117,6 @@ def verwijderteam(medewerkerlijst):
     else:
         verwok = "Medewerker(s) succesvol verwijderd."
     teamlijst = team()
-    print(medewerkerlijst)
-    print(teamlijst)
     for i in medewerkerlijst:
         if i[0] != "00000":
             teamlijst.remove(i)
@@ -2312,13 +2349,13 @@ while baas == True:
     print()
     if lang == "EN":
         keuzeopties = "Choose from the following options:\n  0 : %sAbout this program%s\n  1 : %sAdd%s\n >2 : %sView%s\n  3 : %sChange%s\n  4 : %sArchive and Delete%s\n  5 : %sMeeting%s\n  6 : %sNotepad (Vim)%s\n%s\n%s" % (colover,ResetAll,coltoevoegen,ResetAll,colbekijken,ResetAll,colwijzigen,ResetAll,colverwijderen,ResetAll,colmeeting,ResetAll,colinformatie,ResetAll,weg,inputindent)
-        toetom = "%sADD%s a Task or an Agent:\n >1 : Task\n  2 : Agent\n%s\n%s" % (coltoevoegen,ResetAll,terug,inputindent)
+        toetom = "%sADD%s a Task or an Agent or SubTeam:\n >1 : Task\n  2 : Agent or SubTeam\n%s\n%s" % (coltoevoegen,ResetAll,terug,inputindent)
         zietom = "%sVIEW%s Tasks or Agents:\n >1 : Tasks\n  2 : Agents\n%s\n%s" % (colbekijken,ResetAll,terug,inputindent)
         andiot = "%sCHANGE%s a Task or Team data:\n  1 : Task\n  2 : One Agent\n >3 : Group\n%s\n%s" % (colwijzigen,ResetAll,terug,inputindent)
         watweg = "%sARCHIVE and/or DELETE%s a Task or an Agent:\n >1 : Task\n  2 : Agent\n%s\n%s" % (colverwijderen,ResetAll,terug,inputindent)
     else:
         keuzeopties = "Kies uit de volgende opties:\n  0 : %sOver dit programma%s\n  1 : %sToevoegen%s\n >2 : %sBekijken%s\n  3 : %sWijzigen%s\n  4 : %sArchiveren en Verwijderen%s\n  5 : %sVergadering%s\n  6 : %sKladblok (Vim)%s\n%s\n%s" % (colover,ResetAll,coltoevoegen,ResetAll,colbekijken,ResetAll,colwijzigen,ResetAll,colverwijderen,ResetAll,colmeeting,ResetAll,colinformatie,ResetAll,weg,inputindent)
-        toetom = "%sVOEG%s een Taak of een Medewerker %sTOE%s:\n >1 : Taak\n  2 : Medewerker\n%s\n%s" % (coltoevoegen,ResetAll,coltoevoegen,ResetAll,terug,inputindent)
+        toetom = "%sVOEG%s een Taak of een Medewerker of SubTeam %sTOE%s:\n >1 : Taak\n  2 : Medewerker of SubTeam\n%s\n%s" % (coltoevoegen,ResetAll,coltoevoegen,ResetAll,terug,inputindent)
         zietom = "%sBEKIJK%s Taken of Medewerkers:\n >1 : Taken\n  2 : Medewerkers\n%s\n%s" % (colbekijken,ResetAll,terug,inputindent)
         andiot = "%sWIJZIG%s een Taak of Team gegevens:\n  1 : Taak\n  2 : Één Medewerker\n >3 : Groep\n%s\n%s" % (colwijzigen,ResetAll,terug,inputindent)
         watweg = "%sARCHIVEER en/of VERWIJDER%s een Taak of een Medewerker:\n >1 : Taak\n  2 : Medewerker\n%s\n%s" % (colverwijderen,ResetAll,terug,inputindent)
