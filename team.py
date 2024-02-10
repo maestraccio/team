@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-versie = "1.65"
-datum = "20240209"
+versie = "1.66"
+datum = "20240210"
 import locale, os, ast, pathlib, subprocess, random, textwrap, calendar
 from datetime import *
 from dateutil.relativedelta import *
@@ -124,7 +124,7 @@ while lang == False:
         lang = "NL"
 
 if lang == "EN":
-    checklijst = ["OUT","IN"]
+    checklijst = ["OUT","IN",""]
     weg = "%s  Q!: Exit%s" % (ResetAll+colterug,ResetAll)
     terug = "%s  Q : Back%s" % (ResetAll+colterug,ResetAll)
     statuslijst = ["Planned","Started","Paused","Aborted","Completed","Overdue","Absent"]
@@ -134,7 +134,7 @@ if lang == "EN":
     else:
         teamverdeling = ["Agent Number","Given Name","Last Name","Check","Note"]
 else:
-    checklijst = ["UIT","IN"]
+    checklijst = ["UIT","IN",""]
     weg = "%s  Q!: Afsluiten%s" % (ResetAll+colterug,ResetAll)
     terug = "%s  Q : Terug%s" % (ResetAll+colterug,ResetAll)
     statuslijst = ["Gepland","Gestart","Gepauzeerd","Afgebroken","Afgerond","Verlopen","Afwezig"]
@@ -246,12 +246,24 @@ def team():
             print(teamlijst, end = "", file = t)
     except:
         if lang == "EN":
-            teamlijst = [['00000','Whole','Team',0,'Whole Team']]
+            teamlijst = [['00000','Whole','Team',2,'Whole Team']]
         else:
-            teamlijst = [['00000','Hele','Team',0,'Hele Team']]
+            teamlijst = [['00000','Hele','Team',2,'Hele Team']]
         with open("teamlijst","w") as t:
             print(teamlijst, end = "", file = t)
     return teamlijst
+
+def nepecht():
+    teamlijst = team()
+    nep = []
+    echt = []
+    for i in teamlijst:
+        if i[0] == "00000" or i[0][0] == "~":
+            nep.append(i)
+    for i in teamlijst:
+        if i not in nep:
+            echt.append(i)
+    return teamlijst,nep,echt
 
 def taak():
     try:
@@ -318,8 +330,6 @@ def wijzigoei(oeilijst):
                 print("Wijzig de Einddatum of de Status van Taak %s" % statcol[5]+str(indi)+ResetAll)
     print()
 
-
-
 def teamnieuw():
     teamshowbasis()
     if lang == "EN":
@@ -344,15 +354,9 @@ def teamnieuw():
             nieuwpersoneelsnummer = "Typ het PersoneelsNummer:\n%s" % inputindent
             nietuniek = "Dit Personeelsnummer bestaat al."
         nieuweaantekening = "Typ een Aantekening (opt):\n%s" % inputindent
-    teamlijst = team()
-    nep = []
-    echt = []
-    for i in teamlijst:
-        if i[0] == "00000" or i[0][0] == "~":
-            nep.append(i)
-    for i in teamlijst:
-        if i not in nep:
-            echt.append(i)
+    teamlijst = nepecht()[0]
+    nep = nepecht()[1]
+    echt = nepecht()[2]
     subteamvoornaam = "~"
     voornaam = False
     while voornaam == False:
@@ -384,7 +388,7 @@ def teamnieuw():
             else:
                 voornaam = True
     try:
-        print(VN)
+        print(AN)
     except:
         achternaam = False
         while achternaam == False:
@@ -456,10 +460,12 @@ def teamnieuw():
 
 def teamshowbasis():
     if lang == "EN":
-        tpmofukt = "Type the Agent ID to view the Tasks of that Agent:\n%s" % inputindent
+        tpmofukt = "Type the ID to view the Tasks of that Agent ir SubTeam:\n%s" % inputindent
     else:
-        tpmofukt = "Typ de ID van de Medewerker om de taken van die Medewerker te zien:\n%s" % inputindent
-    teamlijst = team()
+        tpmofukt = "Typ de ID om de taken van die Medewerker of dat SubTeam te zien:\n%s" % inputindent
+    teamlijst = nepecht()[0]
+    nep = nepecht()[1]
+    echt = nepecht()[2]
     lijn = "+--+----------+----------+--------------------+-----+------------+"
     if lang == "EN":
         if key == "emailadres":
@@ -477,22 +483,49 @@ def teamshowbasis():
     for i in teamlijst:
         if i[0] != "00000":
             ID = teamlijst.index(i)
+            if i[0][0] == "~":
+                print(forr3(ID),forc10(i[0])[:10],forr10(i[1])[:10],forl20(i[2])[:20],forc5(""),forl12(i[4])[:12])
+            else:
+                print(forr3(ID),forc10(i[0])[:10],forr10(i[1])[:10],forl20(i[2])[:20],iocol[int(forc5(i[3]))]+forc5(checklijst[int(forc5(i[3]))])[:5]+ResetAll,forl12(i[4])[:12])
+    print(colbekijken+lijn+ResetAll)
+    print()
+
+def teamshowbasisecht():
+    if lang == "EN":
+        tpmofukt = "Type the ID to view the Tasks of that Agent ir SubTeam:\n%s" % inputindent
+    else:
+        tpmofukt = "Typ de ID om de taken van die Medewerker of dat SubTeam te zien:\n%s" % inputindent
+    teamlijst = nepecht()[0]
+    nep = nepecht()[1]
+    echt = nepecht()[2]
+    lijn = "+--+----------+----------+--------------------+-----+------------+"
+    if lang == "EN":
+        if key == "emailadres":
+            kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("EMail")[:10],forc10("GivenName")[:10],forc20("LastName")[:20],forc5("Chk")[:5],forc12("Note")[:12])
+        else:
+            kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("AN")[:10],forc10("GivenName")[:10],forc20("LastName")[:20],forc5("Chk")[:5],forc12("Note")[:12])
+    else:
+        if key == "emailadres":
+            kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("EMail")[:10],forc10("VoorNaam")[:10],forc20("AchterNaam")[:20],forc5("Chk")[:5],forc12("Aantekening")[:12])
+        else:
+            kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("PN")[:10],forc10("VoorNaam")[:10],forc20("AchterNaam")[:20],forc5("Chk")[:5],forc12("Aantekening")[:12])
+    print(colbekijken+lijn+ResetAll)
+    print(kop)
+    print(lijn)
+    for i in echt:
+        if i[0] != "00000":
+            ID = echt.index(i)+1
             print(forr3(ID),forc10(i[0])[:10],forr10(i[1])[:10],forl20(i[2])[:20],iocol[int(forc5(i[3]))]+forc5(checklijst[int(forc5(i[3]))])[:5]+ResetAll,forl12(i[4])[:12])
     print(colbekijken+lijn+ResetAll)
     print()
 
+
 def teamshowkort():
     lenlist = 0
     numin = 0
-    teamlijst = team()
-    nep = []
-    echt = []
-    for i in teamlijst:
-        if i[0] == "00000" or i[0][0] == "~":
-            nep.append(i)
-    for i in teamlijst:
-        if i not in nep:
-            echt.append(i)
+    teamlijst = nepecht()[0]
+    nep = nepecht()[1]
+    echt = nepecht()[2]
     for i in echt:
         numin += i[3]
         lenlist += 1
@@ -526,12 +559,14 @@ def teamshowkort():
  
 def teamshow():
     if lang == "EN":
-        tpmofukt = "View Agent's details or Tasks:\n  1 : Details\n >2 : Tasks:\n%s" % inputindent
-        tpmidq = "Type an Agent's ID:\n%s" % inputindent
+        tpmofukt = "View Agent or SubTeam's details or Tasks:\n  1 : Details\n >2 : Tasks:\n%s" % inputindent
+        tpmidq = "Type an Agent or SubTeam's ID:\n%s" % inputindent
     else:
-        tpmofukt = "Bekijk details of Taken van een Medewerker:\n  1 : Details\n >2 : Taken:\n%s" % inputindent
-        tpmidq = "Typ de ID van een Medewerker:\n%s" % inputindent
-    teamlijst = team()
+        tpmofukt = "Bekijk details of Taken van een Medewerker of SubTeam:\n  1 : Details\n >2 : Taken:\n%s" % inputindent
+        tpmidq = "Typ de ID van een Medewerker of SubTeam:\n%s" % inputindent
+    teamlijst = nepecht()[0]
+    nep = nepecht()[1]
+    echt = nepecht()[2]
     lijn = "+--+----------+----------+--------------------+-----+------------+"
     if lang == "EN":
         if key == "emailadres":
@@ -549,7 +584,10 @@ def teamshow():
     for i in teamlijst:
         if i[0] != "00000":
             ID = teamlijst.index(i)
-            print(forr3(ID),forc10(i[0])[:10],forr10(i[1])[:10],forl25(i[2])[:20],iocol[int(forc5(i[3]))]+forc5(checklijst[int(forc5(i[3]))])[:5]+ResetAll,forl12(i[4])[:12])
+            if i[0][0] == "~":
+                print(forr3(ID),forc10(i[0])[:10],forr10(i[1])[:10],forl25(i[2])[:20],forc5(""),forl12(i[4])[:12])
+            else:
+                print(forr3(ID),forc10(i[0])[:10],forr10(i[1])[:10],forl25(i[2])[:20],iocol[int(forc5(i[3]))]+forc5(checklijst[int(forc5(i[3]))])[:5]+ResetAll,forl12(i[4])[:12])
     print(colbekijken+lijn+ResetAll)
     takenlijst = taak()
     tpm = input(tpmofukt)
@@ -594,7 +632,7 @@ def taaknieuw():
         einddatum = "Give the Due date (YYYYMMDD, or \"+N\" adds days to the Start date):\n%s" % inputindent
         omschrijving = "Give the TaskDescription:\n%s" % inputindent
         moetlanger = "Give at least 4 characters."
-        wie = "Give the ID of the Agent:\n%s" % inputindent
+        wie = "Give the ID of the Agent or SubTeam:\n%s" % inputindent
         aantekening = "Give extra Info (opt):\n%s" % inputindent
         staten = "Give the ID of one of these Statuses:"
     else:
@@ -606,7 +644,7 @@ def taaknieuw():
         einddatum = "Geef de Einddatum op (YYYYMMDD, of \"+N\" voegt dagen toe aan Startdatum):\n%s" % inputindent
         omschrijving = "Geef de Taakbeschrijving op:\n%s" % inputindent
         moetlanger = "Geef tenminste 4 karakters op."
-        wie = "Geef de ID van de Medewerker:\n%s" % inputindent
+        wie = "Geef de ID van de Medewerker of het SubTeam:\n%s" % inputindent
         aantekening = "Geef extra Informatie (opt):\n%s" % inputindent
         staten = "Geef de ID van één van deze Statusen:"
     takenlijst = taak()
@@ -793,7 +831,9 @@ def taaknieuw():
                 print(moetlanger)
             else:
                 koe = True
-        teamlijst = team()
+        teamlijst = nepecht()[0]
+        nep = nepecht()[1]
+        echt = nepecht()[2]
         teamshowbasis()
         pisang = False
         while pisang == False:
@@ -1567,7 +1607,7 @@ def wijzigtaak():
         einddatum = "Give the Due date (YYYYMMDD), or \"+N\" for N days more:\n%s" % inputindent
         omschrijving = "Give the TaskDescription:\n%s" % inputindent
         moetlanger = "Give at least 4 characters."
-        wie = "Give the ID of the Agent:\n%s" % inputindent
+        wie = "Give the ID of the Agent or SubTeam:\n%s" % inputindent
         aantekening = "Give extra Info (opt):\n%s" % inputindent
         staten = "Give the ID of one of these Statuses:"
         welk = "Give the ID of the Task you want to change:\n%s" % inputindent
@@ -1577,7 +1617,7 @@ def wijzigtaak():
         einddatum = "Geef de Einddatum op (YYYYMMDD), of \"+N\" voor N dagen méér:\n%s" % inputindent
         omschrijving = "Geef de Taakbeschrijving op:\n%s" % inputindent
         moetlanger = "Geef tenminste 4 karakters op."
-        wie = "Geef de ID van de Medewerker:\n%s" % inputindent
+        wie = "Geef de ID van de Medewerker of het SubTeam:\n%s" % inputindent
         aantekening = "Geef extra Informatie (opt):\n%s" % inputindent
         staten = "Geef de ID van één van deze Statusen:"
         welk = "Geef de ID op van de Taak die u wilt wijzigen:\n%s" % inputindent
@@ -1702,7 +1742,9 @@ def wijzigtaak():
                             takenlijst[welke-1][3-1] = OS
                             koe = True
                 elif watte == "4":
-                    teamlijst = team()
+                    teamlijst = nepecht()[0]
+                    nep = nepecht()[1]
+                    echt = nepecht()[2]
                     teamshowbasis()
                     pisang = False
                     while pisang == False:
@@ -1774,26 +1816,28 @@ def wijzigtaak():
 
 def wijzigmedewerker():
     if lang == "EN":
-        kies = "Choose an Agent to %sCHANGE%s:" % (colwijzigen, ResetAll)
-        wie = "Give the ID of the Agent:\n%s" % inputindent
+        kies = "Choose an Agent or SubTeam to %sCHANGE%s:" % (colwijzigen, ResetAll)
+        wie = "Give the ID of the Agent or SubTeam:\n%s" % inputindent
         if key == "emailadres":
             keyhere = "EMail address"
         else:
             keyhere = "Agent Number"
         wat = "What do you want to change?:\n  1 : %s\n  2 : Given Name\n  3 : Last Name\n  4 : Check\n  5 : Note\n%s" % (keyhere,inputindent)
         nietuniek = "This %s already exists." % keyhere
-        tog = "Check these Agent OUT or IN:\n  0 : OUT\n  1 : IN\n >2 : Invert\n%s" % inputindent
+        tog = "Check these Agents OUT or IN:\n  0 : OUT\n  1 : IN\n >2 : Invert\n%s" % inputindent
     else:
-        kies = "Kies een Medewerker om te %sWIJZIGEN%s:" % (colwijzigen, ResetAll)
-        wie = "Geef de ID van de Medewerker:\n%s" % inputindent
+        kies = "Kies een Medewerker of SubTeam om te %sWIJZIGEN%s:" % (colwijzigen, ResetAll)
+        wie = "Geef de ID van de Medewerker of het SubTeam:\n%s" % inputindent
         if key == "emailadres":
             keyhere = "EMailadres"
         else:
             keyhere = "PersoneelsNummer"
         wat = "Wat wilt u Wijzigen?:\n  1 : %s\n  2 : VoorNaam\n  3 : AchterNaam\n  4 : Check\n  5 : Aantekening\n%s" % (keyhere,inputindent)
         nietuniek = "Dit %s bestaat al." % keyhere
-        tog = "Check deze Medewerker UIT of IN:\n  0 : UIT\n  1 : IN\n >2 : Omkeren\n%s" % inputindent
-    teamlijst = team()
+        tog = "Check deze Medewerkers UIT of IN:\n  0 : UIT\n  1 : IN\n >2 : Omkeren\n%s" % inputindent
+    teamlijst = nepecht()[0]
+    nep = nepecht()[1]
+    echt = nepecht()[2]
     print(kies)
     teamshowbasis()
     pisang = False
@@ -1832,7 +1876,12 @@ def wijzigmedewerker():
                                 if u == False:
                                     print(colslecht+nietuniek+ResetAll)
                                 else:
-                                    teamlijst[LL][0] = EM
+                                    print(die)
+                                    print(EM)
+                                    if die[0][0] == "~" and EM[0] != "~":
+                                        teamlijst[LL][0] = "~"+EM
+                                    else:
+                                        teamlijst[LL][0] = EM
                                     emailadres = True
                     else:
                         personeelsnummer = False
@@ -1852,7 +1901,12 @@ def wijzigmedewerker():
                                 if u == False:
                                     print(colslecht+nietuniek+ResetAll)
                                 else:
-                                    teamlijst[LL][0] = PN
+                                    print(die)
+                                    print(PN)
+                                    if die[0][0] == "~" and PN[0] != "~":
+                                        teamlijst[LL][0] = "~"+PN
+                                    else:
+                                        teamlijst[LL][0] = PN
                                     personeelsnummer = True
                 elif welk == "2":
                     voornaam = False
@@ -1901,7 +1955,9 @@ def wijzigmedewerker():
                     teamlijst[LL][4] = AT
                 with open("teamlijst","w") as t:
                     print(teamlijst, end = "", file = t)
-                teamlijst = team()
+                teamlijst = nepecht()[0]
+                nep = nepecht()[1]
+                echt = nepecht()[2]
         except:
             pass
         pisang = True
@@ -1909,16 +1965,18 @@ def wijzigmedewerker():
 
 def wijzigteam():
     if lang == "EN":
-        sel = "Select the IDs of the Agents you want to %sCHANGE%s,\nin CSV style (separated by commas), or * for all:\n%s" % (colwijzigen,ResetAll,inputindent)
-        tog = "Check these Agents OUT or IN:\n  0 : OUT\n  1 : IN\n >2 : Invert\n%s" % inputindent
+        sel = "Select the IDs of the Agents or SubTeams you want to %sCHANGE%s,\nin CSV style (separated by commas), or * for all:\n%s" % (colwijzigen,ResetAll,inputindent)
+        tog = "Check these Agents or SubTeams OUT or IN:\n  0 : OUT\n  1 : IN\n >2 : Invert\n%s" % inputindent
         wat = "What do you want to change?\n >1 : Check this group OUT or IN\n  2 : Change Note for everyone in this group\n%s" % inputindent
         nieuweaantekening = "Type or clear the Note:\n%s" % inputindent
     else:
-        sel = "Selecteer ID's van de Medewerkers die u wilt %sWIJZIGEN%s,\nin CSV-stijl (gescheiden door een komma), of * voor alle:\n%s" % (colwijzigen,ResetAll,inputindent)
-        tog = "Check deze Medewerkers UIT of IN:\n  0 : UIT\n  1 : IN\n >2 : Omkeren\n%s" % inputindent
+        sel = "Selecteer ID's van de Medewerkers of SubTeams die u wilt %sWIJZIGEN%s,\nin CSV-stijl (gescheiden door een komma), of * voor alle:\n%s" % (colwijzigen,ResetAll,inputindent)
+        tog = "Check deze Medewerkers of SubTeams UIT of IN:\n  0 : UIT\n  1 : IN\n >2 : Omkeren\n%s" % inputindent
         wat = "Wat wilt u wijzigen?\n >1 : Check deze groep UIT of IN\n  2 : Wijzig Aantekening voor iedereen in deze groep\n%s" % inputindent
         nieuweaantekening = "Typ of wis de Aantekening:\n%s" % inputindent
-    teamlijst = team()
+    teamlijst = nepecht()[0]
+    nep = nepecht()[1]
+    echt = nepecht()[2]
     teamshowbasis()
     select = input(sel).replace(" ","")
     if select.upper() in afsluitlijst:
@@ -1968,7 +2026,9 @@ def wijzigteam():
                     i[3] = 0
     with open("teamlijst","w") as t:
         print(teamlijst, end = "", file = t)
-    teamlijst = team()
+    teamlijst = nepecht()[0]
+    nep = nepecht()[1]
+    echt = nepecht()[2]
     print()
 
 def vergadering():
@@ -1988,8 +2048,10 @@ def vergadering():
         geendeelnemers = "Check deelnemende Medewerkers in, of voeg handmatig deelnemers toe."
         perdeelnemer = "Genoteerde opmerkingen gegroepeerd per Deelnemer:"
         eindevergadering = "Hier stopt de vergadering."
-    teamlijst = team()
-    teamshowbasis()
+    teamlijst = nepecht()[0]
+    nep = nepecht()[1]
+    echt = nepecht()[2]
+    teamshowbasisecht()
     meelijst = []
     numin = 0
     for i in teamlijst:
@@ -2087,10 +2149,10 @@ def vergadering():
 def archiveerteam(medewerkerlijst):
     if lang == "EN":
         archop = "\nArchived on %s:" % nu
-        archok = "Agent(s) archived successfully."
+        archok = "Agent(s) or SubTeam(s) archived successfully."
     else:
         archop = "\nGearchiveerd op %s:" % nu
-        archok = "Medewerker(s) succesvol gearchiveerd."
+        archok = "Medewerker(s) of SubTeam(s)succesvol gearchiveerd."
     with open("team.txt","a+") as t:
         try:
             for i in medewerkerlijst:
@@ -2113,10 +2175,12 @@ def archiveerteam(medewerkerlijst):
 
 def verwijderteam(medewerkerlijst):
     if lang == "EN":
-        verwok = "Agent(s) deleted successfully."
+        verwok = "Agent(s) or SubTeam(s) deleted successfully."
     else:
-        verwok = "Medewerker(s) succesvol verwijderd."
-    teamlijst = team()
+        verwok = "Medewerker(s) of SubTeam(s) succesvol verwijderd."
+    teamlijst = nepecht()[0]
+    nep = nepecht()[1]
+    echt = nepecht()[2]
     for i in medewerkerlijst:
         if i[0] != "00000":
             teamlijst.remove(i)
@@ -2223,12 +2287,14 @@ def archiveerofverwijdertaak():
 
 def archiveerofverwijdermedewerker():
     if lang == "EN":
-        sel = "Select the IDs of the Agents that you want to %sARCHIVE and/or DELETE%s,\nin CSV style (separated by commas), or * for all:\n%s" % (colverwijderen, ResetAll, inputindent)
+        sel = "Select the IDs of the Agents or SubTeams that you want to %sARCHIVE and/or DELETE%s,\nin CSV style (separated by commas), or * for all:\n%s" % (colverwijderen, ResetAll, inputindent)
         archov = "Select:\n  1 : Only Archive (append to Notepad)\n  2 : Only Delete\n >3 : Archive and Delete\n%s" % inputindent
     else:
-        sel = "Selecteer ID's van de Medewerkers die u wilt %sARCHIVEREN en/of VERWIJDEREN%s,\nin CSV-stijl (gescheiden door een komma), of * voor alle:\n%s" % (colverwijderen, ResetAll, inputindent)
+        sel = "Selecteer ID's van de Medewerkers of SubTeams die u wilt %sARCHIVEREN en/of VERWIJDEREN%s,\nin CSV-stijl (gescheiden door een komma), of * voor alle:\n%s" % (colverwijderen, ResetAll, inputindent)
         archov = "Selecteer:\n  1 : Alleen Archiveren (toevoegen aan Kladblok)\n  2 : Alleen Verwijderen\n >3 : Archiveren en Verwijderen\n%s" % inputindent
-    teamlijst = team()
+    teamlijst = nepecht()[0]
+    nep = nepecht()[1]
+    echt = nepecht()[2]
     teamshowbasis()
     select = input(sel).replace(" ","")
     if select.upper() in afsluitlijst:
@@ -2259,22 +2325,28 @@ def archiveerofverwijdermedewerker():
         return uit
     elif aov == "2":
         verwijderteam(medewerkerlijst)
-        teamlijst = team()
+        teamlijst = nepecht()[0]
+        nep = nepecht()[1]
+        echt = nepecht()[2]
         uit = True
         return uit
     else:
         archiveerteam(medewerkerlijst)
         verwijderteam(medewerkerlijst)
-        teamlijst = team()
+        teamlijst = nepecht()[0]
+        nep = nepecht()[1]
+        echt = nepecht()[2]
         uit = True
         return uit
 
 def uitklapteam():
     if lang == "EN":
-        welk = "Give the ID of the Agent you want to expand:\n%s" % inputindent
+        welk = "Give the ID of the Agent or SubTeam you want to expand:\n%s" % inputindent
     else:
-        welk = "Geef de ID op van de Medewerker die u wilt uitklappen:\n%s" % inputindent
-    teamlijst = team()
+        welk = "Geef de ID op van de Medewerker of het SubTeam om uit te klappen:\n%s" % inputindent
+    teamlijst = nepecht()[0]
+    nep = nepecht()[1]
+    echt = nepecht()[2]
     kelapa = False
     while kelapa == False:
         welke = input(welk)
@@ -2350,15 +2422,15 @@ while baas == True:
     if lang == "EN":
         keuzeopties = "Choose from the following options:\n  0 : %sAbout this program%s\n  1 : %sAdd%s\n >2 : %sView%s\n  3 : %sChange%s\n  4 : %sArchive and Delete%s\n  5 : %sMeeting%s\n  6 : %sNotepad (Vim)%s\n%s\n%s" % (colover,ResetAll,coltoevoegen,ResetAll,colbekijken,ResetAll,colwijzigen,ResetAll,colverwijderen,ResetAll,colmeeting,ResetAll,colinformatie,ResetAll,weg,inputindent)
         toetom = "%sADD%s a Task or an Agent or SubTeam:\n >1 : Task\n  2 : Agent or SubTeam\n%s\n%s" % (coltoevoegen,ResetAll,terug,inputindent)
-        zietom = "%sVIEW%s Tasks or Agents:\n >1 : Tasks\n  2 : Agents\n%s\n%s" % (colbekijken,ResetAll,terug,inputindent)
-        andiot = "%sCHANGE%s a Task or Team data:\n  1 : Task\n  2 : One Agent\n >3 : Group\n%s\n%s" % (colwijzigen,ResetAll,terug,inputindent)
-        watweg = "%sARCHIVE and/or DELETE%s a Task or an Agent:\n >1 : Task\n  2 : Agent\n%s\n%s" % (colverwijderen,ResetAll,terug,inputindent)
+        zietom = "%sVIEW%s Tasks or Agents or SubTeams:\n >1 : Tasks\n  2 : Agents or SubTeams\n%s\n%s" % (colbekijken,ResetAll,terug,inputindent)
+        andiot = "%sCHANGE%s a Task or Team data:\n  1 : Task\n  2 : One Agent or SubTeam\n >3 : Group\n%s\n%s" % (colwijzigen,ResetAll,terug,inputindent)
+        watweg = "%sARCHIVE and/or DELETE%s a Task or an Agent or SubTeam:\n >1 : Task\n  2 : Agent or SubTeam\n%s\n%s" % (colverwijderen,ResetAll,terug,inputindent)
     else:
         keuzeopties = "Kies uit de volgende opties:\n  0 : %sOver dit programma%s\n  1 : %sToevoegen%s\n >2 : %sBekijken%s\n  3 : %sWijzigen%s\n  4 : %sArchiveren en Verwijderen%s\n  5 : %sVergadering%s\n  6 : %sKladblok (Vim)%s\n%s\n%s" % (colover,ResetAll,coltoevoegen,ResetAll,colbekijken,ResetAll,colwijzigen,ResetAll,colverwijderen,ResetAll,colmeeting,ResetAll,colinformatie,ResetAll,weg,inputindent)
         toetom = "%sVOEG%s een Taak of een Medewerker of SubTeam %sTOE%s:\n >1 : Taak\n  2 : Medewerker of SubTeam\n%s\n%s" % (coltoevoegen,ResetAll,coltoevoegen,ResetAll,terug,inputindent)
-        zietom = "%sBEKIJK%s Taken of Medewerkers:\n >1 : Taken\n  2 : Medewerkers\n%s\n%s" % (colbekijken,ResetAll,terug,inputindent)
-        andiot = "%sWIJZIG%s een Taak of Team gegevens:\n  1 : Taak\n  2 : Één Medewerker\n >3 : Groep\n%s\n%s" % (colwijzigen,ResetAll,terug,inputindent)
-        watweg = "%sARCHIVEER en/of VERWIJDER%s een Taak of een Medewerker:\n >1 : Taak\n  2 : Medewerker\n%s\n%s" % (colverwijderen,ResetAll,terug,inputindent)
+        zietom = "%sBEKIJK%s Taken of Medewerkers of SubTeams:\n >1 : Taken\n  2 : Medewerkers of SubTeams\n%s\n%s" % (colbekijken,ResetAll,terug,inputindent)
+        andiot = "%sWIJZIG%s een Taak of Team gegevens:\n  1 : Taak\n  2 : Één Medewerker of SubTeam\n >3 : Groep\n%s\n%s" % (colwijzigen,ResetAll,terug,inputindent)
+        watweg = "%sARCHIVEER en/of VERWIJDER%s een Taak of een Medewerker of SubTeam:\n >1 : Taak\n  2 : Medewerker of SubTeam\n%s\n%s" % (colverwijderen,ResetAll,terug,inputindent)
     keuze = input(keuzeopties)
     if keuze.upper() in afsluitlijst:
         eindroutine()
