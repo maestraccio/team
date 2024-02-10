@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-versie = "1.66"
+versie = "1.67"
 datum = "20240210"
 import locale, os, ast, pathlib, subprocess, random, textwrap, calendar
 from datetime import *
@@ -2364,7 +2364,10 @@ def uitklapteam():
                 for i in range(len(die)):
                     j = die[i]
                     if i == 3:
-                        j = iocol[die[3]]+checklijst[die[3]]+ResetAll
+                        if die[0][0] == "~":
+                            j = ""
+                        else:
+                            j = iocol[die[3]]+checklijst[die[3]]+ResetAll
                     print(" "+forl20(teamverdeling[i]),j)
                 print(lijn)
         except:
