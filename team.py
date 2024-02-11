@@ -125,7 +125,7 @@ while lang == False:
         lang = "NL"
 
 if lang == "EN":
-    checklijst = ["OUT","IN",""]
+    checklijst = ["OUT","IN"]
     weg = "%s  Q!: Exit%s" % (ResetAll+colterug,ResetAll)
     terug = "%s  Q : Back%s" % (ResetAll+colterug,ResetAll)
     statuslijst = ["Planned","Started","Paused","Aborted","Completed","Overdue","Absent"]
@@ -135,7 +135,7 @@ if lang == "EN":
     else:
         teamverdeling = ["Agent Number","Given Name","Last Name","Check","Note"]
 else:
-    checklijst = ["UIT","IN",""]
+    checklijst = ["UIT","IN"]
     weg = "%s  Q!: Afsluiten%s" % (ResetAll+colterug,ResetAll)
     terug = "%s  Q : Terug%s" % (ResetAll+colterug,ResetAll)
     statuslijst = ["Gepland","Gestart","Gepauzeerd","Afgebroken","Afgerond","Verlopen","Afwezig"]
