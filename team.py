@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-versie = "1.67"
-datum = "20240210"
+versie = "1.68"
+datum = "20240211"
 import locale, os, ast, pathlib, subprocess, random, textwrap, calendar
 from datetime import *
 from dateutil.relativedelta import *
@@ -84,7 +84,7 @@ lenlijst = 0
 try:
     while len(TeamLogo) > 0:
         for i in logocol:
-            sleep(0.025)
+            sleep(0.0125)
             print(i,end = "")
             print(TeamLogo[logocol.index(i)+lenlijst], end = "", flush = True)
             TeamLogo = TeamLogo[0:]
@@ -104,6 +104,7 @@ dagenlijstNL = ["maandag","dinsdag","woensdag","donderdag","vrijdag","zaterdag",
 maandlijstNL = ["januari","februari","maart","april","mei","juni","juli", "augustus", "september","oktober","november","december"]
 scopenunu = {}
 wi = 66
+forcwi = ("{:^%s}" % wi).format
 vim = """# NL:
 #     Ga naar schrijfmodus met "i", verlaat schrijfmodus met "Esc"
 #     Opslaan met ":w"+"Enter", verlaat Vim met ":q"+"Enter"
@@ -198,14 +199,14 @@ def printstuff():
     if lang == "EN":
         ve = "Version:"
         da = "Date:"
-        stuff1 = textwrap.wrap("\"TEAM\" is a simple planning tool for team leads and managers. Check agents IN or OUT, register personal talents and expertise, assign tasks and organize meetings.", width = wi)
-        stuff2 = textwrap.wrap("To facilitate usage, all tasks and agents are assigned an ad hoc ID on which operations can be performed. An additional agent called \"Whole Team\" is present by default with ID \"0\", not shown in the overviews. If it is deleted (if the first agent has ID \"0\"), you can add this \"Agent\" with Agent Number or EMail address \"00000\" manually. Agents can be combined into SubTeams.", width = wi)
+        stuff1 = textwrap.wrap("\"TEAM\" is a simple planning tool for team leads and managers. Check Agents IN or OUT, register personal talents and expertise, assign Tasks and organize meetings.", width = wi)
+        stuff2 = textwrap.wrap("Tasks and Agents are assigned an ad hoc ID on which operations can be performed. An additional Agent called \"Whole Team\" is present by default with ID \"0\", not shown in the overviews. If it is deleted (if the alphabetically sorted first Agent has ID \"0\"), you can add this \"Agent\" with Agent Number or EMail address \"00000\" manually. Agents can be combined into SubTeams. Remember that Tasks assigned to a SubTeam do not appear with the involved individual Agents.", width = wi)
         stuff3 = textwrap.wrap("Confirm every choice with \"Enter\", go back with \"Q\" or leave the program immediately with \"Q!\". The option \"Notepad (Vim)\" uses the application \"Vim\". Make sure it is installed.\n", width = wi)
     else:
         ve = "Versie:"
         da = "Datum:"
-        stuff1 = textwrap.wrap("\"TEAM\" is een simpele planningstool voor leidinggevenden en managers. Check medewerkers IN of UIT, registreer persoonlijke talenten en expertise, verdeel taken en organiseer vergaderingen.", width = wi)
-        stuff2 = textwrap.wrap("Om het gebruik te vergemakkelijken krijgen alle taken en medewerkers ad hoc een ID waarop de bewerkingen kunnen worden uitgevoerd. Een extra medewerker \"Hele Team\" is standaard aanwezig met ID \"0\", deze wordt in de overzichten niet getoond. Als deze \"medewerker\" werd verwijderd (als de eerste medewerker ID \"0\" heeft), dan kunt u die handmatig toevoegen met PersoneelsNummer of EMailadres \"00000\". Medewerkers kunnen worden gecombineerd tot SubTeams.", width = wi)
+        stuff1 = textwrap.wrap("\"TEAM\" is een simpele planningstool voor leidinggevenden en managers. Check Medewerkers IN of UIT, registreer persoonlijke talenten en expertise, verdeel Taken en organiseer vergaderingen.", width = wi)
+        stuff2 = textwrap.wrap("Alle Taken en Medewerkers krijgen ad hoc een ID waarop de bewerkingen kunnen worden uitgevoerd. Een extra medewerker \"Hele Team\" is standaard aanwezig met ID \"0\", die in de overzichten niet wordt getoond. Als deze \"Medewerker\" werd verwijderd (als de alfabetisch gesorteerd eerste Medewerker ID \"0\" heeft), dan kunt u die handmatig toevoegen met PersoneelsNummer of EMailadres \"00000\". Medewerkers kunnen worden gecombineerd tot SubTeams. Denk eraan dat aan een SubTeam toegewezen Taak niet te zien is bij de betrokken individuele Medewerkers.", width = wi)
         stuff3 = textwrap.wrap("Bevestig iedere keuze met \"Enter\", ga terug met \"Q\" of verlaat het programma direct met \"Q!\". De optie \"Kladblok (Vim)\" maakt gebruik van de applicatie \"Vim\". Installeer dat eerst.", width = wi)
     print()
     print(colover+forl8(ve)+versie+ResetAll)
@@ -333,8 +334,8 @@ def wijzigoei(oeilijst):
 def teamnieuw():
     teamshowbasis()
     if lang == "EN":
-        nieuwevoornaam = "Type the GivenName or an ID (for a SubTeam):\n%s" % inputindent
-        eindsubteam = "Stop adding Agents to the SubTeam with \"~\"."
+        nieuwevoornaam = "Type the GivenNamem, or IDs as CSV (for a SubTeam):\n%s" % inputindent
+        eindsubteam = "End adding Agents to the SubTeam with \"~\"."
         nieuweachternaam = "Type the LastName:\n%s" % inputindent
         if key == "emailadres":
             nieuwemail = "Type the EMail:\n%s" % inputindent
@@ -344,8 +345,8 @@ def teamnieuw():
             nietuniek = "This AgentNumber already exists."
         nieuweaantekening = "Type a Note (opt):\n%s" % inputindent
     else:
-        nieuwevoornaam = "Typ de VoorNaam of een ID (voor een SubTeam):\n%s" % inputindent
-        eindsubteam = "Stop het toevoegen van namen aan dit SubTeam met \"~\"."
+        nieuwevoornaam = "Typ de VoorNaam, of ID's als CSV (voor een SubTeam):\n%s" % inputindent
+        eindsubteam = "Beëindig het toevoegen van Medewerkers aan dit SubTeam met \"~\"."
         nieuweachternaam = "Typ de AchterNaam:\n%s" % inputindent
         if key == "emailadres":
             nieuwemail = "Typ het EMailadres:\n%s" % inputindent
@@ -367,10 +368,12 @@ def teamnieuw():
         elif len(VN) == 2 and VN[0].upper() in afsluitlijst and VN[1].upper() in skiplijst:
             eindroutine()
         try:
-            if int(VN)-1 in range(len(echt)):
-                subteamvoornaam += echt[int(VN)-1][1]+"~"
+            VNCSV = VN.replace(" ","").split(",")
+            for i in VNCSV:
+                if int(i)-1 in range(len(echt)):
+                    subteamvoornaam += echt[int(i)-1][1]+"~"
             print(subteamvoornaam)
-            print(eindsubteam)
+            print(colover+forcwi(eindsubteam)+ResetAll)
         except:
             if VN == "~":
                 AN = subteamvoornaam
