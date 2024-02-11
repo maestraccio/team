@@ -104,7 +104,6 @@ dagenlijstNL = ["maandag","dinsdag","woensdag","donderdag","vrijdag","zaterdag",
 maandlijstNL = ["januari","februari","maart","april","mei","juni","juli", "augustus", "september","oktober","november","december"]
 scopenunu = {}
 wi = 66
-forcwi = ("{:^%s}" % wi).format
 vim = """# NL:
 #     Ga naar schrijfmodus met "i", verlaat schrijfmodus met "Esc"
 #     Opslaan met ":w"+"Enter", verlaat Vim met ":q"+"Enter"
@@ -194,6 +193,7 @@ forr20 = "{:>20}".format
 forc25 = "{:^25}".format
 forl25 = "{:<25}".format
 forr25 = "{:>25}".format
+forcwi = ("{:^%s}" % wi).format
 
 def printstuff():
     if lang == "EN":
