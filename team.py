@@ -383,8 +383,7 @@ def teamnieuw():
                     subteamvoornaam += tijdelijkesubteamvoornaam[i]
             print(subteamvoornaam)
             print(colover+forcwi(eindsubteam)+ResetAll)
-        except(Exception) as f:
-            print(f)
+        except:
             if VN == "~":
                 AN = subteamvoornaam
                 print(AN)
