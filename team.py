@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-versie = "1.69"
+versie = "1.7"
 datum = "20240213"
 import locale, os, ast, pathlib, subprocess, random, textwrap, calendar
 from datetime import *
@@ -361,6 +361,7 @@ def teamnieuw():
     subteamtel = 0
     tijdelijkesubteamvoornaam = "~"
     subteamvoornaam = ""
+    subteamvoornamenlijst = []
     voornaam = False
     while voornaam == False:
         VN = input(nieuwevoornaam)
@@ -373,18 +374,20 @@ def teamnieuw():
             VNCSV = VN.replace(" ","").split(",")
             for i in VNCSV:
                 if int(i)-1 in range(len(echt)):
-                    tijdelijkesubteamvoornaam += echt[int(i)-1][1]+"~"
+                    print("~"+echt[int(i)-1][1])
+                    subteamvoornamenlijst.append(echt[int(i)-1][1])
                     subteamtel += 1
             for i in range(len(tijdelijkesubteamvoornaam)):
                 if i == 1:
-
                     subteamvoornaam += str(subteamtel)+"~"+tijdelijkesubteamvoornaam[i]
                 else:
                     subteamvoornaam += tijdelijkesubteamvoornaam[i]
-            print(subteamvoornaam)
             print(colover+forcwi(eindsubteam)+ResetAll)
         except:
             if VN == "~":
+                subteamvoornaam = "~"+str(subteamtel)+":"
+                for i in subteamvoornamenlijst:
+                    subteamvoornaam += i+"~"
                 AN = subteamvoornaam
                 print(AN)
                 if lang == "EN":
