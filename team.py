@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-versie = "1.68"
-datum = "20240211"
+versie = "1.69"
+datum = "20240213"
 import locale, os, ast, pathlib, subprocess, random, textwrap, calendar
 from datetime import *
 from dateutil.relativedelta import *
@@ -334,7 +334,7 @@ def wijzigoei(oeilijst):
 def teamnieuw():
     teamshowbasis()
     if lang == "EN":
-        nieuwevoornaam = "Type the GivenNamem, or IDs as CSV (for a SubTeam):\n%s" % inputindent
+        nieuwevoornaam = "Type the GivenName, or IDs as CSV (for a SubTeam):\n%s" % inputindent
         eindsubteam = "End adding Agents to the SubTeam with \"~\"."
         nieuweachternaam = "Type the LastName:\n%s" % inputindent
         if key == "emailadres":
@@ -358,7 +358,9 @@ def teamnieuw():
     teamlijst = nepecht()[0]
     nep = nepecht()[1]
     echt = nepecht()[2]
-    subteamvoornaam = "~"
+    subteamtel = 0
+    tijdelijkesubteamvoornaam = "~"
+    subteamvoornaam = ""
     voornaam = False
     while voornaam == False:
         VN = input(nieuwevoornaam)
@@ -371,10 +373,18 @@ def teamnieuw():
             VNCSV = VN.replace(" ","").split(",")
             for i in VNCSV:
                 if int(i)-1 in range(len(echt)):
-                    subteamvoornaam += echt[int(i)-1][1]+"~"
+                    tijdelijkesubteamvoornaam += echt[int(i)-1][1]+"~"
+                    subteamtel += 1
+            for i in range(len(tijdelijkesubteamvoornaam)):
+                if i == 1:
+
+                    subteamvoornaam += str(subteamtel)+"~"+tijdelijkesubteamvoornaam[i]
+                else:
+                    subteamvoornaam += tijdelijkesubteamvoornaam[i]
             print(subteamvoornaam)
             print(colover+forcwi(eindsubteam)+ResetAll)
-        except:
+        except(Exception) as f:
+            print(f)
             if VN == "~":
                 AN = subteamvoornaam
                 print(AN)
@@ -921,7 +931,7 @@ def takensmal():
     if lang == "EN":
         kop = "%s %s %s %s %s %s %s" % (forr3("ID"),forc4("Strt")[:4],forc4("Due")[:4],forc11("TaskDescr.")[:11],forc11("Name")[:11],forc11("Note")[:11],forc10("Status")[:10])
     else:
-        kop = "%s %s %s %s %s %s %s" % (forr3("ID"),forc4("Strt")[:4],forc4("Eind")[:4],forc11("Taakomschr.")[:11],forc11("Name")[:11],forc11("Aantekening")[:11],forc10("Status")[:10])
+        kop = "%s %s %s %s %s %s %s" % (forr3("ID"),forc4("Strt")[:4],forc4("Eind")[:4],forc11("Taakomschr.")[:11],forc11("Naam")[:11],forc11("Aantekening")[:11],forc10("Status")[:10])
     print(colbekijken+lijn+ResetAll)
     print(kop)
     print(lijn)
@@ -937,7 +947,7 @@ def takenbreed():
     if lang == "EN":
         kop = "%s %s %s %s %s %s %s" % (forr3("ID"),forc8("Start")[:8],forc8("Due")[:8],forc20("TaskDescription")[:20],forc20("Name")[:20],forc20("Note")[:20],forc15("Status")[:15])
     else:
-        kop = "%s %s %s %s %s %s %s" % (forr3("ID"),forc8("Start")[:8],forc8("Eind")[:8],forc20("Taakomschrijving")[:20],forc20("Name")[:20],forc20("Aantekening")[:20],forc15("Status")[:15])
+        kop = "%s %s %s %s %s %s %s" % (forr3("ID"),forc8("Start")[:8],forc8("Eind")[:8],forc20("Taakomschrijving")[:20],forc20("Naam")[:20],forc20("Aantekening")[:20],forc15("Status")[:15])
     print(colbekijken+lijn+ResetAll)
     print(kop)
     print(lijn)
