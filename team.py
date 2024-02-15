@@ -1,13 +1,13 @@
 #!/usr/bin/python3
-versie = "1.7"
-datum = "20240213"
+versie = "2.0"
+datum = "20240215"
 import locale, os, ast, pathlib, subprocess, random, textwrap, calendar
 from datetime import *
 from dateutil.relativedelta import *
 from time import sleep
 
-key = "emailadres"
-#key = "personeelsnummer"
+keylijst = ["EMailadres","PersoneelsNummer"]
+keylijstEN = ["EMail address","Agent Number"]
 basismap = os.path.dirname(os.path.realpath(__file__))
 os.chdir(basismap)
 locale.setlocale(locale.LC_ALL, "")
@@ -123,26 +123,30 @@ while lang == False:
     else:
         lang = "NL"
 
+def nukey():
+    try:
+        with open("teamlijst","r") as t:
+            keymlijst = ast.literal_eval(t.read())
+            key = keymlijst[0]
+    except:
+        key = keylijst[0]
+    return key
+key = nukey()
+
 if lang == "EN":
     checklijst = ["OUT","IN"]
     weg = "%s  Q!: Exit%s" % (ResetAll+colterug,ResetAll)
     terug = "%s  Q : Back%s" % (ResetAll+colterug,ResetAll)
     statuslijst = ["Planned","Started","Paused","Aborted","Completed","Overdue","Absent"]
     taakverdeling = ["Start","Due","TaskDescription","Name","Note","Status"]
-    if key == "emailadres":
-        teamverdeling = ["EMail address","Given Name","Last Name","Check","Note"]
-    else:
-        teamverdeling = ["Agent Number","Given Name","Last Name","Check","Note"]
+    teamverdeling = [keylijstEN[keylijst.index(key)],"Given Name","Last Name","Check","Note"]
 else:
     checklijst = ["UIT","IN"]
     weg = "%s  Q!: Afsluiten%s" % (ResetAll+colterug,ResetAll)
     terug = "%s  Q : Terug%s" % (ResetAll+colterug,ResetAll)
     statuslijst = ["Gepland","Gestart","Gepauzeerd","Afgebroken","Afgerond","Verlopen","Afwezig"]
     taakverdeling = ["Start","Eind","Taakomschrijving","Naam","Aantekening","Status"]
-    if key == "emailadres":
-        teamverdeling = ["EMailadres","VoorNaam","AchterNaam","Check","Aantekening"]
-    else:
-        teamverdeling = ["Personeelsnummer","VoorNaam","AchterNaam","Check","Aantekening"]
+    teamverdeling = [key,"VoorNaam","AchterNaam","Check","Aantekening"]
 
 def printdag():
     todaag = datetime.strftime(datetime.today(),"%A %Y%m%d")
@@ -242,17 +246,47 @@ def statusshow():
 def team():
     try:
         with open("teamlijst","r") as t:
-            teamlijst = sorted(ast.literal_eval(t.read()))
+            keymlijst = ast.literal_eval(t.read())
+            teamlijst = sorted(keymlijst[1:])
+            keyteamlijst = [key]
+            for i in teamlijst:
+                keyteamlijst.append(i)
         with open("teamlijst","w") as t:
-            print(teamlijst, end = "", file = t)
+            print(keyteamlijst, end = "", file = t)
     except:
         if lang == "EN":
-            teamlijst = [['00000','Whole','Team',2,'Whole Team']]
+            keyteamlijst = [key, ['00000','Whole','Team',2,'Whole Team']]
         else:
-            teamlijst = [['00000','Hele','Team',2,'Hele Team']]
+            keyteamlijst = [key, ['00000','Hele','Team',2,'Hele Team']]
         with open("teamlijst","w") as t:
-            print(teamlijst, end = "", file = t)
+            print(keyteamlijst, end = "", file = t)
     return teamlijst
+
+def setkey():
+    print(colover, end = "")
+    teamlijst = team()
+    key = nukey()
+    if lang == "EN":
+        curkey = "The current key is %s" % key
+        anderekeyjn = "If you want to change it, choose:\n  1 : %s\n  2 : %s\n%s" % (keylijstEN[0],keylijstEN[1],inputindent)
+    else:
+        curkey = "De huidige key is %s" % key
+        anderekeyjn = "Als u die wilt wijzigen, kies:\n  1 : %s\n  2 : %s\n%s" % (keylijst[0],keylijst[1],inputindent)
+    print(curkey)
+    keychange = input(anderekeyjn)
+    if keychange.upper() in afsluitlijst:
+        return key
+    elif keychange == "1":
+        key = keylijst[0]
+    elif keychange == "2":
+        key = keylijst[1]
+    keyteamlijst = [key]
+    for i in teamlijst:
+        keyteamlijst.append(i)
+    with open("teamlijst","w") as t:
+        print(keyteamlijst, end = "", file = t)
+    print(ResetAll)
+    return key
 
 def nepecht():
     teamlijst = team()
@@ -337,7 +371,7 @@ def teamnieuw():
         nieuwevoornaam = "Type the GivenName, or IDs as CSV (for a SubTeam):\n%s" % inputindent
         eindsubteam = "End adding Agents to the SubTeam with \"~\"."
         nieuweachternaam = "Type the LastName:\n%s" % inputindent
-        if key == "emailadres":
+        if key == keylijst[0]:
             nieuwemail = "Type the EMail:\n%s" % inputindent
             nietuniek = "This EMail already exists."
         else:
@@ -348,7 +382,7 @@ def teamnieuw():
         nieuwevoornaam = "Typ de VoorNaam, of ID's als CSV (voor een SubTeam):\n%s" % inputindent
         eindsubteam = "Beëindig het toevoegen van Medewerkers aan dit SubTeam met \"~\"."
         nieuweachternaam = "Typ de AchterNaam:\n%s" % inputindent
-        if key == "emailadres":
+        if key == keylijst[0]:
             nieuwemail = "Typ het EMailadres:\n%s" % inputindent
             nietuniek = "Dit EMailadres bestaat al."
         else:
@@ -394,7 +428,7 @@ def teamnieuw():
                     VN = "SubTeam"
                 else:
                     VN = "SubTeam"
-            if key == "emailadres":
+            if key == keylijst[0]:
                 EM = subteamvoornaam
             else:
                 PN = subteamvoornaam
@@ -417,7 +451,7 @@ def teamnieuw():
                 pass
             else:
                 achternaam = True
-        if key == "emailadres":
+        if key == keylijst[0]:
             email = False
             while email == False:
                 EM = input(nieuwemail)
@@ -463,14 +497,17 @@ def teamnieuw():
         return uit
     elif len(AT) == 2 and AT[0].upper() in afsluitlijst and AT[1].upper() in skiplijst:
         eindroutine()
-    if key == "emailadres":
+    if key == keylijst[0]:
         nieuwteam = [EM,VN,AN,0,AT]
     else:
         nieuwteam = [PN,VN,AN,0,AT]
     teamlijst.append(nieuwteam)
     teamlijst = sorted(teamlijst)
+    keyteamlijst = [key]
+    for i in teamlijst:
+        keyteamlijst.append(i)
     with open("teamlijst","w") as t:
-        print(teamlijst, end = "", file = t)
+        print(keyteamlijst, end = "", file = t)
     print()
 
 def teamshowbasis():
@@ -483,15 +520,9 @@ def teamshowbasis():
     echt = nepecht()[2]
     lijn = "+--+----------+----------+--------------------+-----+------------+"
     if lang == "EN":
-        if key == "emailadres":
-            kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("EMail")[:10],forc10("GivenName")[:10],forc20("LastName")[:20],forc5("Chk")[:5],forc12("Note")[:12])
-        else:
-            kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("AN")[:10],forc10("GivenName")[:10],forc20("LastName")[:20],forc5("Chk")[:5],forc12("Note")[:12])
+        kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10(keylijstEN[keylijst.index(key)])[:10],forc10("GivenName")[:10],forc20("LastName")[:20],forc5("Chk")[:5],forc12("Note")[:12])
     else:
-        if key == "emailadres":
-            kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("EMail")[:10],forc10("VoorNaam")[:10],forc20("AchterNaam")[:20],forc5("Chk")[:5],forc12("Aantekening")[:12])
-        else:
-            kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("PN")[:10],forc10("VoorNaam")[:10],forc20("AchterNaam")[:20],forc5("Chk")[:5],forc12("Aantekening")[:12])
+        kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10(key)[:10],forc10("VoorNaam")[:10],forc20("AchterNaam")[:20],forc5("Chk")[:5],forc12("Aantekening")[:12])
     print(colbekijken+lijn+ResetAll)
     print(kop)
     print(lijn)
@@ -515,15 +546,9 @@ def teamshowbasisecht():
     echt = nepecht()[2]
     lijn = "+--+----------+----------+--------------------+-----+------------+"
     if lang == "EN":
-        if key == "emailadres":
-            kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("EMail")[:10],forc10("GivenName")[:10],forc20("LastName")[:20],forc5("Chk")[:5],forc12("Note")[:12])
-        else:
-            kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("AN")[:10],forc10("GivenName")[:10],forc20("LastName")[:20],forc5("Chk")[:5],forc12("Note")[:12])
+        kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10(keylijstEN[keylijst.index(key)])[:10],forc10("GivenName")[:10],forc20("LastName")[:20],forc5("Chk")[:5],forc12("Note")[:12])
     else:
-        if key == "emailadres":
-            kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("EMail")[:10],forc10("VoorNaam")[:10],forc20("AchterNaam")[:20],forc5("Chk")[:5],forc12("Aantekening")[:12])
-        else:
-            kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("PN")[:10],forc10("VoorNaam")[:10],forc20("AchterNaam")[:20],forc5("Chk")[:5],forc12("Aantekening")[:12])
+        kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10(key)[:10],forc10("VoorNaam")[:10],forc20("AchterNaam")[:20],forc5("Chk")[:5],forc12("Aantekening")[:12])
     print(colbekijken+lijn+ResetAll)
     print(kop)
     print(lijn)
@@ -584,15 +609,9 @@ def teamshow():
     echt = nepecht()[2]
     lijn = "+--+----------+----------+--------------------+-----+------------+"
     if lang == "EN":
-        if key == "emailadres":
-            kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("EMail")[:10],forc10("GivenName")[:10],forc20("LastName")[:20],forc5("Chk")[:5],forc12("Note")[:12])
-        else:
-            kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("AN")[:10],forc10("GivenName")[:10],forc20("LastName")[:20],forc5("Chk")[:5],forc12("Note")[:12])
+        kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10(keylijstEN[keylijst.index(key)])[:10],forc10("GivenName")[:10],forc20("LastName")[:20],forc5("Chk")[:5],forc12("Note")[:12])
     else:
-        if key == "emailadres":
-            kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("EMail")[:10],forc10("VoorNaam")[:10],forc20("AchterNaam")[:20],forc5("Chk")[:5],forc12("Aantekening")[:12])
-        else:
-            kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10("PN")[:10],forc10("VoorNaam")[:10],forc20("AchterNaam")[:20],forc5("Chk")[:5],forc12("Aantekening")[:12])
+        kop = "%s %s %s %s %s %s" % (forr3("ID"),forc10(key)[:10],forc10("VoorNaam")[:10],forc20("AchterNaam")[:20],forc5("Chk")[:5],forc12("Aantekening")[:12])
     print(colbekijken+lijn+ResetAll)
     print(kop)
     print(lijn)
@@ -1833,22 +1852,14 @@ def wijzigmedewerker():
     if lang == "EN":
         kies = "Choose an Agent or SubTeam to %sCHANGE%s:" % (colwijzigen, ResetAll)
         wie = "Give the ID of the Agent or SubTeam:\n%s" % inputindent
-        if key == "emailadres":
-            keyhere = "EMail address"
-        else:
-            keyhere = "Agent Number"
-        wat = "What do you want to change?:\n  1 : %s\n  2 : Given Name\n  3 : Last Name\n  4 : Check\n  5 : Note\n%s" % (keyhere,inputindent)
-        nietuniek = "This %s already exists." % keyhere
+        wat = "What do you want to change?:\n  1 : %s\n  2 : Given Name\n  3 : Last Name\n  4 : Check\n  5 : Note\n%s" % (keylijstEN[keylijst.index(key)],inputindent)
+        nietuniek = "This %s already exists." % keylijstEN[keylijst.index(key)]
         tog = "Check these Agents OUT or IN:\n  0 : OUT\n  1 : IN\n >2 : Invert\n%s" % inputindent
     else:
         kies = "Kies een Medewerker of SubTeam om te %sWIJZIGEN%s:" % (colwijzigen, ResetAll)
         wie = "Geef de ID van de Medewerker of het SubTeam:\n%s" % inputindent
-        if key == "emailadres":
-            keyhere = "EMailadres"
-        else:
-            keyhere = "PersoneelsNummer"
-        wat = "Wat wilt u Wijzigen?:\n  1 : %s\n  2 : VoorNaam\n  3 : AchterNaam\n  4 : Check\n  5 : Aantekening\n%s" % (keyhere,inputindent)
-        nietuniek = "Dit %s bestaat al." % keyhere
+        wat = "Wat wilt u Wijzigen?:\n  1 : %s\n  2 : VoorNaam\n  3 : AchterNaam\n  4 : Check\n  5 : Aantekening\n%s" % (key,inputindent)
+        nietuniek = "Dit %s bestaat al." % key
         tog = "Check deze Medewerkers UIT of IN:\n  0 : UIT\n  1 : IN\n >2 : Omkeren\n%s" % inputindent
     teamlijst = nepecht()[0]
     nep = nepecht()[1]
@@ -1873,7 +1884,7 @@ def wijzigmedewerker():
                 elif len(welk) == 2 and welk[0].upper() in afsluitlijst and welk[1].upper() in skiplijst:
                     eindroutine()
                 if welk == "1":
-                    if key == "emailadres":
+                    if key == keylijst[0]:
                         emailadres = False
                         while emailadres == False:
                             EM = input()
@@ -1968,8 +1979,11 @@ def wijzigmedewerker():
                     elif len(AT) == 2 and AT[0].upper() in afsluitlijst and AT[1].upper() in skiplijst:
                         eindroutine()
                     teamlijst[LL][4] = AT
+                keyteamlijst = [key]
+                for i in teamlijst:
+                    keyteamlijst.append(i)
                 with open("teamlijst","w") as t:
-                    print(teamlijst, end = "", file = t)
+                    print(keyteamlijst, end = "", file = t)
                 teamlijst = nepecht()[0]
                 nep = nepecht()[1]
                 echt = nepecht()[2]
@@ -2199,8 +2213,11 @@ def verwijderteam(medewerkerlijst):
     for i in medewerkerlijst:
         if i[0] != "00000":
             teamlijst.remove(i)
+    keyteamlijst = [key]
+    for i in teamlijst:
+        keyteamlijst.append(i)
     with open("teamlijst","w") as t:
-        print(teamlijst, end = "", file = t)
+        print(keyteamlijst, end = "", file = t)
     print(verwok)
     print()
 
@@ -2456,6 +2473,7 @@ while baas == True:
         eindroutine()
     if keuze == "0":
         printstuff()
+        key = setkey()
     elif keuze == "1":
         toevoegen = input(toetom)
         if toevoegen.upper() in afsluitlijst:
