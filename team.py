@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-versie = "2.0"
-datum = "20240215"
+versie = "2.1"
+datum = "20240216"
 import locale, os, ast, pathlib, subprocess, random, textwrap, calendar
 from datetime import *
 from dateutil.relativedelta import *
@@ -2083,7 +2083,7 @@ def vergadering():
     teamshowbasisecht()
     meelijst = []
     numin = 0
-    for i in teamlijst:
+    for i in echt:
         numin += i[3]
         if i[3] == 1:
             meelijst.append(i[1])
