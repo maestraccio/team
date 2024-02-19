@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-versie = "2.1"
-datum = "20240216"
+versie = "2.2"
+datum = "20240219"
 import locale, os, ast, pathlib, subprocess, random, textwrap, calendar
 from datetime import *
 from dateutil.relativedelta import *
@@ -2014,7 +2014,7 @@ def wijzigteam():
     elif len(select) == 2 and select[0].upper() in afsluitlijst and select[1].upper() in skiplijst:
         eindroutine()
     if select == "*":
-        medewerkerlijst = teamlijst
+        medewerkerlijst = teamlijst[1:]
     else:
         medewerkerlijst = []
         try:
@@ -2053,8 +2053,11 @@ def wijzigteam():
                     i[3] = 1
                 else:
                     i[3] = 0
+    keyteamlijst = [key]
+    for i in teamlijst:
+        keyteamlijst.append(i)
     with open("teamlijst","w") as t:
-        print(teamlijst, end = "", file = t)
+        print(keyteamlijst, end = "", file = t)
     teamlijst = nepecht()[0]
     nep = nepecht()[1]
     echt = nepecht()[2]
