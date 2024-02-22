@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-versie = "2.2"
-datum = "20240219"
+versie = "2.3"
+datum = "20240222"
 import locale, os, ast, pathlib, subprocess, random, textwrap, calendar
 from datetime import *
 from dateutil.relativedelta import *
@@ -1851,14 +1851,26 @@ def wijzigtaak():
 def wijzigmedewerker():
     if lang == "EN":
         kies = "Choose an Agent or SubTeam to %sCHANGE%s:" % (colwijzigen, ResetAll)
+        nieuwevoornaam = "Type the GivenName, or IDs as CSV (for a SubTeam):\n%s" % inputindent
+        nieuweid = "Type IDs as CSV:\n%s" % inputindent
         wie = "Give the ID of the Agent or SubTeam:\n%s" % inputindent
-        wat = "What do you want to change?:\n  1 : %s\n  2 : Given Name\n  3 : Last Name\n  4 : Check\n  5 : Note\n%s" % (keylijstEN[keylijst.index(key)],inputindent)
+        wat = "What do you want to Change?:\n  1 : %s\n  2 : Given Name\n  3 : Last Name\n  4 : Check\n  5 : Note\n%s" % (keylijstEN[keylijst.index(key)],inputindent)
+        wieinSubTeam = "This SubTeam is now composed of the Agents:"
+        watSubTeam = "What do you want to Change?:\n >1 : Composition\n  2 : Note\n%s" % inputindent
+        tovSubTeam = "Add or Remove Agents?:\n  1 : Add\n  2 : Remove\n%s" % inputindent
+        eindsubteam = "End adding Agents to the SubTeam with \"~\"."
         nietuniek = "This %s already exists." % keylijstEN[keylijst.index(key)]
         tog = "Check these Agents OUT or IN:\n  0 : OUT\n  1 : IN\n >2 : Invert\n%s" % inputindent
     else:
         kies = "Kies een Medewerker of SubTeam om te %sWIJZIGEN%s:" % (colwijzigen, ResetAll)
+        nieuwevoornaam = "Typ de VoorNaam, of ID's als CSV (voor een SubTeam):\n%s" % inputindent
+        nieuweid = "Typ ID's als CSV:\n%s" % inputindent
         wie = "Geef de ID van de Medewerker of het SubTeam:\n%s" % inputindent
         wat = "Wat wilt u Wijzigen?:\n  1 : %s\n  2 : VoorNaam\n  3 : AchterNaam\n  4 : Check\n  5 : Aantekening\n%s" % (key,inputindent)
+        wieinSubTeam = "Dit SubTeam is nu samengesteld uit de Medewerkers:"
+        watSubTeam = "Wat wilt u Wijzigen?:\n >1 : Samenstelling\n  2 : Aantekening\n%s" % inputindent
+        tovSubTeam = "Medewerkers Toevoegen of Verwijderen?:\n  1 : Toevoegen\n  2 : Verwijderen\n%s" % inputindent
+        eindsubteam = "Beëindig het toevoegen van Medewerkers aan dit SubTeam met \"~\"."
         nietuniek = "Dit %s bestaat al." % key
         tog = "Check deze Medewerkers UIT of IN:\n  0 : UIT\n  1 : IN\n >2 : Omkeren\n%s" % inputindent
     teamlijst = nepecht()[0]
@@ -1876,117 +1888,199 @@ def wijzigmedewerker():
             eindroutine()
         try:
             LL = int(LL)
-            if 0 <= LL <= len(teamlijst):
+            if LL in range(len(teamlijst)):
                 die = teamlijst[LL]
-                welk = input(wat)
-                if welk.upper() in afsluitlijst:
-                    return
-                elif len(welk) == 2 and welk[0].upper() in afsluitlijst and welk[1].upper() in skiplijst:
-                    eindroutine()
-                if welk == "1":
-                    if key == keylijst[0]:
-                        emailadres = False
-                        while emailadres == False:
-                            EM = input()
-                            if EM.upper() in afsluitlijst:
+                if die[0][0] == "~":
+                    subteamid = "~"
+                    subteamruwelijst = die[0][1:-1].split("~")
+                    subteamtel = 0
+                    subteamnamenlijst = []
+                    for i in subteamruwelijst:
+                        if i == subteamruwelijst[0] and ":" in i:
+                            i = i[i.index(":")+1:]
+                        subteamnamenlijst.append(i)
+                        subteamtel += 1
+                    watst = input(watSubTeam)
+                    if watst.upper() in afsluitlijst:
+                        uit = True
+                        return uit
+                    elif len(watst) == 2 and watst[0].upper() in afsluitlijst and watst[1].upper() in skiplijst:
+                        eindroutine()
+                    elif watst == "2":
+                        AT = input()
+                        if AT.upper() in afsluitlijst:
+                            return
+                        elif len(AT) == 2 and AT[0].upper() in afsluitlijst and AT[1].upper() in skiplijst:
+                            eindroutine()
+                        teamlijst[LL][4] = AT
+                    else:
+                        print(wieinSubTeam)
+                        for i in subteamnamenlijst:
+                            print(forr3(subteamnamenlijst.index(i)+1)+" "+i)
+                        tovst = input(tovSubTeam)
+                        if tovst.upper() in afsluitlijst:
+                            return
+                        elif len(tovst) == 2 and tovst[0].upper() in afsluitlijst and tovst[1].upper() in skiplijst:
+                            eindroutine()
+                        elif tovst == "1":
+                            ID = input(nieuweid)
+                            if ID.upper() in afsluitlijst:
                                 return
-                            elif len(EM) == 2 and EM[0].upper() in afsluitlijst and EM[1].upper() in skiplijst:
+                            elif len(ID) == 2 and ID[0].upper() in afsluitlijst and ID[1].upper() in skiplijst:
                                 eindroutine()
-                            elif len(EM) < 1:
+                            try:
+                                IDCSV = ID.replace(" ","").split(",")
+                                for i in IDCSV:
+                                    if int(i)-1 in range(len(echt)):
+                                        tijdelijkesubteamnaam = "~"+echt[int(i)-1][1]
+                                        subteamnamenlijst.append(echt[int(i)-1][1])
+                                        subteamtel += 1
+                                for i in subteamnamenlijst:
+                                    print("~"+i)
+                                    if subteamid == "~":
+                                        subteamid += str(subteamtel)+":"
+                                    subteamid += (i+"~")
+                                teamlijst[LL][0] = subteamid
+                                teamlijst[LL][2] = subteamid
+                            except(Exception) as f:
+                                print(f)
+                        elif tovst == "2":
+                            ID = input(nieuweid)
+                            if ID.upper() in afsluitlijst:
+                                return
+                            elif len(ID) == 2 and ID[0].upper() in afsluitlijst and ID[1].upper() in skiplijst:
+                                eindroutine()
+                            try:
+                                IDCSV = ID.replace(" ","").split(",")
+                                IDCSV = sorted(IDCSV, reverse = True)
+                                for i in IDCSV:
+                                    if int(i)-1 in range(len(subteamnamenlijst)) and len(subteamnamenlijst) > 1:
+                                        subteamnamenlijst.remove(subteamnamenlijst[int(i)-1])
+                                        subteamtel -= 1
+                                for i in subteamnamenlijst:
+                                    print("~"+i)
+                                    if subteamid == "~":
+                                        subteamid += str(subteamtel)+":"
+                                    subteamid += (i+"~")
+                                teamlijst[LL][0] = subteamid
+                                teamlijst[LL][2] = subteamid
+                            except(Exception) as f:
+                                print(f)
+                    keyteamlijst = [key]
+                    for i in teamlijst:
+                        keyteamlijst.append(i)
+                    with open("teamlijst","w") as t:
+                        print(keyteamlijst, end = "", file = t)
+                else:
+                    welk = input(wat)
+                    if welk.upper() in afsluitlijst:
+                        return
+                    elif len(welk) == 2 and welk[0].upper() in afsluitlijst and welk[1].upper() in skiplijst:
+                        eindroutine()
+                    if welk == "1":
+                        if key == keylijst[0]:
+                            emailadres = False
+                            while emailadres == False:
+                                EM = input()
+                                if EM.upper() in afsluitlijst:
+                                    return
+                                elif len(EM) == 2 and EM[0].upper() in afsluitlijst and EM[1].upper() in skiplijst:
+                                    eindroutine()
+                                elif len(EM) < 1:
+                                    pass
+                                else:
+                                    u = True
+                                    for i in teamlijst:
+                                        if EM == i[0]:
+                                            u = False
+                                    if u == False:
+                                        print(colslecht+nietuniek+ResetAll)
+                                    else:
+                                        print(die)
+                                        print(EM)
+                                        if die[0][0] == "~" and EM[0] != "~":
+                                            teamlijst[LL][0] = "~"+EM
+                                        else:
+                                            teamlijst[LL][0] = EM
+                                        emailadres = True
+                        else:
+                            personeelsnummer = False
+                            while personeelsnummer == False:
+                                PN = input()
+                                if PN.upper() in afsluitlijst:
+                                    return
+                                elif len(PN) == 2 and PN[0].upper() in afsluitlijst and PN[1].upper() in skiplijst:
+                                    eindroutine()
+                                elif len(PN) < 1:
+                                    pass
+                                else:
+                                    u = True
+                                    for i in teamlijst:
+                                        if PN == i[0]:
+                                            u = False
+                                    if u == False:
+                                        print(colslecht+nietuniek+ResetAll)
+                                    else:
+                                        print(die)
+                                        print(PN)
+                                        if die[0][0] == "~" and PN[0] != "~":
+                                            teamlijst[LL][0] = "~"+PN
+                                        else:
+                                            teamlijst[LL][0] = PN
+                                        personeelsnummer = True
+                    elif welk == "2":
+                        voornaam = False
+                        while voornaam == False:
+                            VN = input()
+                            if VN.upper() in afsluitlijst:
+                                return
+                            elif len(VN) == 2 and VN[0].upper() in afsluitlijst and VN[1].upper() in skiplijst:
+                                eindroutine()
+                            elif len(VN) < 1:
                                 pass
                             else:
-                                u = True
-                                for i in teamlijst:
-                                    if EM == i[0]:
-                                        u = False
-                                if u == False:
-                                    print(colslecht+nietuniek+ResetAll)
-                                else:
-                                    print(die)
-                                    print(EM)
-                                    if die[0][0] == "~" and EM[0] != "~":
-                                        teamlijst[LL][0] = "~"+EM
-                                    else:
-                                        teamlijst[LL][0] = EM
-                                    emailadres = True
-                    else:
-                        personeelsnummer = False
-                        while personeelsnummer == False:
-                            PN = input()
-                            if PN.upper() in afsluitlijst:
+                                teamlijst[LL][1] = VN
+                                voornaam = True
+                    elif welk == "3":
+                        achternaam = False
+                        while achternaam == False:
+                            AN = input()
+                            if AN.upper() in afsluitlijst:
                                 return
-                            elif len(PN) == 2 and PN[0].upper() in afsluitlijst and PN[1].upper() in skiplijst:
+                            elif len(AN) == 2 and AN[0].upper() in afsluitlijst and AN[1].upper() in skiplijst:
                                 eindroutine()
-                            elif len(PN) < 1:
+                            elif len(AN) < 1:
                                 pass
                             else:
-                                u = True
-                                for i in teamlijst:
-                                    if PN == i[0]:
-                                        u = False
-                                if u == False:
-                                    print(colslecht+nietuniek+ResetAll)
-                                else:
-                                    print(die)
-                                    print(PN)
-                                    if die[0][0] == "~" and PN[0] != "~":
-                                        teamlijst[LL][0] = "~"+PN
-                                    else:
-                                        teamlijst[LL][0] = PN
-                                    personeelsnummer = True
-                elif welk == "2":
-                    voornaam = False
-                    while voornaam == False:
-                        VN = input()
-                        if VN.upper() in afsluitlijst:
-                            return
-                        elif len(VN) == 2 and VN[0].upper() in afsluitlijst and VN[1].upper() in skiplijst:
-                            eindroutine()
-                        elif len(VN) < 1:
-                            pass
-                        else:
-                            teamlijst[LL][1] = VN
-                            voornaam = True
-                elif welk == "3":
-                    achternaam = False
-                    while achternaam == False:
-                        AN = input()
-                        if AN.upper() in afsluitlijst:
-                            return
-                        elif len(AN) == 2 and AN[0].upper() in afsluitlijst and AN[1].upper() in skiplijst:
-                            eindroutine()
-                        elif len(AN) < 1:
-                            pass
-                        else:
-                            teamlijst[LL][2] = AN
-                            achternaam = True
-                    teamlijst[LL][2] = AN
-                elif welk == "4":
-                    toggleall = input(tog)
-                    if toggleall == "0":
-                        teamlijst[LL][3] = 0
-                    elif toggleall == "1":
-                        teamlijst[LL][3] = 1
-                    else:
-                        if teamlijst[LL][3] == 0:
+                                teamlijst[LL][2] = AN
+                                achternaam = True
+                        teamlijst[LL][2] = AN
+                    elif welk == "4":
+                        toggleall = input(tog)
+                        if toggleall == "0":
+                            teamlijst[LL][3] = 0
+                        elif toggleall == "1":
                             teamlijst[LL][3] = 1
                         else:
-                            teamlijst[LL][3] = 0
-                elif welk == "5":
-                    AT = input()
-                    if AT.upper() in afsluitlijst:
-                        return
-                    elif len(AT) == 2 and AT[0].upper() in afsluitlijst and AT[1].upper() in skiplijst:
-                        eindroutine()
-                    teamlijst[LL][4] = AT
-                keyteamlijst = [key]
-                for i in teamlijst:
-                    keyteamlijst.append(i)
-                with open("teamlijst","w") as t:
-                    print(keyteamlijst, end = "", file = t)
-                teamlijst = nepecht()[0]
-                nep = nepecht()[1]
-                echt = nepecht()[2]
+                            if teamlijst[LL][3] == 0:
+                                teamlijst[LL][3] = 1
+                            else:
+                                teamlijst[LL][3] = 0
+                    elif welk == "5":
+                        AT = input()
+                        if AT.upper() in afsluitlijst:
+                            return
+                        elif len(AT) == 2 and AT[0].upper() in afsluitlijst and AT[1].upper() in skiplijst:
+                            eindroutine()
+                        teamlijst[LL][4] = AT
+                    keyteamlijst = [key]
+                    for i in teamlijst:
+                        keyteamlijst.append(i)
+                    with open("teamlijst","w") as t:
+                        print(keyteamlijst, end = "", file = t)
+                    teamlijst = nepecht()[0]
+                    nep = nepecht()[1]
+                    echt = nepecht()[2]
         except:
             pass
         pisang = True
