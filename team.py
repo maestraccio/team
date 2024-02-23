@@ -1,13 +1,11 @@
 #!/usr/bin/python3
-versie = "2.3"
-datum = "20240222"
+versie = "2.4"
+datum = "20240223"
 import locale, os, ast, pathlib, subprocess, random, textwrap, calendar
 from datetime import *
 from dateutil.relativedelta import *
 from time import sleep
 
-keylijst = ["EMailadres","PersoneelsNummer"]
-keylijstEN = ["EMail address","Agent Number"]
 basismap = os.path.dirname(os.path.realpath(__file__))
 os.chdir(basismap)
 locale.setlocale(locale.LC_ALL, "")
@@ -92,6 +90,8 @@ try:
 except:
     print(ResetAll)
 
+keylijst = ["EMailadres","PersoneelsNummer"]
+keylijstEN = ["EMail address","Agent Number"]
 nu = datetime.strftime(datetime.today(),"%Y%m%d")
 afsluitlijst = ["X","Q",":X",":Q"]
 jalijst = ["J","JA","Y","YES","OK","K","SURE","JAZEKER","ZEKER","INDERDAAD","IDD"]
@@ -405,10 +405,14 @@ def teamnieuw():
         elif len(VN) == 2 and VN[0].upper() in afsluitlijst and VN[1].upper() in skiplijst:
             eindroutine()
         try:
-            VNCSV = VN.replace(" ","").split(",")
+            tempVNCSV = VN.replace(" ","").split(",")
+            VNCSV = []
+            for i in tempVNCSV:
+                if i != "":
+                    VNCSV.append(i)
             for i in VNCSV:
                 if int(i)-1 in range(len(echt)):
-                    print("~"+echt[int(i)-1][1])
+                    print(colbekijken+"~"+echt[int(i)-1][1]+ResetAll)
                     subteamvoornamenlijst.append(echt[int(i)-1][1])
                     subteamtel += 1
             for i in range(len(tijdelijkesubteamvoornaam)):
@@ -423,7 +427,6 @@ def teamnieuw():
                 for i in subteamvoornamenlijst:
                     subteamvoornaam += i+"~"
                 AN = subteamvoornaam
-                print(AN)
                 if lang == "EN":
                     VN = "SubTeam"
                 else:
@@ -437,7 +440,7 @@ def teamnieuw():
             else:
                 voornaam = True
     try:
-        print(AN)
+        print(colbekijken+AN+ResetAll)
     except:
         achternaam = False
         while achternaam == False:
@@ -1916,7 +1919,7 @@ def wijzigmedewerker():
                     else:
                         print(wieinSubTeam)
                         for i in subteamnamenlijst:
-                            print(forr3(subteamnamenlijst.index(i)+1)+" "+i)
+                            print(colbekijken+forr3(subteamnamenlijst.index(i)+1)+" "+i+ResetAll)
                         tovst = input(tovSubTeam)
                         if tovst.upper() in afsluitlijst:
                             return
@@ -1935,15 +1938,16 @@ def wijzigmedewerker():
                                         tijdelijkesubteamnaam = "~"+echt[int(i)-1][1]
                                         subteamnamenlijst.append(echt[int(i)-1][1])
                                         subteamtel += 1
+                                subteamnamenlijst = sorted(subteamnamenlijst)
                                 for i in subteamnamenlijst:
-                                    print("~"+i)
+                                    print(colbekijken+"~"+i+ResetAll)
                                     if subteamid == "~":
                                         subteamid += str(subteamtel)+":"
                                     subteamid += (i+"~")
                                 teamlijst[LL][0] = subteamid
                                 teamlijst[LL][2] = subteamid
-                            except(Exception) as f:
-                                print(f)
+                            except:
+                                pass
                         elif tovst == "2":
                             ID = input(nieuweid)
                             if ID.upper() in afsluitlijst:
@@ -1953,19 +1957,22 @@ def wijzigmedewerker():
                             try:
                                 IDCSV = ID.replace(" ","").split(",")
                                 IDCSV = sorted(IDCSV, reverse = True)
-                                for i in IDCSV:
-                                    if int(i)-1 in range(len(subteamnamenlijst)) and len(subteamnamenlijst) > 1:
-                                        subteamnamenlijst.remove(subteamnamenlijst[int(i)-1])
-                                        subteamtel -= 1
-                                for i in subteamnamenlijst:
-                                    print("~"+i)
-                                    if subteamid == "~":
-                                        subteamid += str(subteamtel)+":"
-                                    subteamid += (i+"~")
-                                teamlijst[LL][0] = subteamid
-                                teamlijst[LL][2] = subteamid
-                            except(Exception) as f:
-                                print(f)
+                                if len(IDCSV) >= len(subteamnamenlijst):
+                                    teamlijst.remove(teamlijst[LL])
+                                else:
+                                    for i in IDCSV:
+                                        if int(i)-1 in range(len(subteamnamenlijst)) and len(subteamnamenlijst) > 1:
+                                            subteamnamenlijst.remove(subteamnamenlijst[int(i)-1])
+                                            subteamtel -= 1
+                                    for i in subteamnamenlijst:
+                                        print(colbekijken+"~"+i+ResetAll)
+                                        if subteamid == "~":
+                                            subteamid += str(subteamtel)+":"
+                                        subteamid += (i+"~")
+                                    teamlijst[LL][0] = subteamid
+                                    teamlijst[LL][2] = subteamid
+                            except:
+                                pass
                     keyteamlijst = [key]
                     for i in teamlijst:
                         keyteamlijst.append(i)
@@ -2161,19 +2168,21 @@ def vergadering():
     if lang == "EN":
         ingecheckt = "These Agents are checked %sIN%s and can participate:" % (iocol[1],ResetAll)
         naamkop = colmeeting+forc10("Name:")+ResetAll
-        meetingstart = "Comments are collected and shown but not stored.\n%sThe meeting has started.%s End with \"Q\"." % (colmeeting,ResetAll)
+        meetingstart = "Comments are collected and shown but not stored.\n%sThe meeting has started.%s\nThe chairperson can end the meeting with \"Q\"." % (colmeeting,ResetAll)
         extradeelnemer = "Add extra participants by typing their names, or\ntype the IDs of any indisposed Agent(s) (csv style).\nLeave empty to continue:\n%s" % inputindent
         geendeelnemers = "Check in participating Agents, or add participants manually."
-        perdeelnemer = "Noted comments grouped per participant:"
-        eindevergadering = "Here ends the Meeting."
+        wievoorzitter = "Assign a chairperson:\n%s" % inputindent
+        dievoorzitter = "The chairperson for this meeting is %s"
+        alleendevoorzitter = "Only the chairperson %s can end the meeting."
     else:
         ingecheckt = "Deze Medewerkers zijn %sIN%sgecheckt en kunnen deelnemen:" % (iocol[1],ResetAll)
         naamkop = colmeeting+forc10("Naam:")+ResetAll
-        meetingstart = "Opmerkingen worden verzameld en getoond maar niet opgeslagen.\n%sDe vergadering is gestart.%s Beëindig met \"Q\"." % (colmeeting,ResetAll)
+        meetingstart = "Opmerkingen worden verzameld en getoond maar niet opgeslagen.\n%sDe vergadering is gestart.%s\nDe voorzitter kan deze beëindigen met \"Q\"." % (colmeeting,ResetAll)
         extradeelnemer = "Voeg extra deelnemers toe door hun namen te typen, of\ngeef de ID's van verhinderde Medewerkers (csv-stijl).\nLaat leeg om door te gaan:\n%s" % inputindent
         geendeelnemers = "Check deelnemende Medewerkers in, of voeg handmatig deelnemers toe."
-        perdeelnemer = "Genoteerde opmerkingen gegroepeerd per Deelnemer:"
-        eindevergadering = "Hier stopt de vergadering."
+        wievoorzitter = "Wijs een voorzitter aan:\n%s" % inputindent
+        dievoorzitter = "De voorzitter voor deze vergadering is %s"
+        alleendevoorzitter = "Alleen de voorzitter %s kan afsluiten."
     teamlijst = nepecht()[0]
     nep = nepecht()[1]
     echt = nepecht()[2]
@@ -2221,7 +2230,23 @@ def vergadering():
                 for i in meelijst:
                     print(forr3(indie)+" : "+iocol[1]+i+ResetAll)
                     indie += 1
-    meetingdictrandom = {}
+    voorzitter = False
+    while voorzitter == False:
+        VZ = input(wievoorzitter)
+        if VZ.upper() in afsluitlijst:
+            gezellig = False
+            return
+        elif len(VZ) == 2 and VZ[0].upper() in afsluitlijst and VZ[1].upper() in skiplijst:
+            eindroutine()
+        else:
+            try:
+                voor = meelijst[int(VZ)-1]
+                voorzitter = True
+            except:
+                pass
+    print(dievoorzitter % (colmeeting+voor+ResetAll))
+    meelijst.remove(voor)
+    meetingdictrandom = {voor: []}
     while len(meelijst) > 0:
         r = random.choice(meelijst)
         meetingdictrandom[r]= []
@@ -2248,28 +2273,16 @@ def vergadering():
         for i,j in meetingdictrandom.items():
             print(forr2(puttel),forr10(i[:10]),": ", end = "")
             put = input()
-            if put.upper() in afsluitlijst:
-                meetingdictrandom[i].append(str(puttel)+": "+eindevergadering)
-                print()
+            if put.upper() in afsluitlijst and i == voor:
                 gezellig = False
                 break
+            elif put.upper() in afsluitlijst:
+                print(alleendevoorzitter % (colmeeting+voor+ResetAll))
             elif len(put) == 2 and put[0].upper() in afsluitlijst and put[1].upper() in skiplijst:
                 eindroutine()
             meetingdictrandom[i].append(str(puttel)+": "+put)
-        print(lijn)
         puttel += 1
-    print(perdeelnemer)
-    try:
-        tel = 0
-        for i,j in meetingdictrandom.items():
-            print("    "+colmeeting+forl10(i[:10])+":"+ResetAll,end = "")
-            print(" "+colmeeting+j[0]+" "+ResetAll)
-            for k in j[1:]:
-                print("                "+colmeeting+k+" "+ResetAll)
-            tel += 1
-    except:
-        print()
-    print(colmeeting+lijn+ResetAll)
+        print(colmeeting+lijn+ResetAll)
     print()
 
 def archiveerteam(medewerkerlijst):
