@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-versie = "2.4"
-datum = "20240223"
+versie = "2.41"
+datum = "20250221"
 import locale, os, ast, pathlib, subprocess, random, textwrap, calendar
 from datetime import *
 from dateutil.relativedelta import *
@@ -94,9 +94,9 @@ keylijst = ["EMailadres","PersoneelsNummer"]
 keylijstEN = ["EMail address","Agent Number"]
 nu = datetime.strftime(datetime.today(),"%Y%m%d")
 afsluitlijst = ["X","Q",":X",":Q"]
-jalijst = ["J","JA","Y","YES","OK","K","SURE","JAZEKER","ZEKER","INDERDAAD","IDD"]
-neelijst = ["N"]
-skiplijst = ["!",">","S","D"] # Skip, Standaard, Default
+jalijst = ["J","JA","Y","YES","OK","K","SURE","JAZEKER","ZEKER","INDERDAAD","IDD",">","]","}",")"]
+neelijst = ["N","<","[","{","("]
+skiplijst = ["!","S","D"] # Skip, Standaard, Default
 inputindent = "  : "
 dagenlijstEN = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
 maandlijstEN = ["January","February","March","April","May","June","July", "August", "September","October","November","December"]
@@ -2287,11 +2287,11 @@ def vergadering():
 
 def archiveerteam(medewerkerlijst):
     if lang == "EN":
-        archop = "\nArchived on %s:" % nu
+        archop = "\nAgent or SubTeam archived on %s:" % nu
         archok = "Agent(s) or SubTeam(s) archived successfully."
     else:
-        archop = "\nGearchiveerd op %s:" % nu
-        archok = "Medewerker(s) of SubTeam(s)succesvol gearchiveerd."
+        archop = "\nMedewerker of SubTeam gearchiveerd op %s:" % nu
+        archok = "Medewerker(s) of SubTeam(s) succesvol gearchiveerd."
     with open("team.txt","a+") as t:
         try:
             for i in medewerkerlijst:
@@ -2333,11 +2333,11 @@ def verwijderteam(medewerkerlijst):
 
 def archiveertaak(taaklijst):
     if lang == "EN":
-        archop = "\nArchived on %s:" % nu
+        archop = "\nTask archived on %s:" % nu
         archok = "Task(s) archived successfully."
         archnok = "%sTask(s) NOT archived successfully.%s Is the status %s?" % (statcol[5],ResetAll,Omkeren+statcol[5]+statuslijst[5]+ResetAll)
     else:
-        archop = "\nGearchiveerd op %s:" % nu
+        archop = "\nTaak gearchiveerd op %s:" % nu
         archok = "Ta(a)k(en) succesvol gearchiveerd."
         archnok = "%sTa(a)k(en) NIET succesvol gearchiveerd.%s Is de status %s?" % (statcol[5],ResetAll,Omkeren+statcol[5]+statuslijst[5]+ResetAll)
     with open("team.txt","a+") as t:
